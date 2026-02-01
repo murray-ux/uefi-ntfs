@@ -6,13 +6,23 @@
   "license": "Apache-2.0",
   "private": true,
   "scripts": {
+    "setup": "node scripts/setup.js",
+    "start": "npx tsx src/server.ts",
+    "dev": "npx tsx watch src/server.ts",
+    "gate": "npx tsx src/index.ts",
     "build": "tsc",
     "test": "node --import tsx --test test/*.test.ts",
+    "health": "npx tsx src/index.ts health",
+    "harden": "npx tsx src/index.ts harden",
+    "ooda": "npx tsx src/index.ts ooda",
     "verify": "./verify/full_verify.sh --verbose",
     "orchestrate": "python3 core/orchestrator.py",
     "master": "./bin/genesis_master.sh",
     "rust:build": "cargo build --release --manifest-path rust_boundary/Cargo.toml",
     "rust:test": "cargo test --manifest-path rust_boundary/Cargo.toml"
+  },
+  "dependencies": {
+    "tsx": "^4.7.0"
   },
   "devDependencies": {
     "typescript": "^5.3.0",
