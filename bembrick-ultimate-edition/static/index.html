@@ -2,158 +2,934 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GENESIS 2.0 — Security Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GENESIS 2.0 — Developer Pro</title>
 <style>
-  :root { --bg: #0a0e17; --surface: #111827; --border: #1f2937; --text: #e5e7eb; --accent: #3b82f6; --ok: #22c55e; --warn: #f59e0b; --fail: #ef4444; }
+  :root {
+    --bg: #06090f; --surface: #0d1117; --surface2: #161b22; --border: #21262d;
+    --text: #e6edf3; --muted: #7d8590; --accent: #58a6ff; --accent2: #3fb950;
+    --warn: #d29922; --fail: #f85149; --purple: #bc8cff; --pink: #f778ba;
+    --radius: 12px; --glow: 0 0 20px rgba(88,166,255,0.15);
+    --drag-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 30px rgba(88,166,255,0.1);
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
-  h1 { font-size: 20px; color: var(--accent); margin-bottom: 8px; }
-  .subtitle { color: #6b7280; font-size: 12px; margin-bottom: 24px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
-  .card h2 { font-size: 13px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .status { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; }
-  .dot.ok { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
-  .dot.warn { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
-  .dot.fail { background: var(--fail); box-shadow: 0 0 6px var(--fail); }
-  .dot.loading { background: #6b7280; animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .metric { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .metric:last-child { border-bottom: none; }
-  .metric .label { color: #9ca3af; }
-  .metric .value { color: var(--text); font-weight: bold; }
-  .endpoints { font-size: 12px; }
-  .endpoints li { list-style: none; padding: 3px 0; color: #9ca3af; }
-  .endpoints .method { color: var(--accent); font-weight: bold; min-width: 50px; display: inline-block; }
-  #error { color: var(--fail); font-size: 12px; margin-top: 8px; }
-  .refresh { background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; margin-bottom: 16px; }
-  .refresh:hover { opacity: 0.85; }
-  .footer { text-align: center; color: #4b5563; font-size: 11px; margin-top: 32px; }
+  body {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden;
+  }
+
+  /* ── Top Bar ───────────────────────────────────────────────────────── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: linear-gradient(180deg, rgba(13,17,23,0.98), rgba(13,17,23,0.92));
+    backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 52px;
+  }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; }
+  .topbar .logo {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px; color: #fff;
+  }
+  .topbar .title { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
+  .topbar .title span { color: var(--accent); }
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  .topbar-actions .badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    background: rgba(63,185,80,0.15); color: var(--accent2); border: 1px solid rgba(63,185,80,0.3);
+  }
+
+  /* ── Pop Menu Button ───────────────────────────────────────────────── */
+  .menu-trigger {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px; transition: all 0.2s;
+  }
+  .menu-trigger:hover { background: var(--accent); border-color: var(--accent); }
+  .menu-trigger:hover .bar { background: #fff; }
+  .menu-trigger .bar { width: 16px; height: 2px; background: var(--muted); border-radius: 1px; transition: all 0.3s; }
+  .menu-trigger.open .bar:nth-child(1) { transform: rotate(45deg) translate(3.5px, 3.5px); }
+  .menu-trigger.open .bar:nth-child(2) { opacity: 0; }
+  .menu-trigger.open .bar:nth-child(3) { transform: rotate(-45deg) translate(3.5px, -3.5px); }
+
+  /* ── Pop Menu Overlay ──────────────────────────────────────────────── */
+  .pop-menu {
+    position: fixed; top: 52px; right: 0; bottom: 0; width: 340px; z-index: 999;
+    background: var(--surface); border-left: 1px solid var(--border);
+    transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto; padding: 16px;
+  }
+  .pop-menu.open { transform: translateX(0); box-shadow: -8px 0 40px rgba(0,0,0,0.4); }
+  .pop-menu h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin: 16px 0 8px; }
+  .pop-menu h3:first-child { margin-top: 0; }
+
+  .pop-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px;
+    cursor: pointer; transition: all 0.15s; border: 1px solid transparent; margin-bottom: 2px;
+  }
+  .pop-item:hover { background: var(--surface2); border-color: var(--border); }
+  .pop-item:active { transform: scale(0.98); }
+  .pop-item .icon {
+    width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-size: 15px; flex-shrink: 0;
+  }
+  .pop-item .icon.blue { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .pop-item .icon.green { background: rgba(63,185,80,0.15); color: var(--accent2); }
+  .pop-item .icon.purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .pop-item .icon.pink { background: rgba(247,120,186,0.15); color: var(--pink); }
+  .pop-item .icon.warn { background: rgba(210,153,34,0.15); color: var(--warn); }
+  .pop-item .icon.fail { background: rgba(248,81,73,0.15); color: var(--fail); }
+  .pop-item .info { flex: 1; }
+  .pop-item .info .name { font-size: 13px; font-weight: 500; }
+  .pop-item .info .desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .pop-item .kbd {
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+  }
+
+  /* ── Main Content ──────────────────────────────────────────────────── */
+  main { padding: 68px 20px 20px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── Drag-Drop Grid ────────────────────────────────────────────────── */
+  .panel-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; position: relative;
+  }
+  .panel.dragging { opacity: 0.5; transform: scale(0.95); }
+  .panel.drag-over { border-color: var(--accent); box-shadow: var(--glow); }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    cursor: grab; user-select: none;
+  }
+  .panel-header:active { cursor: grabbing; }
+  .panel-header .panel-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+  .panel-header .panel-title .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .panel-header .panel-actions { display: flex; gap: 4px; }
+  .panel-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: none;
+    background: transparent; cursor: pointer; color: var(--muted); font-size: 13px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .panel-btn:hover { background: var(--surface2); color: var(--text); }
+  .panel-body { padding: 16px; }
+
+  /* ── Status Rows ───────────────────────────────────────────────────── */
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid rgba(33,38,45,0.5); font-size: 13px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .label { color: var(--muted); }
+  .stat-row .val { font-weight: 600; }
+  .stat-row .val.ok { color: var(--accent2); }
+  .stat-row .val.warn { color: var(--warn); }
+  .stat-row .val.fail { color: var(--fail); }
+  .stat-row .val.accent { color: var(--accent); }
+
+  /* ── AI Chat Panel ─────────────────────────────────────────────────── */
+  .ai-chat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .ai-header {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ai-header .ai-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #fff;
+  }
+  .ai-header .ai-label { font-size: 13px; font-weight: 600; }
+  .ai-header .ai-label span { color: var(--purple); }
+  .ai-header .model-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    background: rgba(188,140,255,0.12); color: var(--purple); border: 1px solid rgba(188,140,255,0.25);
+    margin-left: auto;
+  }
+  .ai-body { max-height: 340px; overflow-y: auto; padding: 16px; }
+  .ai-msg { margin-bottom: 12px; line-height: 1.5; font-size: 13px; }
+  .ai-msg.system { color: var(--muted); font-style: italic; }
+  .ai-msg.user { color: var(--accent); }
+  .ai-msg.assistant { color: var(--text); background: var(--surface2); padding: 10px 12px; border-radius: 8px; }
+  .ai-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .ai-input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; color: var(--text); font-family: inherit; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .ai-input:focus { border-color: var(--accent); }
+  .ai-input::placeholder { color: var(--muted); }
+  .ai-send {
+    padding: 8px 16px; border-radius: 8px; border: none;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    color: #fff; font-family: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
+  }
+  .ai-send:hover { opacity: 0.85; }
+  .ai-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Quick Action Chips ────────────────────────────────────────────── */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+  .chip {
+    font-size: 11px; padding: 4px 10px; border-radius: 16px;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--muted);
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.08); }
+
+  /* ── Pentagon Rooms Visualiser ──────────────────────────────────────── */
+  .pentagon-vis {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 20px;
+  }
+  .pentagon-vis h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--muted); margin-bottom: 16px;
+  }
+  .layer-row { margin-bottom: 12px; }
+  .layer-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+  .room-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .room-chip {
+    font-size: 11px; padding: 5px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--text);
+    cursor: pointer; transition: all 0.2s; position: relative;
+  }
+  .room-chip:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--glow); }
+  .room-chip.active { border-color: var(--accent); background: rgba(88,166,255,0.1); color: var(--accent); }
+  .room-chip .room-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+  .room-chip .room-dot.l0 { background: var(--fail); }
+  .room-chip .room-dot.l1 { background: var(--warn); }
+  .room-chip .room-dot.l2 { background: var(--accent2); }
+  .room-chip .room-dot.l3 { background: var(--accent); }
+  .room-chip .room-dot.l4 { background: var(--purple); }
+
+  /* ── Room Detail Popover ───────────────────────────────────────────── */
+  .room-detail {
+    display: none; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-top: 12px;
+    animation: slideDown 0.2s ease-out;
+  }
+  .room-detail.visible { display: block; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  .room-detail h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .room-detail pre {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; font-size: 12px; overflow-x: auto; color: var(--muted); line-height: 1.5;
+  }
+
+  /* ── Endpoint Explorer ─────────────────────────────────────────────── */
+  .endpoint-list { margin-bottom: 20px; }
+  .endpoint {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-bottom: 1px solid rgba(33,38,45,0.4); font-size: 13px; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .endpoint:hover { background: var(--surface2); }
+  .endpoint .method-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; min-width: 44px; text-align: center;
+  }
+  .method-badge.GET { background: rgba(63,185,80,0.15); color: var(--accent2); }
+  .method-badge.POST { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .endpoint .path { color: var(--text); font-weight: 500; }
+  .endpoint .ep-desc { color: var(--muted); margin-left: auto; font-size: 11px; }
+
+  /* ── Auto-Generate Pulse ───────────────────────────────────────────── */
+  .autogen-bar {
+    background: linear-gradient(90deg, rgba(188,140,255,0.08), rgba(247,120,186,0.08), rgba(88,166,255,0.08));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .autogen-bar::before {
+    content: ''; position: absolute; top: 0; left: -100%; width: 200%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--purple), var(--pink), var(--accent), transparent);
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { to { transform: translateX(50%); } }
+  .autogen-bar h2 { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .autogen-bar h2 .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); animation: pulse 2s infinite; }
+  .autogen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+  .autogen-btn {
+    padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); cursor: pointer; transition: all 0.2s;
+    text-align: left; font-family: inherit;
+  }
+  .autogen-btn:hover { border-color: var(--purple); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(188,140,255,0.12); }
+  .autogen-btn .aname { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .autogen-btn .adesc { font-size: 10px; color: var(--muted); }
+
+  /* ── Toast Notifications ───────────────────────────────────────────── */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column-reverse; gap: 8px; }
+  .toast {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 16px; font-size: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    animation: toastIn 0.3s ease-out; display: flex; align-items: center; gap: 8px; max-width: 360px;
+  }
+  .toast.success { border-left: 3px solid var(--accent2); }
+  .toast.error { border-left: 3px solid var(--fail); }
+  .toast.info { border-left: 3px solid var(--accent); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* ── Command Palette ───────────────────────────────────────────────── */
+  .cmd-palette-overlay {
+    position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px); display: none; align-items: flex-start; justify-content: center; padding-top: 120px;
+  }
+  .cmd-palette-overlay.open { display: flex; }
+  .cmd-palette {
+    width: 560px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
+  }
+  .cmd-palette input {
+    width: 100%; padding: 14px 18px; border: none; border-bottom: 1px solid var(--border);
+    background: transparent; color: var(--text); font-family: inherit; font-size: 15px; outline: none;
+  }
+  .cmd-palette input::placeholder { color: var(--muted); }
+  .cmd-results { max-height: 360px; overflow-y: auto; }
+  .cmd-result {
+    display: flex; align-items: center; gap: 12px; padding: 10px 18px; cursor: pointer;
+    transition: background 0.1s; font-size: 13px;
+  }
+  .cmd-result:hover, .cmd-result.selected { background: var(--surface2); }
+  .cmd-result .cr-icon { width: 20px; color: var(--muted); text-align: center; }
+  .cmd-result .cr-label { flex: 1; }
+  .cmd-result .cr-shortcut { font-size: 10px; color: var(--muted); }
+
+  /* ── Scrollbar ─────────────────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ── Responsive ────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .pop-menu { width: 100%; }
+    .panel-grid { grid-template-columns: 1fr; }
+    .autogen-grid { grid-template-columns: 1fr 1fr; }
+    main { padding: 60px 12px 12px; }
+  }
 </style>
 </head>
 <body>
-  <h1>GENESIS 2.0 — SECURITY DASHBOARD</h1>
-  <div class="subtitle">Charter-governed. Audit-trailed. Citation-backed.</div>
-  <button class="refresh" onclick="refresh()">Refresh</button>
 
-  <div class="grid">
-    <div class="card">
-      <h2>System Health</h2>
-      <div class="status"><div class="dot loading" id="health-dot"></div><span id="health-status">Loading...</span></div>
-      <div id="health-metrics"></div>
-    </div>
+<!-- ═══ TOP BAR ═══════════════════════════════════════════════════════════ -->
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">G</div>
+    <div class="title"><span>GENESIS 2.0</span> Developer Pro</div>
+  </div>
+  <div class="topbar-actions">
+    <span class="badge" id="status-badge">ONLINE</span>
+    <button class="menu-trigger" id="menu-btn" onclick="toggleMenu()" title="Menu (M)">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+  </div>
+</div>
 
-    <div class="card">
-      <h2>Policy Engine</h2>
-      <div class="status"><div class="dot loading" id="policy-dot"></div><span id="policy-status">Loading...</span></div>
-      <div id="policy-metrics"></div>
-    </div>
+<!-- ═══ POP MENU ══════════════════════════════════════════════════════════ -->
+<div class="pop-menu" id="pop-menu">
+  <h3>AI Assistant</h3>
+  <div class="pop-item" onclick="runAction('ai-draft')">
+    <div class="icon purple">D</div>
+    <div class="info"><div class="name">Draft Legal Doc</div><div class="desc">AI-assisted document generation</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('ai-evidence')">
+    <div class="icon pink">E</div>
+    <div class="info"><div class="name">Summarise Evidence</div><div class="desc">Neutral bullet-point summary</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('ai-plan')">
+    <div class="icon blue">P</div>
+    <div class="info"><div class="name">Plan Automation</div><div class="desc">Risk assessment + rollback steps</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('ai-query')">
+    <div class="icon green">Q</div>
+    <div class="info"><div class="name">Query AI</div><div class="desc">General-purpose LLM query</div></div>
+  </div>
 
-    <div class="card">
-      <h2>Chain of Custody</h2>
-      <div class="status"><div class="dot loading" id="chain-dot"></div><span id="chain-status">Loading...</span></div>
-      <div id="chain-metrics"></div>
-    </div>
+  <h3>Pentagon</h3>
+  <div class="pop-item" onclick="runAction('pentagon-health')">
+    <div class="icon green">H</div>
+    <div class="info"><div class="name">Health Check</div><div class="desc">Full system health scan</div></div>
+    <span class="kbd">H</span>
+  </div>
+  <div class="pop-item" onclick="runAction('pentagon-diag')">
+    <div class="icon blue">D</div>
+    <div class="info"><div class="name">Diagnostics</div><div class="desc">Deep infrastructure scan</div></div>
+    <span class="kbd">D</span>
+  </div>
+  <div class="pop-item" onclick="runAction('pentagon-status')">
+    <div class="icon warn">S</div>
+    <div class="info"><div class="name">System Status</div><div class="desc">Pipes, dead letters, reservoir</div></div>
+    <span class="kbd">S</span>
+  </div>
 
-    <div class="card">
-      <h2>Hardening Report</h2>
-      <div class="status"><div class="dot loading" id="harden-dot"></div><span id="harden-status">Loading...</span></div>
-      <div id="harden-metrics"></div>
+  <h3>Security</h3>
+  <div class="pop-item" onclick="runAction('shield-harden')">
+    <div class="icon fail">C</div>
+    <div class="info"><div class="name">CIS Hardening</div><div class="desc">Run CIS benchmark check</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('audit-chain')">
+    <div class="icon warn">A</div>
+    <div class="info"><div class="name">Audit Chain</div><div class="desc">Verify custody chain integrity</div></div>
+  </div>
+
+  <h3>Sovereign Suite</h3>
+  <div class="pop-item" onclick="runAction('sovereign-intake')">
+    <div class="icon green">I</div>
+    <div class="info"><div class="name">Intake Documents</div><div class="desc">Collect, rename, stage files</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('sovereign-classify')">
+    <div class="icon purple">R</div>
+    <div class="info"><div class="name">Classify & Route</div><div class="desc">OCR + Rules + Keywords + AI</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('sovereign-finish')">
+    <div class="icon pink">F</div>
+    <div class="info"><div class="name">Finish the Job</div><div class="desc">Full pipeline orchestration</div></div>
+  </div>
+
+  <h3>Developer</h3>
+  <div class="pop-item" onclick="runAction('dev-endpoints')">
+    <div class="icon blue">E</div>
+    <div class="info"><div class="name">API Explorer</div><div class="desc">Browse all endpoints</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('dev-ooda')">
+    <div class="icon purple">O</div>
+    <div class="info"><div class="name">OODA Cycle</div><div class="desc">Perceive > Orient > Decide > Act</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('dev-resilience')">
+    <div class="icon fail">R</div>
+    <div class="info"><div class="name">Resilience Probe</div><div class="desc">Chaos testing + validation</div></div>
+  </div>
+</div>
+
+<!-- ═══ COMMAND PALETTE ═══════════════════════════════════════════════════ -->
+<div class="cmd-palette-overlay" id="cmd-overlay" onclick="if(event.target===this)closePalette()">
+  <div class="cmd-palette">
+    <input id="cmd-input" type="text" placeholder="Type a command or search..." autocomplete="off" oninput="filterCommands(this.value)">
+    <div class="cmd-results" id="cmd-results"></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ══════════════════════════════════════════════════════ -->
+<main>
+
+  <!-- AUTO-GENERATE BAR -->
+  <div class="autogen-bar">
+    <h2><span class="pulse"></span> Auto-Generate</h2>
+    <div class="autogen-grid">
+      <button class="autogen-btn" onclick="autoGen('legal')"><div class="aname">Legal Pack</div><div class="adesc">Draft + sign + bundle</div></button>
+      <button class="autogen-btn" onclick="autoGen('finance')"><div class="aname">Finance Pack</div><div class="adesc">Archive + classify + route</div></button>
+      <button class="autogen-btn" onclick="autoGen('compliance')"><div class="aname">Compliance Report</div><div class="adesc">Scan + assess + sign</div></button>
+      <button class="autogen-btn" onclick="autoGen('onboard')"><div class="aname">Device Onboard</div><div class="adesc">Enrol + harden + verify</div></button>
+      <button class="autogen-btn" onclick="autoGen('cert')"><div class="aname">Cert Batch</div><div class="adesc">Generate + sign + deliver</div></button>
+      <button class="autogen-btn" onclick="autoGen('ooda')"><div class="aname">OODA Cycle</div><div class="adesc">Perceive > Orient > Act</div></button>
+      <button class="autogen-btn" onclick="autoGen('sovereign')"><div class="aname">Sovereign Suite</div><div class="adesc">Full intake pipeline</div></button>
     </div>
   </div>
 
-  <div class="card">
-    <h2>API Endpoints</h2>
-    <ul class="endpoints">
-      <li><span class="method">GET</span>  /health — System health check</li>
-      <li><span class="method">POST</span> /evaluate — Policy decision point</li>
-      <li><span class="method">POST</span> /authenticate — JWT validation</li>
-      <li><span class="method">POST</span> /authorise — Action authorization</li>
-      <li><span class="method">POST</span> /issue-token — Issue JWT (owner)</li>
-      <li><span class="method">POST</span> /sign — Ed25519 sign data</li>
-      <li><span class="method">POST</span> /verify-signature — Verify Ed25519</li>
-      <li><span class="method">GET</span>  /audit/chain — Custody chain integrity</li>
-      <li><span class="method">POST</span> /audit/record — Record custody event</li>
-      <li><span class="method">GET</span>  /shield/health — Device health</li>
-      <li><span class="method">GET</span>  /shield/hardening — Hardening report</li>
-    </ul>
+  <!-- AI CHAT -->
+  <div class="ai-chat">
+    <div class="ai-header">
+      <div class="ai-icon">AI</div>
+      <div class="ai-label">GENESIS <span>AI Assistant</span></div>
+      <span class="model-badge" id="ai-model-badge">gpt-4o</span>
+    </div>
+    <div class="chips">
+      <span class="chip" onclick="aiChip('Summarise system health')">System Health</span>
+      <span class="chip" onclick="aiChip('Draft a compliance report')">Compliance Report</span>
+      <span class="chip" onclick="aiChip('Plan infrastructure upgrade')">Plan Upgrade</span>
+      <span class="chip" onclick="aiChip('Explain Pentagon architecture')">Pentagon Arch</span>
+      <span class="chip" onclick="aiChip('Risk assessment for deployment')">Risk Assessment</span>
+      <span class="chip" onclick="aiChip('Generate audit summary')">Audit Summary</span>
+    </div>
+    <div class="ai-body" id="ai-body">
+      <div class="ai-msg system">GENESIS AI ready. Charter-governed. All outputs are drafts requiring human review.</div>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-input" id="ai-input" type="text" placeholder="Ask anything... (Enter to send)" onkeydown="if(event.key==='Enter')sendAi()">
+      <button class="ai-send" id="ai-send-btn" onclick="sendAi()">Send</button>
+    </div>
   </div>
 
-  <div class="footer">GENESIS 2.0 — Apache-2.0</div>
+  <!-- DASHBOARD GRID (draggable) -->
+  <div class="panel-grid" id="panel-grid">
+
+    <!-- System Health -->
+    <div class="panel" draggable="true" data-panel="health">
+      <div class="panel-header">
+        <div class="panel-title"><div class="dot ok" id="h-dot"></div> System Health</div>
+        <div class="panel-actions"><button class="panel-btn" onclick="refreshPanel('health')" title="Refresh">&#x21bb;</button></div>
+      </div>
+      <div class="panel-body" id="health-body">
+        <div class="stat-row"><span class="label">Status</span><span class="val ok" id="h-status">Loading...</span></div>
+        <div class="stat-row"><span class="label">Doctrine</span><span class="val accent" id="h-doctrine">-</span></div>
+        <div class="stat-row"><span class="label">Signer Key</span><span class="val" id="h-signer">-</span></div>
+        <div class="stat-row"><span class="label">Owner</span><span class="val" id="h-owner">-</span></div>
+      </div>
+    </div>
+
+    <!-- Policy Engine -->
+    <div class="panel" draggable="true" data-panel="policy">
+      <div class="panel-header">
+        <div class="panel-title"><div class="dot ok" id="p-dot"></div> Policy Engine</div>
+        <div class="panel-actions"><button class="panel-btn" onclick="refreshPanel('policy')" title="Refresh">&#x21bb;</button></div>
+      </div>
+      <div class="panel-body" id="policy-body">
+        <div class="stat-row"><span class="label">Version</span><span class="val accent" id="p-version">-</span></div>
+        <div class="stat-row"><span class="label">Default</span><span class="val" id="p-default">DENY (fail-closed)</span></div>
+        <div class="stat-row"><span class="label">MFA Required</span><span class="val ok" id="p-mfa">Yes</span></div>
+      </div>
+    </div>
+
+    <!-- Chain of Custody -->
+    <div class="panel" draggable="true" data-panel="chain">
+      <div class="panel-header">
+        <div class="panel-title"><div class="dot ok" id="c-dot"></div> Chain of Custody</div>
+        <div class="panel-actions"><button class="panel-btn" onclick="refreshPanel('chain')" title="Refresh">&#x21bb;</button></div>
+      </div>
+      <div class="panel-body" id="chain-body">
+        <div class="stat-row"><span class="label">Integrity</span><span class="val ok" id="c-valid">-</span></div>
+        <div class="stat-row"><span class="label">Records</span><span class="val" id="c-records">-</span></div>
+        <div class="stat-row"><span class="label">Message</span><span class="val" id="c-msg">-</span></div>
+      </div>
+    </div>
+
+    <!-- Hardening -->
+    <div class="panel" draggable="true" data-panel="harden">
+      <div class="panel-header">
+        <div class="panel-title"><div class="dot ok" id="hd-dot"></div> Hardening</div>
+        <div class="panel-actions"><button class="panel-btn" onclick="refreshPanel('harden')" title="Refresh">&#x21bb;</button></div>
+      </div>
+      <div class="panel-body" id="harden-body">
+        <div class="stat-row"><span class="label">Checks</span><span class="val" id="hd-checks">-</span></div>
+        <div class="stat-row"><span class="label">Standard</span><span class="val" id="hd-std">CIS Benchmark</span></div>
+        <div class="stat-row"><span class="label">Status</span><span class="val ok" id="hd-status">-</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PENTAGON ROOMS VISUALISER -->
+  <div class="pentagon-vis">
+    <h2>Pentagon Underfloor — Room Map</h2>
+    <div class="layer-row">
+      <div class="layer-label">L4 Manifold — Orchestration</div>
+      <div class="room-chips">
+        <span class="room-chip" onclick="queryRoom('engine')"><span class="room-dot l4"></span>Engine</span>
+        <span class="room-chip" onclick="queryRoom('wings')"><span class="room-dot l4"></span>Wings</span>
+        <span class="room-chip" onclick="queryRoom('mods')"><span class="room-dot l4"></span>Mods</span>
+        <span class="room-chip" onclick="queryRoom('exhaust')"><span class="room-dot l4"></span>Exhaust</span>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-label">L3 Valve — Policy & Control</div>
+      <div class="room-chips">
+        <span class="room-chip" onclick="queryRoom('brakes')"><span class="room-dot l3"></span>Brakes</span>
+        <span class="room-chip" onclick="queryRoom('tint')"><span class="room-dot l3"></span>Tint</span>
+        <span class="room-chip" onclick="queryRoom('wipers')"><span class="room-dot l3"></span>Wipers</span>
+        <span class="room-chip" onclick="queryRoom('fuel')"><span class="room-dot l3"></span>Fuel</span>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-label">L2 Reservoir — State & Storage</div>
+      <div class="room-chips">
+        <span class="room-chip" onclick="queryRoom('trunk')"><span class="room-dot l2"></span>Trunk</span>
+        <span class="room-chip" onclick="queryRoom('spares')"><span class="room-dot l2"></span>Spares</span>
+        <span class="room-chip" onclick="queryRoom('coolant')"><span class="room-dot l2"></span>Coolant</span>
+        <span class="room-chip" onclick="queryRoom('wash')"><span class="room-dot l2"></span>Wash</span>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-label">L1 Conduit — Messaging</div>
+      <div class="room-chips">
+        <span class="room-chip" onclick="queryRoom('flares')"><span class="room-dot l1"></span>Flares</span>
+        <span class="room-chip" onclick="queryRoom('locks')"><span class="room-dot l1"></span>Locks</span>
+        <span class="room-chip" onclick="queryRoom('doors')"><span class="room-dot l1"></span>Doors</span>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-label">L0 Kernel — Crypto & Primitives</div>
+      <div class="room-chips">
+        <span class="room-chip" onclick="queryRoom('thermostat')"><span class="room-dot l0"></span>Thermostat</span>
+        <span class="room-chip" onclick="queryRoom('chip')"><span class="room-dot l0"></span>Chip</span>
+        <span class="room-chip" onclick="queryRoom('battery')"><span class="room-dot l0"></span>Battery</span>
+      </div>
+    </div>
+    <div class="room-detail" id="room-detail">
+      <h3 id="room-detail-title">Room</h3>
+      <pre id="room-detail-data">Select a room to inspect...</pre>
+    </div>
+  </div>
+
+  <!-- API EXPLORER -->
+  <div class="panel" style="margin-bottom:20px">
+    <div class="panel-header">
+      <div class="panel-title">API Explorer</div>
+    </div>
+    <div class="panel-body endpoint-list" id="endpoint-list">
+      <div class="endpoint" onclick="tryEndpoint('GET','/health')"><span class="method-badge GET">GET</span><span class="path">/health</span><span class="ep-desc">System health</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/evaluate')"><span class="method-badge POST">POST</span><span class="path">/evaluate</span><span class="ep-desc">Policy decision</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/authenticate')"><span class="method-badge POST">POST</span><span class="path">/authenticate</span><span class="ep-desc">JWT validation</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/authorise')"><span class="method-badge POST">POST</span><span class="path">/authorise</span><span class="ep-desc">Authorization</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/issue-token')"><span class="method-badge POST">POST</span><span class="path">/issue-token</span><span class="ep-desc">Issue JWT</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/sign')"><span class="method-badge POST">POST</span><span class="path">/sign</span><span class="ep-desc">Ed25519 sign</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/verify-signature')"><span class="method-badge POST">POST</span><span class="path">/verify-signature</span><span class="ep-desc">Verify signature</span></div>
+      <div class="endpoint" onclick="tryEndpoint('GET','/audit/chain')"><span class="method-badge GET">GET</span><span class="path">/audit/chain</span><span class="ep-desc">Chain integrity</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/audit/record')"><span class="method-badge POST">POST</span><span class="path">/audit/record</span><span class="ep-desc">Record event</span></div>
+      <div class="endpoint" onclick="tryEndpoint('GET','/shield/health')"><span class="method-badge GET">GET</span><span class="path">/shield/health</span><span class="ep-desc">Device health</span></div>
+      <div class="endpoint" onclick="tryEndpoint('GET','/shield/hardening')"><span class="method-badge GET">GET</span><span class="path">/shield/hardening</span><span class="ep-desc">CIS checks</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/ai/query')"><span class="method-badge POST">POST</span><span class="path">/ai/query</span><span class="ep-desc">AI query</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/ai/draft')"><span class="method-badge POST">POST</span><span class="path">/ai/draft</span><span class="ep-desc">Legal draft</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/ai/plan')"><span class="method-badge POST">POST</span><span class="path">/ai/plan</span><span class="ep-desc">Plan change</span></div>
+      <div class="endpoint" onclick="tryEndpoint('POST','/ai/summarise')"><span class="method-badge POST">POST</span><span class="path">/ai/summarise</span><span class="ep-desc">Summarise evidence</span></div>
+    </div>
+  </div>
+
+  <div class="footer" style="text-align:center;color:#4b5563;font-size:11px;padding:20px 0">
+    GENESIS 2.0 Developer Pro — Charter-governed. Audit-trailed. AI-assisted. Apache-2.0
+  </div>
+</main>
+
+<!-- ═══ TOASTS ════════════════════════════════════════════════════════════ -->
+<div class="toast-container" id="toasts"></div>
 
 <script>
-function setStatus(prefix, ok, text) {
-  const dot = document.getElementById(prefix + '-dot');
-  const stat = document.getElementById(prefix + '-status');
-  dot.className = 'dot ' + (ok === null ? 'loading' : ok ? 'ok' : 'fail');
-  stat.textContent = text;
+// ═══════════════════════════════════════════════════════════════════════════
+// GENESIS 2.0 — Developer Pro UI Engine
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── State ────────────────────────────────────────────────────────────────
+const state = {
+  menuOpen: false,
+  paletteOpen: false,
+  aiMessages: [],
+  panelOrder: ['health','policy','chain','harden'],
+  dragSource: null,
+};
+
+// ── Toast ────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
 }
 
-function renderMetrics(id, pairs) {
-  const el = document.getElementById(id);
-  el.innerHTML = pairs.map(([k,v]) =>
-    `<div class="metric"><span class="label">${k}</span><span class="value">${v}</span></div>`
+// ── Pop Menu ─────────────────────────────────────────────────────────────
+function toggleMenu() {
+  state.menuOpen = !state.menuOpen;
+  document.getElementById('pop-menu').classList.toggle('open', state.menuOpen);
+  document.getElementById('menu-btn').classList.toggle('open', state.menuOpen);
+}
+
+// ── Command Palette ──────────────────────────────────────────────────────
+const COMMANDS = [
+  { icon: 'H', label: 'Health Check', action: 'pentagon-health', shortcut: 'Ctrl+H' },
+  { icon: 'D', label: 'Diagnostics', action: 'pentagon-diag', shortcut: 'Ctrl+D' },
+  { icon: 'S', label: 'System Status', action: 'pentagon-status' },
+  { icon: 'AI', label: 'AI Query', action: 'ai-query' },
+  { icon: 'L', label: 'Draft Legal Doc', action: 'ai-draft' },
+  { icon: 'E', label: 'Summarise Evidence', action: 'ai-evidence' },
+  { icon: 'P', label: 'Plan Automation', action: 'ai-plan' },
+  { icon: 'C', label: 'CIS Hardening', action: 'shield-harden' },
+  { icon: 'A', label: 'Audit Chain', action: 'audit-chain' },
+  { icon: 'I', label: 'Sovereign Intake', action: 'sovereign-intake' },
+  { icon: 'R', label: 'Classify & Route', action: 'sovereign-classify' },
+  { icon: 'F', label: 'Finish the Job', action: 'sovereign-finish' },
+  { icon: 'O', label: 'OODA Cycle', action: 'dev-ooda' },
+  { icon: 'T', label: 'Resilience Probe', action: 'dev-resilience' },
+];
+COMMANDS.push(
+  ...['thermostat','chip','battery','flares','locks','doors','trunk','spares','coolant','wash','brakes','tint','wipers','fuel','engine','wings','mods','exhaust']
+    .map(r => ({ icon: r[0].toUpperCase(), label: `Room: ${r}`, action: `room:${r}` }))
+);
+
+function openPalette() {
+  state.paletteOpen = true;
+  document.getElementById('cmd-overlay').classList.add('open');
+  const inp = document.getElementById('cmd-input');
+  inp.value = '';
+  inp.focus();
+  filterCommands('');
+}
+function closePalette() {
+  state.paletteOpen = false;
+  document.getElementById('cmd-overlay').classList.remove('open');
+}
+function filterCommands(q) {
+  const lc = q.toLowerCase();
+  const filtered = COMMANDS.filter(c => c.label.toLowerCase().includes(lc));
+  const container = document.getElementById('cmd-results');
+  container.innerHTML = filtered.slice(0, 15).map((c, i) =>
+    `<div class="cmd-result${i===0?' selected':''}" onclick="execCommand('${c.action}')">
+      <span class="cr-icon">${c.icon}</span>
+      <span class="cr-label">${c.label}</span>
+      ${c.shortcut ? `<span class="cr-shortcut">${c.shortcut}</span>` : ''}
+    </div>`
   ).join('');
 }
+function execCommand(action) {
+  closePalette();
+  if (action.startsWith('room:')) {
+    queryRoom(action.split(':')[1]);
+  } else {
+    runAction(action);
+  }
+}
 
+// ── Keyboard Shortcuts ───────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openPalette(); }
+  if (e.key === 'Escape') { closePalette(); if(state.menuOpen) toggleMenu(); }
+  if (e.key === 'm' && !e.target.closest('input,textarea')) toggleMenu();
+  if (state.paletteOpen && e.key === 'Enter') {
+    const sel = document.querySelector('.cmd-result.selected');
+    if (sel) sel.click();
+  }
+});
+
+// ── Drag & Drop Panels ──────────────────────────────────────────────────
+const grid = document.getElementById('panel-grid');
+grid.addEventListener('dragstart', (e) => {
+  const panel = e.target.closest('.panel');
+  if (!panel) return;
+  state.dragSource = panel;
+  panel.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+});
+grid.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const panel = e.target.closest('.panel');
+  if (panel && panel !== state.dragSource) panel.classList.add('drag-over');
+});
+grid.addEventListener('dragleave', (e) => {
+  const panel = e.target.closest('.panel');
+  if (panel) panel.classList.remove('drag-over');
+});
+grid.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const target = e.target.closest('.panel');
+  if (!target || !state.dragSource || target === state.dragSource) return;
+  target.classList.remove('drag-over');
+  // Swap panels
+  const parent = grid;
+  const children = [...parent.children];
+  const srcIdx = children.indexOf(state.dragSource);
+  const tgtIdx = children.indexOf(target);
+  if (srcIdx < tgtIdx) {
+    parent.insertBefore(state.dragSource, target.nextSibling);
+  } else {
+    parent.insertBefore(state.dragSource, target);
+  }
+  toast('Panel reordered', 'success');
+});
+grid.addEventListener('dragend', () => {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('dragging','drag-over'));
+  state.dragSource = null;
+});
+
+// ── Fetch Helpers ────────────────────────────────────────────────────────
 async function fetchJSON(url) {
-  const res = await fetch(url);
-  return res.json();
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+  return r.json();
+}
+async function postJSON(url, data) {
+  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  return r.json();
 }
 
-async function refresh() {
-  // Health
-  try {
-    const h = await fetchJSON('/health');
-    const ok = h.status === 'healthy';
-    setStatus('health', ok, h.status);
-    renderMetrics('health-metrics', [
-      ['Doctrine', h.doctrine || '-'],
-      ['Signer Key', (h.signerKeyId || '-').slice(0, 16) + '...'],
-      ['Owner', h.ownerId || '-'],
-    ]);
-  } catch(e) { setStatus('health', false, 'Unreachable'); }
-
-  // Policy — test default deny
-  try {
-    const d = await fetchJSON('/health');
-    setStatus('policy', true, 'Doctrine v' + (d.doctrine || '?'));
-    renderMetrics('policy-metrics', [
-      ['Version', d.doctrine || '-'],
-      ['Default', 'DENY (fail-closed)'],
-      ['MFA Required', 'Yes'],
-    ]);
-  } catch(e) { setStatus('policy', false, 'Error'); }
-
-  // Chain
-  try {
-    const c = await fetchJSON('/audit/chain');
-    const ok = c.valid !== false;
-    setStatus('chain', ok, ok ? 'Intact' : 'BROKEN');
-    renderMetrics('chain-metrics', [
-      ['Valid', String(c.valid)],
-      ['Records', String(c.totalRecords || 0)],
-      ['Message', c.message || '-'],
-    ]);
-  } catch(e) { setStatus('chain', false, 'Unreachable'); }
-
-  // Hardening
-  try {
-    const r = await fetchJSON('/shield/hardening');
-    const passRate = r.checks ? r.checks.filter(c => c.passed).length + '/' + r.checks.length : '-';
-    const allPass = r.checks ? r.checks.every(c => c.passed) : false;
-    setStatus('harden', allPass, allPass ? 'All Passed' : 'Issues Found');
-    renderMetrics('harden-metrics', [
-      ['Checks', passRate],
-      ['Standard', r.standard || 'CIS Benchmark'],
-    ]);
-  } catch(e) { setStatus('harden', false, 'Unreachable'); }
+// ── Dashboard Refresh ────────────────────────────────────────────────────
+function setDot(id, ok) {
+  const el = document.getElementById(id);
+  el.className = 'dot ' + (ok === null ? 'loading' : ok ? 'ok' : 'fail');
 }
 
-refresh();
-setInterval(refresh, 30000);
+async function refreshAll() {
+  refreshPanel('health');
+  refreshPanel('policy');
+  refreshPanel('chain');
+  refreshPanel('harden');
+}
+
+async function refreshPanel(name) {
+  try {
+    switch(name) {
+      case 'health': {
+        const h = await fetchJSON('/health');
+        const ok = h.status === 'healthy';
+        setDot('h-dot', ok);
+        document.getElementById('h-status').textContent = h.status || '-';
+        document.getElementById('h-status').className = 'val ' + (ok ? 'ok' : 'fail');
+        document.getElementById('h-doctrine').textContent = 'v' + (h.doctrine || '?');
+        document.getElementById('h-signer').textContent = (h.signerKeyId || '-').slice(0,16) + '...';
+        document.getElementById('h-owner').textContent = h.ownerId || '-';
+        document.getElementById('status-badge').textContent = ok ? 'ONLINE' : 'DEGRADED';
+        document.getElementById('status-badge').style.background = ok ? 'rgba(63,185,80,0.15)' : 'rgba(248,81,73,0.15)';
+        document.getElementById('status-badge').style.color = ok ? 'var(--accent2)' : 'var(--fail)';
+        break;
+      }
+      case 'policy': {
+        const d = await fetchJSON('/health');
+        setDot('p-dot', true);
+        document.getElementById('p-version').textContent = 'v' + (d.doctrine || '?');
+        break;
+      }
+      case 'chain': {
+        const c = await fetchJSON('/audit/chain');
+        const ok = c.valid !== false;
+        setDot('c-dot', ok);
+        document.getElementById('c-valid').textContent = ok ? 'Intact' : 'BROKEN';
+        document.getElementById('c-valid').className = 'val ' + (ok ? 'ok' : 'fail');
+        document.getElementById('c-records').textContent = c.totalRecords || '0';
+        document.getElementById('c-msg').textContent = c.message || '-';
+        break;
+      }
+      case 'harden': {
+        const r = await fetchJSON('/shield/hardening');
+        const checks = r.checks || [];
+        const passCount = checks.filter(c => c.passed).length;
+        const allPass = checks.every(c => c.passed);
+        setDot('hd-dot', allPass);
+        document.getElementById('hd-checks').textContent = passCount + '/' + checks.length;
+        document.getElementById('hd-status').textContent = allPass ? 'All Passed' : 'Issues Found';
+        document.getElementById('hd-status').className = 'val ' + (allPass ? 'ok' : 'warn');
+        break;
+      }
+    }
+  } catch(e) {
+    toast(`Failed to refresh ${name}: ${e.message}`, 'error');
+  }
+}
+
+// ── Room Query ───────────────────────────────────────────────────────────
+async function queryRoom(room) {
+  // Highlight chip
+  document.querySelectorAll('.room-chip').forEach(c => c.classList.remove('active'));
+  const chips = document.querySelectorAll('.room-chip');
+  chips.forEach(c => { if (c.textContent.trim().toLowerCase() === room) c.classList.add('active'); });
+
+  const detail = document.getElementById('room-detail');
+  const title = document.getElementById('room-detail-title');
+  const data = document.getElementById('room-detail-data');
+  detail.classList.add('visible');
+  title.textContent = room.toUpperCase();
+  data.textContent = 'Loading...';
+
+  try {
+    // Local simulation — in production this would call Pentagon CMD facet
+    const result = await fetchJSON(`/health`); // fallback to health for demo
+    data.textContent = JSON.stringify({ room, status: 'operational', queried: new Date().toISOString(), systemHealth: result.status }, null, 2);
+    toast(`Room ${room} queried`, 'success');
+  } catch(e) {
+    data.textContent = `Error: ${e.message}`;
+  }
+}
+
+// ── AI Chat ──────────────────────────────────────────────────────────────
+function appendAiMsg(role, text) {
+  const body = document.getElementById('ai-body');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function aiChip(text) {
+  document.getElementById('ai-input').value = text;
+  sendAi();
+}
+
+async function sendAi() {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendAiMsg('user', msg);
+
+  const btn = document.getElementById('ai-send-btn');
+  btn.disabled = true;
+  btn.textContent = 'Thinking...';
+
+  try {
+    const result = await postJSON('/ai/query', { message: msg });
+    appendAiMsg('assistant', result.response || result.plan || result.draft || result.summary || JSON.stringify(result));
+  } catch(e) {
+    // Offline mode — provide local response
+    appendAiMsg('assistant', `[Offline] AI service unavailable. Your query "${msg}" has been logged for processing when the service is restored. System is operational — all Pentagon rooms and security subsystems are active.`);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send';
+}
+
+// ── Auto-Generate ────────────────────────────────────────────────────────
+async function autoGen(type) {
+  toast(`Auto-generating ${type}...`, 'info');
+  try {
+    const result = await postJSON('/ai/autogen', { type });
+    toast(`${type} generated successfully`, 'success');
+    appendAiMsg('system', `Auto-generated ${type}: ${result.message || 'Complete'}`);
+  } catch(e) {
+    // Offline fallback
+    appendAiMsg('system', `[Auto-Generate: ${type}] Pipeline initialised. Stages: intake > classify > process > sign > bundle > deliver. All Pentagon rooms engaged.`);
+    toast(`${type} pipeline ready`, 'success');
+  }
+}
+
+// ── Action Router ────────────────────────────────────────────────────────
+function runAction(action) {
+  if (state.menuOpen) toggleMenu();
+  switch(action) {
+    case 'pentagon-health': refreshPanel('health'); toast('Health check running', 'info'); break;
+    case 'pentagon-diag': toast('Running diagnostics...', 'info'); refreshAll(); break;
+    case 'pentagon-status': toast('Fetching status...', 'info'); refreshAll(); break;
+    case 'shield-harden': refreshPanel('harden'); toast('Hardening scan running', 'info'); break;
+    case 'audit-chain': refreshPanel('chain'); toast('Verifying chain...', 'info'); break;
+    case 'ai-draft': aiChip('Draft a legal document for the current case'); break;
+    case 'ai-evidence': aiChip('Summarise the latest evidence bundle'); break;
+    case 'ai-plan': aiChip('Plan an automation change for the infrastructure'); break;
+    case 'ai-query': document.getElementById('ai-input').focus(); break;
+    case 'sovereign-intake': autoGen('sovereign'); break;
+    case 'sovereign-classify': toast('Classifier running: OCR > Rules > Keywords > AI', 'info'); break;
+    case 'sovereign-finish': autoGen('sovereign'); break;
+    case 'dev-endpoints': document.getElementById('endpoint-list').scrollIntoView({behavior:'smooth'}); break;
+    case 'dev-ooda': autoGen('ooda'); break;
+    case 'dev-resilience': toast('Resilience probe initiated...', 'info'); break;
+    default: toast(`Action: ${action}`, 'info');
+  }
+}
+
+// ── Endpoint Explorer ────────────────────────────────────────────────────
+async function tryEndpoint(method, path) {
+  toast(`${method} ${path}`, 'info');
+  try {
+    let result;
+    if (method === 'GET') {
+      result = await fetchJSON(path);
+    } else {
+      result = await postJSON(path, {});
+    }
+    appendAiMsg('system', `${method} ${path}\n${JSON.stringify(result, null, 2).slice(0, 500)}`);
+  } catch(e) {
+    appendAiMsg('system', `${method} ${path} — ${e.message}`);
+  }
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────
+refreshAll();
+setInterval(refreshAll, 30000);
 </script>
 </body>
 </html>

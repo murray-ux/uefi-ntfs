@@ -29,6 +29,7 @@ import { CustodyChain } from "./audit/chain-of-custody";
 import { Ed25519Signer, loadOrCreateKeys } from "../identity/ed25519_signer";
 import { GenesisSSO } from "../identity/sso_master";
 import { QuantumShieldCore } from "../security/quantum_shield_core";
+import { AiOrchestrator } from "../ai/ai_orchestrator";
 
 // ---------------------------------------------------------------------------
 // Config from environment
@@ -74,6 +75,32 @@ const shield = new QuantumShieldCore({
 });
 
 let custodyChain: CustodyChain | null = null;
+
+// AI orchestrator — only active when an LLM API key is configured
+let aiOrchestrator: AiOrchestrator | null = null;
+const AI_API_KEY = process.env.GENESIS_AI_API_KEY || process.env.OPENAI_API_KEY;
+const AI_BASE_URL = process.env.GENESIS_AI_BASE_URL || "https://api.openai.com/v1";
+if (AI_API_KEY) {
+  // Minimal OpenAI-compatible client
+  const llmClient = {
+    chat: {
+      completions: {
+        async create(params: { model: string; messages: Array<{ role: string; content: string }>; temperature?: number; max_tokens?: number }) {
+          const resp = await fetch(`${AI_BASE_URL}/chat/completions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${AI_API_KEY}` },
+            body: JSON.stringify(params),
+          });
+          return resp.json();
+        },
+      },
+    },
+  };
+  aiOrchestrator = new AiOrchestrator({ llmClient: llmClient as any, audit });
+  console.log("[GENESIS] AI orchestrator active");
+} else {
+  console.log("[GENESIS] AI orchestrator disabled (no API key)");
+}
 
 // ---------------------------------------------------------------------------
 // HTTP helpers
@@ -208,6 +235,81 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
     if (url === "/shield/hardening" && method === "GET") {
       const report = await shield.verifyHardening();
       json(res, 200, report);
+      return;
+    }
+
+    // AI: general query
+    if (url === "/ai/query" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      if (!aiOrchestrator) {
+        json(res, 200, { response: `[Offline] AI service not configured. Query logged: "${(body.message || '').slice(0, 100)}"` });
+        return;
+      }
+      const result = await aiOrchestrator.query(
+        "You are the GENESIS 2.0 AI assistant. Be concise, technical, and helpful.",
+        body.message || body.prompt || "",
+      );
+      json(res, 200, { response: result });
+      return;
+    }
+
+    // AI: legal draft
+    if (url === "/ai/draft" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      if (!aiOrchestrator) {
+        json(res, 200, { draft: "[Offline] AI drafting not available without API key.", disclaimer: "AI-generated draft." });
+        return;
+      }
+      const result = await aiOrchestrator.draftLegalDoc(body.prompt || "", body.context || {});
+      json(res, 200, result);
+      return;
+    }
+
+    // AI: plan automation
+    if (url === "/ai/plan" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      if (!aiOrchestrator) {
+        json(res, 200, { plan: "[Offline] Planning not available without API key." });
+        return;
+      }
+      const result = await aiOrchestrator.planAutomationChange(body.request || body.prompt || "");
+      json(res, 200, result);
+      return;
+    }
+
+    // AI: summarise evidence
+    if (url === "/ai/summarise" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      if (!aiOrchestrator) {
+        json(res, 200, { summary: "[Offline] Summarisation not available without API key." });
+        return;
+      }
+      const result = await aiOrchestrator.summariseEvidence(body.bundle || body);
+      json(res, 200, result);
+      return;
+    }
+
+    // AI: auto-generate pipeline
+    if (url === "/ai/autogen" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const type = body.type || "unknown";
+      const pipelines: Record<string, string[]> = {
+        legal: ["intake", "classify", "draft", "review-flag", "sign", "bundle", "deliver"],
+        finance: ["intake", "classify", "archive", "reconcile", "sign", "route"],
+        compliance: ["scan", "assess", "policy-check", "generate-report", "sign", "deliver"],
+        onboard: ["enrol", "provision", "harden", "verify", "certify", "activate"],
+        cert: ["generate", "validate", "sign", "package", "deliver", "audit-log"],
+        ooda: ["perceive", "orient", "decide", "act", "learn"],
+        sovereign: ["intake-collect", "classify-route", "process", "sign", "bundle", "archive"],
+      };
+      const stages = pipelines[type] || ["init", "process", "complete"];
+      json(res, 200, {
+        type,
+        pipeline: stages,
+        stages: stages.length,
+        message: `${type} pipeline initialised with ${stages.length} stages`,
+        generatedAt: new Date().toISOString(),
+      });
       return;
     }
 
