@@ -8,6 +8,8 @@
 //
 // Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
 
+import { readFileSync } from "fs";
+import { join } from "path";
 import { getDoctrine } from "./core/doctrine";
 import { Evaluator } from "./core/evaluator";
 import { AuditService } from "./audit/audit-service";
@@ -18,6 +20,8 @@ import { QuantumShieldCore } from "../security/quantum_shield_core";
 import { LegalAutomation } from "../legal/legal_automation";
 import { CertMaster } from "../cert_master/cert_master";
 import { AiOrchestrator } from "../ai/ai_orchestrator";
+import { CitationService } from "./citation/citation-service";
+import { CustodyChain } from "./audit/chain-of-custody";
 
 // ---------------------------------------------------------------------------
 // Environment enforcement — Charter §8, Axiom A6
@@ -92,7 +96,16 @@ async function bootstrap() {
     }
   }
 
-  return { wheel, evaluator, audit, signer, sso, shield, ai, ownerId, evidenceDir };
+  // Citation — chain-of-custody + evidence + verification instructions
+  const custody = await CustodyChain.create(join(evidenceDir, "custody"));
+  const citation = new CitationService({
+    signer,
+    custody,
+    audit,
+    outputDir: join(evidenceDir, "citations"),
+  });
+
+  return { wheel, evaluator, audit, signer, sso, shield, ai, citation, custody, ownerId, evidenceDir };
 }
 
 // ---------------------------------------------------------------------------
@@ -122,7 +135,7 @@ function buildSpec(
 async function main() {
   enforceEnv();
   const services = await bootstrap();
-  const { wheel, signer, sso, shield, ai, ownerId, evidenceDir } = services;
+  const { wheel, signer, sso, shield, ai, citation, custody, ownerId, evidenceDir } = services;
 
   const [, , cmd, ...rest] = process.argv;
 
@@ -166,6 +179,7 @@ async function main() {
             store: { async insertEvidence() { return 0; } },
             outputDir: `${evidenceDir}/legal`,
             createdBy: ownerId,
+            citation,
           });
           return legal.processFile(rest[0]);
         });
@@ -181,8 +195,31 @@ async function main() {
             store: { async insertEvidence() { return 0; } },
             outputDir: `${evidenceDir}/certs`,
             createdBy: ownerId,
+            citation,
           });
           return cert.processFile(rest[0]);
+        });
+      break;
+
+    case "cite":
+      if (!rest[0]) { process.stderr.write("Usage: gate cite <file> [doc-type] [subject-id]\n"); process.exitCode = 1; return; }
+      spec = buildSpec(services, "citation:create", `citation:${rest[0]}`, 30_000,
+        async () => {
+          const docBytes = readFileSync(rest[0]);
+          return citation.cite({
+            documentBytes: docBytes,
+            docType: rest[1] || "general",
+            subjectId: rest[2] || "unspecified",
+            createdBy: ownerId,
+            meta: { sourceFile: rest[0] },
+          });
+        });
+      break;
+
+    case "verify-chain":
+      spec = buildSpec(services, "citation:verify-chain", "custody:chain", 30_000,
+        async () => {
+          return CustodyChain.verify(join(evidenceDir, "custody", "custody.jsonl"));
         });
       break;
 
@@ -222,9 +259,11 @@ async function main() {
           "Wheeled commands (Axiom A9: Wheel governs):",
           "  health                     System health check",
           "  harden                     OS hardening verification",
-          "  legal <court.csv>          Court document batch",
-          "  cert <exam.csv>            Exam certificate batch",
+          "  legal <court.csv>          Court document batch (with citation)",
+          "  cert <exam.csv>            Exam certificate batch (with citation)",
           "  compliance                 Signed compliance report",
+          "  cite <file> [type] [subj]  Create security-assured citation",
+          "  verify-chain               Verify chain-of-custody integrity",
           '  ai "<instruction>"         AI assistant query',
           "",
           "Atomic commands:",

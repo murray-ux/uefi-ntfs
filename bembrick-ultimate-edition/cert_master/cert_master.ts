@@ -17,6 +17,7 @@ import { join } from "path";
 import { Ed25519Signer } from "../identity/ed25519_signer";
 import { parseCsv } from "../legal/legal_automation";
 import type { PdfRenderer, EvidenceStore } from "../legal/legal_automation";
+import type { CitationService, CitationRecord } from "../src/citation/citation-service";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -45,6 +46,7 @@ export interface CertResult {
   hash?: string;
   signature?: string;
   evidenceId?: number;
+  citation?: CitationRecord;
 }
 
 export interface CertBatchResult {
@@ -154,6 +156,7 @@ export class CertMaster {
   private store: EvidenceStore;
   private outputDir: string;
   private createdBy: string;
+  private citationService: CitationService | null;
 
   /** Strict policy: only 100% pass rate generates a certificate. */
   static readonly PASS_POLICY = "PASS_POLICY_V1";
@@ -165,12 +168,14 @@ export class CertMaster {
     store: EvidenceStore;
     outputDir: string;
     createdBy?: string;
+    citation?: CitationService;
   }) {
     this.signer = opts.signer;
     this.renderer = opts.renderer;
     this.store = opts.store;
     this.outputDir = opts.outputDir;
     this.createdBy = opts.createdBy || "genesis-cert-master";
+    this.citationService = opts.citation || null;
 
     if (!existsSync(this.outputDir)) {
       mkdirSync(this.outputDir, { recursive: true });
@@ -248,6 +253,28 @@ export class CertMaster {
       createdBy: this.createdBy,
     });
 
+    // Issue citation if citation service is wired
+    let citation: CitationRecord | undefined;
+    if (this.citationService) {
+      citation = await this.citationService.cite({
+        documentBytes: pdfFinal,
+        docType: "exam_certificate",
+        subjectId: row.candidateId,
+        createdBy: this.createdBy,
+        meta: {
+          certId,
+          candidateName: row.candidateName,
+          examProvider: row.examProvider,
+          examName: row.examName,
+          score: row.score,
+          maxScore: row.maxScore,
+          dateTaken: row.dateTaken,
+          evidenceId,
+          policy: CertMaster.PASS_POLICY,
+        },
+      });
+    }
+
     return {
       candidateId: row.candidateId,
       candidateName: row.candidateName,
@@ -261,6 +288,7 @@ export class CertMaster {
       hash: sigFinal.hash,
       signature: sigFinal.signature,
       evidenceId,
+      citation,
     };
   }
 

@@ -17,6 +17,7 @@ import { createHash, randomUUID } from "crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, basename } from "path";
 import { Ed25519Signer, SignResult } from "../identity/ed25519_signer";
+import type { CitationService, CitationRecord } from "../src/citation/citation-service";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,6 +60,7 @@ export interface GeneratedDoc {
   keyId: string;
   evidenceId: number;
   generatedAt: string;
+  citation?: CitationRecord;
 }
 
 export interface BatchResult {
@@ -248,6 +250,7 @@ export class LegalAutomation {
   private outputDir: string;
   private template: string;
   private createdBy: string;
+  private citationService: CitationService | null;
 
   constructor(opts: {
     signer: Ed25519Signer;
@@ -256,12 +259,14 @@ export class LegalAutomation {
     outputDir: string;
     templatePath?: string;
     createdBy?: string;
+    citation?: CitationService;
   }) {
     this.signer = opts.signer;
     this.renderer = opts.renderer;
     this.store = opts.store;
     this.outputDir = opts.outputDir;
     this.createdBy = opts.createdBy || "genesis-legal";
+    this.citationService = opts.citation || null;
 
     if (!existsSync(this.outputDir)) {
       mkdirSync(this.outputDir, { recursive: true });
@@ -330,6 +335,25 @@ export class LegalAutomation {
       createdBy: this.createdBy,
     });
 
+    // Issue citation if citation service is wired
+    let citation: CitationRecord | undefined;
+    if (this.citationService) {
+      citation = await this.citationService.cite({
+        documentBytes: pdfFinal,
+        docType: row.docType,
+        subjectId: row.caseNumber,
+        createdBy: this.createdBy,
+        meta: {
+          partyName: row.partyName,
+          filingDate: row.filingDate,
+          documentId: docId,
+          pdfFilename,
+          evidenceId,
+          ...row.fields,
+        },
+      });
+    }
+
     return {
       id: docId,
       caseNumber: row.caseNumber,
@@ -341,6 +365,7 @@ export class LegalAutomation {
       keyId: sigFinal.keyId,
       evidenceId,
       generatedAt,
+      citation,
     };
   }
 
