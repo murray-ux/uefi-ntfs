@@ -4,15 +4,14 @@
 //
 // Charter §4: Single entry. All operations enter through the GATE.
 // No backdoors. No convenience shortcuts. (Axiom A8)
-//
 // Charter §4: Every operation passes through Wheel. (Axiom A9)
 //
 // Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
 
 import { getDoctrine } from "./core/doctrine";
-import { Evaluator, EvaluationInput } from "./core/evaluator";
+import { Evaluator } from "./core/evaluator";
 import { AuditService } from "./audit/audit-service";
-import { Wheel, SpokeSpec, Executor } from "./wheel/wheel-orchestrator";
+import { Wheel, SpokeSpec } from "./wheel/wheel-orchestrator";
 import { Ed25519Signer, loadOrCreateKeys } from "../identity/ed25519_signer";
 import { GenesisSSO } from "../identity/sso_master";
 import { QuantumShieldCore } from "../security/quantum_shield_core";
@@ -21,8 +20,7 @@ import { CertMaster } from "../cert_master/cert_master";
 import { AiOrchestrator } from "../ai/ai_orchestrator";
 
 // ---------------------------------------------------------------------------
-// Environment enforcement — Charter §8
-// Axiom A6: No secrets in code. All config from environment.
+// Environment enforcement — Charter §8, Axiom A6
 // ---------------------------------------------------------------------------
 
 const REQUIRED_ENV = [
@@ -47,7 +45,7 @@ function env(key: string, fallback?: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Bootstrap — wire all services per Charter §5 topology
+// Bootstrap — wire all services once, return persistent Wheel
 // ---------------------------------------------------------------------------
 
 async function bootstrap() {
@@ -64,6 +62,9 @@ async function bootstrap() {
   const keys = loadOrCreateKeys(keyDir);
   const signer = new Ed25519Signer(keys);
   const sso = new GenesisSSO(jwtSecret, evaluator, audit);
+
+  // Wheel — persistent machine. Created once, spun many times. (Charter §3.1)
+  const wheel = new Wheel(evaluator, audit);
 
   // Shield
   const shield = new QuantumShieldCore({
@@ -91,98 +92,41 @@ async function bootstrap() {
     }
   }
 
-  return { evaluator, audit, signer, sso, shield, ai, ownerId, evidenceDir };
-}
-
-// ---------------------------------------------------------------------------
-// Evidence factory — Charter §3.2
-// ---------------------------------------------------------------------------
-
-function buildEvidence(
-  principalId: string,
-  action: string,
-  resource: string,
-): EvaluationInput {
-  return {
-    principalId,
-    principalType: "human",
-    action,
-    resource,
-    tags: [],
-    context: { mfaPassed: true, riskScore: 0, ownerSupervised: true },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Command executors
-// ---------------------------------------------------------------------------
-
-type Services = Awaited<ReturnType<typeof bootstrap>>;
-
-function healthExecutor(s: Services): Executor {
-  return async () => s.shield.checkHealth();
-}
-
-function hardenExecutor(s: Services): Executor {
-  return async () => s.shield.verifyHardening();
-}
-
-function legalExecutor(s: Services, csvPath: string): Executor {
-  const legal = new LegalAutomation({
-    signer: s.signer,
-    renderer: { async render(html: string) { return Buffer.from(html, "utf-8"); } },
-    store: { async insertEvidence() { return 0; } },
-    outputDir: `${s.evidenceDir}/legal`,
-    createdBy: s.ownerId,
-  });
-  return async () => legal.processFile(csvPath);
-}
-
-function certExecutor(s: Services, csvPath: string): Executor {
-  const cert = new CertMaster({
-    signer: s.signer,
-    renderer: { async render(html: string) { return Buffer.from(html, "utf-8"); } },
-    store: { async insertEvidence() { return 0; } },
-    outputDir: `${s.evidenceDir}/certs`,
-    createdBy: s.ownerId,
-  });
-  return async () => cert.processFile(csvPath);
-}
-
-function complianceExecutor(s: Services): Executor {
-  return async () => {
-    const health = await s.shield.checkHealth();
-    const hardening = await s.shield.verifyHardening();
-    const report = {
-      timestamp: new Date().toISOString(),
-      health,
-      hardening,
-      signedBy: s.signer.getKeyId(),
-    };
-    const sig = s.signer.signObject(report);
-    return { ...report, signature: sig };
-  };
-}
-
-function aiExecutor(s: Services, instruction: string): Executor {
-  return async () => {
-    if (!s.ai) throw new Error("AI-001: LLM API key not configured");
-    return s.ai.planAutomationChange(instruction);
-  };
+  return { wheel, evaluator, audit, signer, sso, shield, ai, ownerId, evidenceDir };
 }
 
 // ---------------------------------------------------------------------------
 // CLI dispatch — Charter §4: Single entry point
 // ---------------------------------------------------------------------------
 
+type Services = Awaited<ReturnType<typeof bootstrap>>;
+
+function buildSpec(
+  s: Services,
+  action: string,
+  resource: string,
+  deadlineMs: number,
+  execute: () => Promise<unknown>,
+  context?: Record<string, unknown>,
+): SpokeSpec {
+  return {
+    principalId: s.ownerId,
+    action,
+    resource,
+    context: { mfaPassed: true, riskScore: 0, ownerSupervised: true, ...context },
+    deadlineMs,
+    execute,
+  };
+}
+
 async function main() {
   enforceEnv();
   const services = await bootstrap();
-  const { evaluator, audit, signer, sso, ownerId } = services;
+  const { wheel, signer, sso, shield, ai, ownerId, evidenceDir } = services;
 
   const [, , cmd, ...rest] = process.argv;
 
-  // Atomic commands — these are Wheel dependencies, not workflows.
+  // Atomic commands — Wheel dependencies, not workflows.
   // token and sign are single-operation, no lifecycle needed.
   if (cmd === "token") {
     const subject = rest[0] || ownerId;
@@ -197,57 +141,74 @@ async function main() {
     return;
   }
 
-  // --- Wheeled commands (Axiom A9) ---
+  // --- Wheeled commands (Axiom A9: Wheel governs) ---
 
-  let executor: Executor;
-  let action: string;
-  let resource: string;
-  let deadlineMs: number;
+  let spec: SpokeSpec;
 
   switch (cmd) {
     case "health":
-      executor = healthExecutor(services);
-      action = "system:check";
-      resource = "system:health";
-      deadlineMs = 30_000;
+      spec = buildSpec(services, "system:check", "system:health", 30_000,
+        async () => shield.checkHealth());
       break;
 
     case "harden":
-      executor = hardenExecutor(services);
-      action = "system:harden";
-      resource = "system:hardening";
-      deadlineMs = 30_000;
+      spec = buildSpec(services, "system:harden", "system:hardening", 30_000,
+        async () => shield.verifyHardening());
       break;
 
     case "legal":
       if (!rest[0]) { process.stderr.write("Usage: gate legal <court.csv>\n"); process.exitCode = 1; return; }
-      executor = legalExecutor(services, rest[0]);
-      action = "legal:generate";
-      resource = `legal:batch:${rest[0]}`;
-      deadlineMs = 300_000;
+      spec = buildSpec(services, "legal:generate", `legal:batch:${rest[0]}`, 300_000,
+        async () => {
+          const legal = new LegalAutomation({
+            signer,
+            renderer: { async render(html: string) { return Buffer.from(html, "utf-8"); } },
+            store: { async insertEvidence() { return 0; } },
+            outputDir: `${evidenceDir}/legal`,
+            createdBy: ownerId,
+          });
+          return legal.processFile(rest[0]);
+        });
       break;
 
     case "cert":
       if (!rest[0]) { process.stderr.write("Usage: gate cert <exam.csv>\n"); process.exitCode = 1; return; }
-      executor = certExecutor(services, rest[0]);
-      action = "cert:generate";
-      resource = `cert:batch:${rest[0]}`;
-      deadlineMs = 300_000;
+      spec = buildSpec(services, "cert:generate", `cert:batch:${rest[0]}`, 300_000,
+        async () => {
+          const cert = new CertMaster({
+            signer,
+            renderer: { async render(html: string) { return Buffer.from(html, "utf-8"); } },
+            store: { async insertEvidence() { return 0; } },
+            outputDir: `${evidenceDir}/certs`,
+            createdBy: ownerId,
+          });
+          return cert.processFile(rest[0]);
+        });
       break;
 
     case "compliance":
-      executor = complianceExecutor(services);
-      action = "compliance:generate";
-      resource = "compliance:report";
-      deadlineMs = 120_000;
+      spec = buildSpec(services, "compliance:generate", "compliance:report", 120_000,
+        async () => {
+          const health = await shield.checkHealth();
+          const hardening = await shield.verifyHardening();
+          const report = {
+            timestamp: new Date().toISOString(),
+            health,
+            hardening,
+            signedBy: signer.getKeyId(),
+          };
+          const sig = signer.signObject(report);
+          return { ...report, signature: sig };
+        });
       break;
 
     case "ai":
       if (!rest.length) { process.stderr.write('Usage: gate ai "<instruction>"\n'); process.exitCode = 1; return; }
-      executor = aiExecutor(services, rest.join(" "));
-      action = "ai:query";
-      resource = "ai:orchestrator";
-      deadlineMs = 60_000;
+      spec = buildSpec(services, "ai:query", "ai:orchestrator", 60_000,
+        async () => {
+          if (!ai) throw new Error("AI-001: LLM API key not configured");
+          return ai.planAutomationChange(rest.join(" "));
+        });
       break;
 
     default:
@@ -278,24 +239,8 @@ async function main() {
       return;
   }
 
-  // Build SpokeSpec (Charter §3.1)
-  const spec: SpokeSpec = {
-    agentId: ownerId,
-    action,
-    resourceType: resource.split(":")[0],
-    resourceId: resource,
-    payload: { args: rest },
-    deadlineMs,
-  };
-
-  // Build EvaluationInput (Charter §3.2)
-  const evidence = buildEvidence(ownerId, action, resource);
-
-  // Create Wheel with this command's executor (Charter §3.1)
-  const wheel = new Wheel({ evaluator, audit, executor, ownerId });
-
   // Spin — Axiom A9: Wheel governs. No exceptions.
-  const result = await wheel.spin(spec, evidence);
+  const result = await wheel.spin(spec);
 
   process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   process.exitCode = result.phase === "SEALED" ? 0 : 1;

@@ -20,7 +20,8 @@ import { join } from "path";
 import { createHash, randomUUID } from "crypto";
 
 import { Wheel } from "../src/wheel/wheel-orchestrator";
-import { Evaluator, getDoctrine } from "../src/core/evaluator";
+import { Evaluator } from "../src/core/evaluator";
+import { getDoctrine } from "../src/core/doctrine";
 import { AuditService } from "../src/audit/audit-service";
 import { Ed25519Signer, loadOrCreateKeys } from "../identity/ed25519_signer";
 import { QuantumShieldCore } from "../security/quantum_shield_core";
@@ -170,7 +171,6 @@ export class Grandmaster {
     const startedAt = new Date().toISOString();
 
     const result = await this.wheel.spin({
-      name: `onboard-${hostname}`,
       principalId: this.config.createdBy,
       resource: `device:${hostname}`,
       action: "device:onboard",
@@ -217,7 +217,6 @@ export class Grandmaster {
     const startedAt = new Date().toISOString();
 
     const result = await this.wheel.spin({
-      name: `legal-batch-${Date.now()}`,
       principalId: this.config.createdBy,
       resource: `legal:batch`,
       action: "legal:generate",
@@ -244,7 +243,6 @@ export class Grandmaster {
     const startedAt = new Date().toISOString();
 
     const result = await this.wheel.spin({
-      name: `cert-batch-${Date.now()}`,
       principalId: this.config.createdBy,
       resource: `cert:batch`,
       action: "cert:generate",
@@ -271,7 +269,6 @@ export class Grandmaster {
     const startedAt = new Date().toISOString();
 
     const result = await this.wheel.spin({
-      name: `health-check-${Date.now()}`,
       principalId: "system",
       resource: "system:health",
       action: "system:check",
@@ -300,7 +297,6 @@ export class Grandmaster {
     const startedAt = new Date().toISOString();
 
     const result = await this.wheel.spin({
-      name: `compliance-report-${Date.now()}`,
       principalId: this.config.createdBy,
       resource: "compliance:report",
       action: "compliance:generate",
