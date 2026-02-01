@@ -1,0 +1,8 @@
+node_modules
+dist
+rust_boundary/target
+*.log
+/data
+.git
+.env
+*.key

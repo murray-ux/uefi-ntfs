@@ -1,0 +1,20 @@
+{
+  "name": "genesis-ultimate-edition",
+  "version": "2.0.0",
+  "description": "MuzzL3d Dictionary — Hardened automation stack",
+  "author": "MuzzL3d Dictionary Contributors",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "verify": "./verify/full_verify.sh --verbose",
+    "orchestrate": "python3 core/orchestrator.py",
+    "master": "./bin/genesis_master.sh",
+    "rust:build": "cargo build --release --manifest-path rust_boundary/Cargo.toml",
+    "rust:test": "cargo test --manifest-path rust_boundary/Cargo.toml"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0"
+  }
+}
