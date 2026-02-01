@@ -39,6 +39,31 @@ import { Reservoir } from "./underfloor/layer2-reservoir";
 import { Valve, PolicyRule, ValveDecision } from "./underfloor/layer3-valve";
 import { Manifold, Step, ManifoldResult } from "./underfloor/layer4-manifold";
 
+// ── Room imports ──────────────────────────────────────────────────────────
+// L0 Kernel rooms
+import { Thermostat } from "./underfloor/L0-kernel/thermostat";
+import { Chip } from "./underfloor/L0-kernel/chip";
+import { Battery } from "./underfloor/L0-kernel/battery";
+// L1 Conduit rooms
+import { Flares } from "./underfloor/L1-conduit/flares";
+import { Locks } from "./underfloor/L1-conduit/locks";
+import { Doors } from "./underfloor/L1-conduit/doors";
+// L2 Reservoir rooms
+import { Trunk } from "./underfloor/L2-reservoir/trunk";
+import { Spares } from "./underfloor/L2-reservoir/spares";
+import { Coolant } from "./underfloor/L2-reservoir/coolant";
+import { Wash } from "./underfloor/L2-reservoir/wash";
+// L3 Valve rooms
+import { Brakes } from "./underfloor/L3-valve/brakes";
+import { Tint } from "./underfloor/L3-valve/tint";
+import { Wipers } from "./underfloor/L3-valve/wipers";
+import { Fuel } from "./underfloor/L3-valve/fuel";
+// L4 Manifold rooms
+import { Engine } from "./underfloor/L4-manifold/engine";
+import { Wings } from "./underfloor/L4-manifold/wings";
+import { Mods } from "./underfloor/L4-manifold/mods";
+import { Exhaust } from "./underfloor/L4-manifold/exhaust";
+
 // ---------------------------------------------------------------------------
 // Pentagon config — the ONLY thing the consumer provides
 // ---------------------------------------------------------------------------
@@ -107,6 +132,26 @@ export class Pentagon {
   private readonly manifold: Manifold;
   private readonly ownerId: string;
 
+  // ── Rooms ─────────────────────────────────────────────────────────────
+  private readonly thermostat: Thermostat;
+  private readonly chip: Chip;
+  private readonly battery: Battery;
+  private readonly flares: Flares;
+  private readonly locks: Locks;
+  private readonly doors: Doors;
+  private readonly trunk: Trunk;
+  private readonly spares: Spares;
+  private readonly coolant: Coolant;
+  private readonly wash: Wash;
+  private readonly brakes: Brakes;
+  private readonly tint: Tint;
+  private readonly wipers: Wipers;
+  private readonly fuel: Fuel;
+  private readonly engine: Engine;
+  private readonly wings: Wings;
+  private readonly mods: Mods;
+  private readonly exhaust: Exhaust;
+
   constructor(config: PentagonConfig) {
     this.ownerId = config.ownerId;
 
@@ -156,6 +201,47 @@ export class Pentagon {
     // Layer 4: Manifold — orchestration
     this.manifold = new Manifold(this.kernel, this.conduit, this.reservoir, this.valve);
 
+    // ── Wire rooms ──────────────────────────────────────────────────────
+    // L0 Kernel rooms
+    this.thermostat = new Thermostat(this.kernel);
+    this.chip = new Chip(this.kernel);
+    this.battery = new Battery(this.kernel);
+    // L1 Conduit rooms
+    this.flares = new Flares(this.kernel, this.conduit);
+    this.locks = new Locks(this.kernel);
+    this.doors = new Doors(this.kernel);
+    // L2 Reservoir rooms
+    this.trunk = new Trunk(this.kernel, config.dataDir);
+    this.spares = new Spares(this.kernel, config.dataDir);
+    this.coolant = new Coolant(this.kernel);
+    this.wash = new Wash(this.kernel);
+    // L3 Valve rooms
+    this.brakes = new Brakes(this.kernel);
+    this.tint = new Tint(this.kernel);
+    this.wipers = new Wipers(this.kernel);
+    this.fuel = new Fuel(this.kernel);
+    // L4 Manifold rooms
+    this.engine = new Engine(this.kernel);
+    this.wings = new Wings(this.kernel);
+    this.mods = new Mods(this.kernel);
+    this.exhaust = new Exhaust(this.kernel);
+
+    // ── Cross-wire rooms ───────────────────────────────────────────────
+    // Wipers auto-clean: flush coolant cache
+    this.wipers.register("coolant-flush", () => {
+      return this.coolant.flush();
+    }, 60000);
+
+    // Wipers auto-clean: sweep thermostat and fire flares for alarms
+    this.wipers.register("thermal-sweep", () => {
+      const alarms = this.thermostat.alarms();
+      for (const a of alarms) {
+        this.flares.fire("warning", "thermostat", a.zone, `${a.zone} ${a.status}: ${a.value}`);
+        this.exhaust.emit("thermostat", "alarm", { zone: a.zone, value: a.value, status: a.status });
+      }
+      return { swept: alarms.length, errors: 0 };
+    }, 15000);
+
     // Wire conduit pipes for internal signalling
     this.conduit.register("manifold", "reservoir", "step:done", async (env) => {
       this.reservoir.put(`signal:${env.id}`, env.payload);
@@ -196,6 +282,43 @@ export class Pentagon {
                 return this.internalDiagnostics();
               case "status":
                 return this.internalStatus();
+              // ── Room commands ────────────────────────────
+              case "thermostat":
+                return this.thermostat.sweep();
+              case "chip":
+                return this.chip.status();
+              case "battery":
+                return this.battery.status();
+              case "flares":
+                return this.flares.stats();
+              case "locks":
+                return this.locks.stats();
+              case "doors":
+                return this.doors.stats();
+              case "trunk":
+                return this.trunk.stats();
+              case "spares":
+                return this.spares.manifest();
+              case "coolant":
+                return this.coolant.stats();
+              case "wash":
+                return this.wash.stats();
+              case "brakes":
+                return this.brakes.stats();
+              case "tint":
+                return this.tint.stats();
+              case "wipers":
+                return this.wipers.stats();
+              case "fuel":
+                return this.fuel.gauge();
+              case "engine":
+                return this.engine.stats();
+              case "wings":
+                return this.wings.stats();
+              case "mods":
+                return this.mods.stats();
+              case "exhaust":
+                return this.exhaust.snapshot();
               default:
                 return { command: name, input: inp, handled: false };
             }
@@ -382,6 +505,20 @@ export class Pentagon {
       valve: {
         breakers: this.valve.breakerStates(),
         limiters: this.valve.limiterStates(),
+      },
+      rooms: {
+        thermostat: this.thermostat.sweep(),
+        battery: this.battery.charge(),
+        flares: this.flares.stats(),
+        locks: this.locks.stats(),
+        doors: this.doors.stats(),
+        brakes: this.brakes.stats(),
+        coolant: this.coolant.stats(),
+        fuel: this.fuel.gauge(),
+        engine: this.engine.stats(),
+        wings: this.wings.stats(),
+        mods: this.mods.stats(),
+        exhaust: this.exhaust.stats(),
       },
     };
   }

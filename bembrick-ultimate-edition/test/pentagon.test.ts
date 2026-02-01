@@ -201,4 +201,39 @@ describe("Pentagon — public surface only", () => {
       assert.equal(manifest.type, "test-bundle");
     });
   });
+
+  // ── ROOMS — accessible via CMD facet ─────────────────────────────────
+
+  describe("Rooms via CMD", () => {
+    const roomNames = [
+      "thermostat", "chip", "battery",
+      "flares", "locks", "doors",
+      "trunk", "spares", "coolant", "wash",
+      "brakes", "tint", "wipers", "fuel",
+      "engine", "wings", "mods", "exhaust",
+    ];
+
+    for (const room of roomNames) {
+      it(`should query ${room} room`, async () => {
+        const p = makePentagon();
+        const result = await p.command(room);
+        assert.equal(result.success, true);
+        assert.equal(result.command, room);
+        assert.ok(result.output !== null && result.output !== undefined);
+      });
+    }
+
+    it("diagnostics should include rooms section", async () => {
+      const p = makePentagon();
+      const result = await p.command("diagnostics");
+      const output = result.output as Record<string, unknown>;
+      assert.ok("rooms" in output);
+      const rooms = output.rooms as Record<string, unknown>;
+      assert.ok("thermostat" in rooms);
+      assert.ok("battery" in rooms);
+      assert.ok("fuel" in rooms);
+      assert.ok("engine" in rooms);
+      assert.ok("exhaust" in rooms);
+    });
+  });
 });
