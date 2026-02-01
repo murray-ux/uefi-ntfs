@@ -25,6 +25,8 @@
     "config/**/*.ts",
     "db/**/*.ts",
     "ai/**/*.ts",
+    "pentagon/**/*.ts",
+    "sovereign-suite/**/*.ts",
     "test/**/*.ts"
   ],
   "exclude": [
