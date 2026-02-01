@@ -22,6 +22,7 @@ import { CertMaster } from "../cert_master/cert_master";
 import { AiOrchestrator } from "../ai/ai_orchestrator";
 import { CitationService } from "./citation/citation-service";
 import { CustodyChain } from "./audit/chain-of-custody";
+import { P2PEComplianceChecker } from "../security/p2pe_compliance";
 
 // ---------------------------------------------------------------------------
 // Environment enforcement — Charter §8, Axiom A6
@@ -239,6 +240,24 @@ async function main() {
         });
       break;
 
+    case "p2pe":
+      if (!rest[0]) { process.stderr.write("Usage: gate p2pe <query|audit> [search-term]\n"); process.exitCode = 1; return; }
+      spec = buildSpec(services, "p2pe:check", `p2pe:${rest[0]}`, 30_000,
+        async () => {
+          const registryPath = join(evidenceDir, "..", "data", "reference", "p2pe_applications.csv");
+          const defaultPath = join(process.cwd(), "data", "reference", "p2pe_applications.csv");
+          const p2pe = new P2PEComplianceChecker({
+            registryPath: require("fs").existsSync(registryPath) ? registryPath : defaultPath,
+            audit: services.audit,
+            citation,
+          });
+          if (rest[0] === "audit") {
+            return p2pe.auditRegistry(ownerId);
+          }
+          return p2pe.check(rest.join(" "), ownerId);
+        });
+      break;
+
     case "ai":
       if (!rest.length) { process.stderr.write('Usage: gate ai "<instruction>"\n'); process.exitCode = 1; return; }
       spec = buildSpec(services, "ai:query", "ai:orchestrator", 60_000,
@@ -264,6 +283,8 @@ async function main() {
           "  compliance                 Signed compliance report",
           "  cite <file> [type] [subj]  Create security-assured citation",
           "  verify-chain               Verify chain-of-custody integrity",
+          "  p2pe <query>               P2PE compliance check (cited)",
+          "  p2pe audit                 Full P2PE registry audit (cited)",
           '  ai "<instruction>"         AI assistant query',
           "",
           "Atomic commands:",
