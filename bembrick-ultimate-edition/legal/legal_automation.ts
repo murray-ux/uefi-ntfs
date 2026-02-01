@@ -18,6 +18,10 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, basename } from "path";
 import { Ed25519Signer, SignResult } from "../identity/ed25519_signer";
 import type { CitationService, CitationRecord } from "../src/citation/citation-service";
+import { parseCsv, extractField, extractRemainder } from "../src/util/csv";
+
+// Re-export parseCsv for backward compatibility with CertMaster import
+export { parseCsv } from "../src/util/csv";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,78 +78,25 @@ export interface BatchResult {
 }
 
 // ---------------------------------------------------------------------------
-// CSV parser — minimal, handles quoted fields
+// CSV → CourtRow mapper (CSV parser now in src/util/csv.ts)
 // ---------------------------------------------------------------------------
 
-export function parseCsv(text: string): Record<string, string>[] {
-  const lines = text.trim().split("\n");
-  if (lines.length < 2) return [];
-
-  const headers = parseCsvLine(lines[0]);
-  const rows: Record<string, string>[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const values = parseCsvLine(lines[i]);
-    const row: Record<string, string> = {};
-    for (let j = 0; j < headers.length; j++) {
-      row[headers[j].trim()] = (values[j] || "").trim();
-    }
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function parseCsvLine(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === "," && !inQuotes) {
-      result.push(current);
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  result.push(current);
-  return result;
-}
-
-// ---------------------------------------------------------------------------
-// CSV → CourtRow mapper
-// ---------------------------------------------------------------------------
+const CASE_ALIASES = ["case_number", "caseNumber", "case_no"];
+const PARTY_ALIASES = ["party_name", "partyName", "party"];
+const DOCTYPE_ALIASES = ["doc_type", "docType", "document_type"];
+const DATE_ALIASES = ["filing_date", "filingDate", "date"];
+const COURT_RESERVED = new Set([
+  ...CASE_ALIASES, ...PARTY_ALIASES, ...DOCTYPE_ALIASES, ...DATE_ALIASES,
+]);
 
 export function csvToCourtRows(records: Record<string, string>[]): CourtRow[] {
-  return records.map((r) => {
-    const caseNumber = r.case_number || r.caseNumber || r.case_no || "";
-    const partyName = r.party_name || r.partyName || r.party || "";
-    const docType = r.doc_type || r.docType || r.document_type || "";
-    const filingDate = r.filing_date || r.filingDate || r.date || new Date().toISOString().slice(0, 10);
-
-    // Everything else goes into fields
-    const reserved = new Set([
-      "case_number", "caseNumber", "case_no",
-      "party_name", "partyName", "party",
-      "doc_type", "docType", "document_type",
-      "filing_date", "filingDate", "date",
-    ]);
-    const fields: Record<string, string> = {};
-    for (const [k, v] of Object.entries(r)) {
-      if (!reserved.has(k)) fields[k] = v;
-    }
-
-    return { caseNumber, partyName, docType, filingDate, fields };
-  });
+  return records.map((r) => ({
+    caseNumber: extractField(r, CASE_ALIASES),
+    partyName: extractField(r, PARTY_ALIASES),
+    docType: extractField(r, DOCTYPE_ALIASES),
+    filingDate: extractField(r, DATE_ALIASES, new Date().toISOString().slice(0, 10)),
+    fields: extractRemainder(r, COURT_RESERVED),
+  }));
 }
 
 // ---------------------------------------------------------------------------

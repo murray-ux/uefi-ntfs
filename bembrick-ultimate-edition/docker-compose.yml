@@ -1,32 +1,51 @@
 # GENESIS 2.0 — Docker Compose
 #
+# Services:
+#   genesis    The GATE (single entry point, Axiom A8)
+#   db         PostgreSQL 16 (evidence, ledger, identities, claims)
+#
 # Usage:
-#   docker compose up              Start all services
-#   docker compose up --build      Rebuild and start
-#   docker compose run genesis verify   Run verification suite
+#   docker compose up -d                 Start all services
+#   docker compose up --build            Rebuild and start
+#   docker compose run genesis health    Run health check via Wheel
+#   docker compose run genesis legal f.csv  Generate court documents
+#   docker compose run genesis cite f.pdf   Create citation record
+#   docker compose exec db psql -U genesis genesis  Connect to database
 #
 # Volumes:
-#   genesis-data   Persistent audit logs, evidence chains, signing keys
+#   genesis-data    Audit logs, evidence chains, signing keys, citations
+#   genesis-pgdata  PostgreSQL data directory
 #
 # Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
 
 services:
+  # --------------------------------------------------------------------------
+  # GATE — Charter §4: Single entry point
+  # --------------------------------------------------------------------------
   genesis:
     build: .
-    container_name: genesis-core
-    ports:
-      - "${GENESIS_PDP_PORT:-8080}:8080"       # Policy Decision Point API
-      - "${GENESIS_DASHBOARD_PORT:-3000}:3000"  # Dashboard + health UI
+    container_name: genesis-gate
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - genesis-data:/data
     environment:
+      # Required (Axiom A6: no secrets in code — pass at runtime)
       - GENESIS_AUDIT_DIR=/data/audit
       - GENESIS_EVIDENCE_DIR=/data/evidence
       - GENESIS_KEY_DIR=/data/keys
-      - GENESIS_PDP_PORT=8080
-      - GENESIS_DASHBOARD_PORT=3000
+      - GENESIS_DATA_DIR=/data
+      - GENESIS_JWT_SECRET=${GENESIS_JWT_SECRET:?Set GENESIS_JWT_SECRET}
       - GENESIS_OWNER_ID=${GENESIS_OWNER_ID:-owner}
-      - GENESIS_OVERRIDE_SECRET_HASH=${GENESIS_OVERRIDE_SECRET_HASH:-}
+      # PostgreSQL connection
+      - POSTGRES_CONNECTION_STRING=postgresql://genesis:${POSTGRES_PASSWORD:-genesis}@db:5432/genesis
+      # Optional
+      - GENESIS_LLM_API_KEY=${GENESIS_LLM_API_KEY:-}
+      - GENESIS_LLM_MODEL=${GENESIS_LLM_MODEL:-gpt-4o}
+      - GENESIS_JURISDICTION=${GENESIS_JURISDICTION:-general}
+      - FLEET_API_URL=${FLEET_API_URL:-}
+      - FLEET_API_KEY=${FLEET_API_KEY:-}
       - NODE_ENV=production
     restart: unless-stopped
     read_only: true
@@ -35,11 +54,36 @@ services:
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
-      interval: 30s
-      timeout: 5s
+      test: ["CMD", "node", "dist/src/index.js", "health"]
+      interval: 60s
+      timeout: 10s
       retries: 3
+      start_period: 15s
+
+  # --------------------------------------------------------------------------
+  # PostgreSQL — Charter §6: Evidence, Ledger, Identities, Claims
+  # --------------------------------------------------------------------------
+  db:
+    image: postgres:16-bookworm
+    container_name: genesis-db
+    volumes:
+      - genesis-pgdata:/var/lib/postgresql/data
+      - ./db/genesis_platform.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    environment:
+      - POSTGRES_USER=genesis
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-genesis}
+      - POSTGRES_DB=genesis
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U genesis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   genesis-data:
+    driver: local
+  genesis-pgdata:
     driver: local

@@ -15,7 +15,7 @@ import { createHash, randomUUID } from "crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { Ed25519Signer } from "../identity/ed25519_signer";
-import { parseCsv } from "../legal/legal_automation";
+import { parseCsv, extractField } from "../src/util/csv";
 import type { PdfRenderer, EvidenceStore } from "../legal/legal_automation";
 import type { CitationService, CitationRecord } from "../src/citation/citation-service";
 
@@ -136,13 +136,13 @@ function renderCertHtml(row: ExamRow, extras: Record<string, string>): string {
 
 export function csvToExamRows(records: Record<string, string>[]): ExamRow[] {
   return records.map((r) => ({
-    candidateId: r.candidate_id || r.candidateId || r.id || randomUUID(),
-    candidateName: r.candidate_name || r.candidateName || r.name || "",
-    examProvider: r.exam_provider || r.examProvider || r.provider || "",
-    examName: r.exam_name || r.examName || r.exam || "",
-    score: parseFloat(r.score || "0"),
-    maxScore: parseFloat(r.max_score || r.maxScore || "100"),
-    dateTaken: r.date_taken || r.dateTaken || r.date || new Date().toISOString().slice(0, 10),
+    candidateId: extractField(r, ["candidate_id", "candidateId", "id"], randomUUID()),
+    candidateName: extractField(r, ["candidate_name", "candidateName", "name"]),
+    examProvider: extractField(r, ["exam_provider", "examProvider", "provider"]),
+    examName: extractField(r, ["exam_name", "examName", "exam"]),
+    score: parseFloat(extractField(r, ["score"], "0")),
+    maxScore: parseFloat(extractField(r, ["max_score", "maxScore"], "100")),
+    dateTaken: extractField(r, ["date_taken", "dateTaken", "date"], new Date().toISOString().slice(0, 10)),
   }));
 }
 

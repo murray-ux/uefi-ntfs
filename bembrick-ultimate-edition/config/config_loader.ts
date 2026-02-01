@@ -1,7 +1,18 @@
 // config/config_loader.ts
 //
 // GENESIS Configuration Loader — reads genesis_infrastructure.yml
-// and substitutes environment variables for any sensitive values.
+// and substitutes environment variables for sensitive values.
+//
+// Includes a zero-dependency YAML parser that handles:
+//   - Nested objects (indentation-based)
+//   - Arrays (- prefix)
+//   - Quoted and unquoted string values
+//   - Inline comments (#)
+//   - Boolean, number, and null coercion
+//   - Multi-level nesting
+//
+// For full YAML spec (anchors, flow syntax, etc.), swap in js-yaml.
+// This parser covers the subset GENESIS actually uses.
 //
 // Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
 
@@ -43,21 +54,167 @@ export interface GenesisConfig {
 }
 
 // ---------------------------------------------------------------------------
-// YAML-lite parser — handles the flat YAML we use, no external dep.
-// For complex YAML, swap in js-yaml.
+// YAML parser — indentation-based, recursive
 // ---------------------------------------------------------------------------
 
-function parseSimpleYaml(text: string): Record<string, unknown> {
-  // This is a minimal placeholder. In production, install js-yaml.
-  // For now, return the raw text as a config-shaped object.
-  const result: Record<string, unknown> = { _raw: text };
-  for (const line of text.split("\n")) {
-    const match = line.match(/^\s*(\w+):\s*"?([^"#]*)"?\s*$/);
-    if (match) {
-      result[match[1]] = match[2].trim();
+type YamlValue = string | number | boolean | null | YamlValue[] | { [key: string]: YamlValue };
+
+function parseYaml(text: string): Record<string, YamlValue> {
+  const lines = text.split("\n");
+  const { value } = parseBlock(lines, 0, 0);
+  return (value as Record<string, YamlValue>) || {};
+}
+
+function parseBlock(
+  lines: string[],
+  start: number,
+  minIndent: number,
+): { value: YamlValue; nextLine: number } {
+  const result: Record<string, YamlValue> = {};
+  let i = start;
+
+  while (i < lines.length) {
+    const raw = lines[i];
+    const stripped = stripComment(raw);
+
+    // Skip blank and comment-only lines
+    if (stripped.trim() === "") { i++; continue; }
+
+    const indent = leadingSpaces(raw);
+
+    // If dedented below our block, we're done
+    if (indent < minIndent) break;
+
+    // Array item (- prefix)
+    const arrayMatch = stripped.match(/^(\s*)-\s+(.*)/);
+    if (arrayMatch) {
+      return parseArray(lines, i, indent);
+    }
+
+    // Key: value pair
+    const kvMatch = stripped.match(/^(\s*)([\w._-]+)\s*:\s*(.*)/);
+    if (!kvMatch) { i++; continue; }
+
+    const key = kvMatch[2];
+    const inlineValue = kvMatch[3].trim();
+
+    if (inlineValue === "" || inlineValue === "|" || inlineValue === ">") {
+      // Nested block — parse children at deeper indent
+      const childIndent = findChildIndent(lines, i + 1);
+      if (childIndent > indent) {
+        const child = parseBlock(lines, i + 1, childIndent);
+        result[key] = child.value;
+        i = child.nextLine;
+      } else {
+        result[key] = inlineValue === "" ? null : "";
+        i++;
+      }
+    } else {
+      result[key] = coerce(inlineValue);
+      i++;
     }
   }
-  return result;
+
+  return { value: result, nextLine: i };
+}
+
+function parseArray(
+  lines: string[],
+  start: number,
+  arrayIndent: number,
+): { value: YamlValue; nextLine: number } {
+  const items: YamlValue[] = [];
+  let i = start;
+
+  while (i < lines.length) {
+    const raw = lines[i];
+    const stripped = stripComment(raw);
+    if (stripped.trim() === "") { i++; continue; }
+
+    const indent = leadingSpaces(raw);
+    if (indent < arrayIndent) break;
+
+    const arrayMatch = stripped.match(/^(\s*)-\s+(.*)/);
+    if (!arrayMatch) break;
+
+    const itemValue = arrayMatch[2].trim();
+
+    // Check if item is a key:value (nested object in array)
+    const kvInItem = itemValue.match(/^([\w._-]+)\s*:\s*(.*)/);
+    if (kvInItem) {
+      // Start of an inline object
+      const obj: Record<string, YamlValue> = {};
+      obj[kvInItem[1]] = coerce(kvInItem[2].trim());
+
+      // Check for continuation lines at deeper indent
+      const childIndent = arrayIndent + 2;
+      i++;
+      while (i < lines.length) {
+        const cRaw = lines[i];
+        const cStripped = stripComment(cRaw);
+        if (cStripped.trim() === "") { i++; continue; }
+        const cIndent = leadingSpaces(cRaw);
+        if (cIndent < childIndent) break;
+        const cKv = cStripped.match(/^\s*([\w._-]+)\s*:\s*(.*)/);
+        if (cKv) {
+          obj[cKv[1]] = coerce(cKv[2].trim());
+          i++;
+        } else {
+          break;
+        }
+      }
+      items.push(obj);
+    } else {
+      items.push(coerce(itemValue));
+      i++;
+    }
+  }
+
+  return { value: items, nextLine: i };
+}
+
+function findChildIndent(lines: string[], from: number): number {
+  for (let i = from; i < lines.length; i++) {
+    const stripped = stripComment(lines[i]);
+    if (stripped.trim() !== "") return leadingSpaces(lines[i]);
+  }
+  return 0;
+}
+
+function leadingSpaces(line: string): number {
+  const match = line.match(/^( *)/);
+  return match ? match[1].length : 0;
+}
+
+function stripComment(line: string): string {
+  // Don't strip # inside quotes
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === "'" && !inDouble) inSingle = !inSingle;
+    if (ch === '"' && !inSingle) inDouble = !inDouble;
+    if (ch === "#" && !inSingle && !inDouble) {
+      return line.slice(0, i);
+    }
+  }
+  return line;
+}
+
+function coerce(s: string): YamlValue {
+  if (s === "" || s === "null" || s === "~") return null;
+  if (s === "true") return true;
+  if (s === "false") return false;
+
+  // Strip quotes
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    return s.slice(1, -1);
+  }
+
+  // Number
+  if (/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+
+  return s;
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +256,7 @@ export class ConfigLoader {
     }
 
     const raw = readFileSync(filePath, "utf-8");
-    const parsed = parseSimpleYaml(raw);
+    const parsed = parseYaml(raw);
     this.instance = substituteEnvVars(parsed) as Record<string, unknown>;
     return this.instance;
   }
@@ -113,3 +270,6 @@ export class ConfigLoader {
     this.instance = null;
   }
 }
+
+// Re-export YAML parser for testing or direct use
+export { parseYaml };
