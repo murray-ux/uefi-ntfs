@@ -1,0 +1,62 @@
+{
+  "version": "1.0.0",
+  "description": "Keyword-to-category mappings for local OCR classification",
+  "categories": {
+    "finance.invoice": {
+      "priority": 50,
+      "keywords": ["invoice", "tax invoice", "receipt", "payment due", "amount owing"]
+    },
+    "finance.bank": {
+      "priority": 50,
+      "keywords": ["bank statement", "account summary", "transaction history", "opening balance", "closing balance"]
+    },
+    "finance.superannuation": {
+      "priority": 40,
+      "keywords": ["superannuation", "super statement", "member statement", "retirement"]
+    },
+    "legal.family": {
+      "priority": 10,
+      "keywords": ["family court", "affidavit", "court order", "consent order", "interim order", "subpoena", "notice to produce", "financial statement", "form 13"]
+    },
+    "legal.general": {
+      "priority": 30,
+      "keywords": ["solicitor", "barrister", "legal advice", "deed", "contract", "agreement"]
+    },
+    "ato.notice": {
+      "priority": 20,
+      "keywords": ["notice of assessment", "tax return", "income tax", "tax file number", "ato", "australian taxation"]
+    },
+    "ato.bas": {
+      "priority": 20,
+      "keywords": ["business activity statement", "bas", "gst", "payg instalment"]
+    },
+    "ato.ias": {
+      "priority": 20,
+      "keywords": ["instalment activity statement", "ias", "payg withholding"]
+    },
+    "health.referral": {
+      "priority": 60,
+      "keywords": ["referral", "dear doctor", "referred to", "specialist"]
+    },
+    "health.results": {
+      "priority": 60,
+      "keywords": ["pathology", "radiology", "test results", "blood test", "imaging"]
+    },
+    "health.claims": {
+      "priority": 60,
+      "keywords": ["medicare", "private health", "claim", "benefit paid", "gap"]
+    },
+    "trust.deed": {
+      "priority": 15,
+      "keywords": ["trust deed", "deed of variation", "trustee", "settlor", "appointor"]
+    },
+    "trust.distribution": {
+      "priority": 15,
+      "keywords": ["distribution statement", "distribution resolution", "beneficiary", "trust distribution", "financial year"]
+    },
+    "business.general": {
+      "priority": 70,
+      "keywords": ["abn", "acn", "business name", "registered office", "asic"]
+    }
+  }
+}
