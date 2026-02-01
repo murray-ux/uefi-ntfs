@@ -21,9 +21,9 @@ import { join } from "path";
 import { createHash } from "crypto";
 
 import { getDoctrine } from "../core/doctrine";
-import { Evaluator, EvaluationInput } from "../core/evaluator";
+import { Evaluator } from "../core/evaluator";
 import { AuditService } from "../audit/audit-service";
-import { Wheel, SpokeSpec, Phase } from "../wheel/wheel-orchestrator";
+import { Wheel, Phase } from "../wheel/wheel-orchestrator";
 
 // ---------------------------------------------------------------------------
 // Rust boundary invocation
@@ -42,7 +42,6 @@ function invokeRustBoundary(
   hexFile: string,
   expectedHash?: string
 ): FirmwareResult {
-  // Step 1: Validate Intel HEX structure + checksums via Rust
   const fwArgs = expectedHash
     ? `firmware "${hexFile}" "${expectedHash}"`
     : `firmware "${hexFile}"`;
@@ -52,11 +51,8 @@ function invokeRustBoundary(
     encoding: "utf-8",
   }).trim();
 
-  // Step 2: Independent SHA-256 from Node side (cross-verify)
   const rawBytes = readFileSync(hexFile);
   const nodeSha = createHash("sha256").update(rawBytes).digest("hex");
-
-  // Step 3: Count Intel HEX records
   const lines = rawBytes.toString("utf-8").split("\n").filter((l) => l.startsWith(":"));
 
   return {
@@ -65,17 +61,6 @@ function invokeRustBoundary(
     sha256: nodeSha,
     recordCount: lines.length,
     rustOutput,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// The executor — called by the Wheel inside a spoke
-// ---------------------------------------------------------------------------
-
-function makeFirmwareExecutor(rustBin: string, expectedHash?: string) {
-  return async (spec: SpokeSpec): Promise<FirmwareResult> => {
-    const hexFile = spec.payload.hexFile as string;
-    return invokeRustBoundary(rustBin, hexFile, expectedHash);
   };
 }
 
@@ -103,7 +88,6 @@ async function main() {
   const rustBin = flag("--rust-bin", false)
     || join(process.cwd(), "rust_boundary/target/release/genesis-verify");
 
-  // Validate inputs
   if (!existsSync(hexFile)) {
     console.error(`HEX file not found: ${hexFile}`);
     process.exit(1);
@@ -114,40 +98,11 @@ async function main() {
     process.exit(1);
   }
 
-  // Wire the Wheel
+  // Wire the Wheel — Charter §3.1: create once, spin many
   const doctrine = getDoctrine();
   const evaluator = new Evaluator(doctrine);
   const audit = new AuditService({ logDir: join(process.cwd(), ".genesis-audit") });
-  const executor = makeFirmwareExecutor(rustBin, expectedHash);
-
-  const wheel = new Wheel({ evaluator, audit, executor, ownerId });
-
-  // Build the spoke
-  const spec: SpokeSpec = {
-    agentId: "firmware-gate",
-    action: "validate-firmware",
-    resourceType: "firmware",
-    resourceId: hexFile,
-    payload: {
-      hexFile,
-      expectedHash: expectedHash ?? "none",
-    },
-    deadlineMs: 30000,
-  };
-
-  // Evidence — firmware validation is a privileged operation
-  const evidence: EvaluationInput = {
-    principalId: ownerId,
-    principalType: "human",
-    action: "validate-firmware",
-    resource: `firmware:${hexFile}`,
-    tags: ["elevated", "firmware"],
-    context: {
-      mfaPassed: true,
-      ownerSupervised: true,
-      riskScore: 30,
-    },
-  };
+  const wheel = new Wheel(evaluator, audit);
 
   console.log("╔══════════════════════════════════════════════════════╗");
   console.log("║     GENESIS FIRMWARE GATE — RUST INTEGRITY CHECK     ║");
@@ -158,9 +113,20 @@ async function main() {
   console.log(`  Owner:        ${ownerId}`);
   console.log();
 
-  const result = await wheel.spin(spec, evidence);
+  // Executor travels WITH the spec — new Wheel API
+  const result = await wheel.spin({
+    principalId: ownerId,
+    action: "validate-firmware",
+    resource: `firmware:${hexFile}`,
+    context: {
+      mfaPassed: true,
+      ownerSupervised: true,
+      riskScore: 30,
+    },
+    deadlineMs: 30000,
+    execute: async () => invokeRustBoundary(rustBin, hexFile, expectedHash),
+  });
 
-  // Output
   console.log(`  Phase:    ${result.phase}`);
   console.log(`  Spoke ID: ${result.spokeId}`);
   console.log(`  Duration: ${result.durationMs ?? "n/a"}ms`);
@@ -179,7 +145,6 @@ async function main() {
     console.log(`  Error: ${result.error}`);
   }
 
-  // Receipt chain
   console.log(`\n  RECEIPT CHAIN`);
   console.log(`  ─────────────────────────────────────────────────────`);
   for (const r of result.receipts) {

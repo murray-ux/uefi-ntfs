@@ -3,8 +3,8 @@
 //
 // Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
 
-import { Doctrine, loadDoctrine } from "../core/doctrine";
-import { Evaluator, EvidencePack } from "../core/evaluator";
+import { Doctrine, getDoctrine } from "../core/doctrine";
+import { Evaluator, EvaluationInput } from "../core/evaluator";
 
 export interface CheckResult {
   name: string;
@@ -23,15 +23,19 @@ function checkDoctrineLoads(doctrine: Doctrine): CheckResult {
   };
 }
 
-function checkDefaultDeny(evaluator: Evaluator): CheckResult {
-  const empty: EvidencePack = {
-    host: { hostname: "ci-test", os: "linux", secureBootEnabled: false },
-    identity: { userId: "ci-bot", mfaVerified: false, roles: [], riskScore: 0 },
-    agent: { agentId: "ci-bot", agentType: "pipeline", scope: [] },
+async function checkDefaultDeny(evaluator: Evaluator): Promise<CheckResult> {
+  const empty: EvaluationInput = {
+    principalId: "ci-bot",
+    principalType: "agent",
     action: "ci-test-action",
     resource: "ci-test-resource",
+    tags: [],
+    context: {
+      mfaPassed: false,
+      riskScore: 0,
+    },
   };
-  const decision = evaluator.evaluate(empty);
+  const decision = await evaluator.evaluate(empty);
   const denied = decision.effect === "DENY";
   return {
     name: "default-deny",
@@ -42,24 +46,25 @@ function checkDefaultDeny(evaluator: Evaluator): CheckResult {
   };
 }
 
-export function runAllChecks(): CheckResult[] {
-  const doctrine = loadDoctrine();
+export async function runAllChecks(): Promise<CheckResult[]> {
+  const doctrine = getDoctrine();
   const evaluator = new Evaluator(doctrine);
 
   return [
     checkDoctrineLoads(doctrine),
-    checkDefaultDeny(evaluator),
+    await checkDefaultDeny(evaluator),
   ];
 }
 
 // CLI entry
 if (require.main === module) {
-  const results = runAllChecks();
-  let failed = false;
-  for (const r of results) {
-    const icon = r.passed ? "PASS" : "FAIL";
-    console.log(`[${icon}] ${r.name}: ${r.message}`);
-    if (!r.passed) failed = true;
-  }
-  process.exit(failed ? 1 : 0);
+  runAllChecks().then((results) => {
+    let failed = false;
+    for (const r of results) {
+      const icon = r.passed ? "PASS" : "FAIL";
+      console.log(`[${icon}] ${r.name}: ${r.message}`);
+      if (!r.passed) failed = true;
+    }
+    process.exit(failed ? 1 : 0);
+  });
 }

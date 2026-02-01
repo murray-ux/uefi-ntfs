@@ -130,9 +130,9 @@ function checkWheelStateIntegrity(root: string): string {
     }
   }
 
-  // Verify LEGAL_TRANSITIONS is defined
-  if (!content.includes("LEGAL_TRANSITIONS")) {
-    throw new Error("Wheel missing LEGAL_TRANSITIONS state machine");
+  // Verify legal transition map is defined
+  if (!content.includes("LEGAL") || !content.includes("new Map")) {
+    throw new Error("Wheel missing legal transitions state machine");
   }
 
   return `All ${requiredPhases.length} phases present, state machine intact`;

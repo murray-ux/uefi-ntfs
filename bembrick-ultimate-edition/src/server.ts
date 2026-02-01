@@ -39,7 +39,11 @@ const EVIDENCE_DIR = process.env.GENESIS_EVIDENCE_DIR || "./data/evidence";
 const KEY_DIR = process.env.GENESIS_KEY_DIR || "./data/keys";
 const PDP_PORT = parseInt(process.env.GENESIS_PDP_PORT || "8080", 10);
 const OWNER_ID = process.env.GENESIS_OWNER_ID || "owner";
-const JWT_SECRET = process.env.GENESIS_JWT_SECRET || "genesis-dev-secret-change-me";
+const JWT_SECRET = process.env.GENESIS_JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("[GENESIS] FATAL: GENESIS_JWT_SECRET must be set (Axiom A6: no secrets in code)");
+  process.exit(1);
+}
 const STATIC_DIR = process.env.GENESIS_STATIC_DIR || "./static";
 
 // ---------------------------------------------------------------------------

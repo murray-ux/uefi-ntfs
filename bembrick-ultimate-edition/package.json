@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
+    "test": "node --import tsx --test test/*.test.ts",
     "verify": "./verify/full_verify.sh --verbose",
     "orchestrate": "python3 core/orchestrator.py",
     "master": "./bin/genesis_master.sh",

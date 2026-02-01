@@ -18,15 +18,15 @@
 
 import { createHash } from "crypto";
 import {
-  readdirSync, readFileSync, writeFileSync, existsSync,
+  readdirSync, readFileSync, existsSync,
   mkdirSync, statSync, copyFileSync
 } from "fs";
 import { join, relative, dirname } from "path";
 
 import { getDoctrine } from "../core/doctrine";
-import { Evaluator, EvaluationInput } from "../core/evaluator";
+import { Evaluator } from "../core/evaluator";
 import { AuditService } from "../audit/audit-service";
-import { Wheel, SpokeSpec, WheelResult, Phase } from "../wheel/wheel-orchestrator";
+import { Wheel, Phase } from "../wheel/wheel-orchestrator";
 
 // ---------------------------------------------------------------------------
 // Manifest — SHA-256 snapshot of every file in a directory tree
@@ -98,38 +98,34 @@ function diff(source: FileEntry[], target: FileEntry[]): SyncAction[] {
 }
 
 // ---------------------------------------------------------------------------
-// The executor — this is what the Wheel runs inside each spoke.
-// It copies one file and verifies the copy by re-hashing.
+// Copy + verify — the executor for each spoke
 // ---------------------------------------------------------------------------
 
-function makeCopyExecutor(sourceDir: string, targetDir: string) {
-  return async (spec: SpokeSpec): Promise<{ verified: boolean; bytes: number }> => {
-    const rel = spec.payload.relativePath as string;
-    const src = join(sourceDir, rel);
-    const dst = join(targetDir, rel);
+function copyAndVerify(
+  sourceDir: string,
+  targetDir: string,
+  action: SyncAction,
+): { verified: boolean; bytes: number } {
+  const src = join(sourceDir, action.relativePath);
+  const dst = join(targetDir, action.relativePath);
 
-    // Ensure target subdirectory exists
-    const dstDir = dirname(dst);
-    if (!existsSync(dstDir)) {
-      mkdirSync(dstDir, { recursive: true });
-    }
+  const dstDir = dirname(dst);
+  if (!existsSync(dstDir)) {
+    mkdirSync(dstDir, { recursive: true });
+  }
 
-    // Copy
-    copyFileSync(src, dst);
+  copyFileSync(src, dst);
 
-    // Verify: re-hash the destination and compare to source hash
-    const dstData = readFileSync(dst);
-    const dstHash = createHash("sha256").update(dstData).digest("hex");
-    const expectedHash = spec.payload.sourceHash as string;
+  const dstData = readFileSync(dst);
+  const dstHash = createHash("sha256").update(dstData).digest("hex");
 
-    if (dstHash !== expectedHash) {
-      throw new Error(
-        `Integrity failure: ${rel} — expected ${expectedHash}, got ${dstHash}`
-      );
-    }
+  if (dstHash !== action.sourceHash) {
+    throw new Error(
+      `Integrity failure: ${action.relativePath} — expected ${action.sourceHash}, got ${dstHash}`
+    );
+  }
 
-    return { verified: true, bytes: dstData.length };
-  };
+  return { verified: true, bytes: dstData.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +133,6 @@ function makeCopyExecutor(sourceDir: string, targetDir: string) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  // Parse args
   const args = process.argv.slice(2);
   const flag = (name: string): string => {
     const idx = args.indexOf(name);
@@ -153,7 +148,6 @@ async function main() {
   const ownerId = flag("--owner");
   const deadlineMs = parseInt(flag("--deadline"), 10) || 5000;
 
-  // Validate directories
   if (!existsSync(sourceDir) || !statSync(sourceDir).isDirectory()) {
     console.error(`Source is not a directory: ${sourceDir}`);
     process.exit(1);
@@ -162,13 +156,11 @@ async function main() {
     mkdirSync(targetDir, { recursive: true });
   }
 
-  // Build the Wheel
+  // Build the Wheel — Charter §3.1: create once, spin many
   const doctrine = getDoctrine();
   const evaluator = new Evaluator(doctrine);
   const audit = new AuditService({ logDir: join(targetDir, ".genesis-audit") });
-  const executor = makeCopyExecutor(sourceDir, targetDir);
-
-  const wheel = new Wheel({ evaluator, audit, executor, ownerId });
+  const wheel = new Wheel(evaluator, audit);
 
   // Scan
   console.log(`[sync] Scanning source: ${sourceDir}`);
@@ -186,41 +178,23 @@ async function main() {
     return;
   }
 
-  // Spin one spoke per file
+  // Spin one spoke per file — executor travels WITH the spec
   let sealed = 0;
   let dead = 0;
 
   for (const action of actions) {
-    const spec: SpokeSpec = {
-      agentId: "file-sync-agent",
-      action: "copy-file",
-      resourceType: "file",
-      resourceId: action.relativePath,
-      payload: {
-        relativePath: action.relativePath,
-        reason: action.reason,
-        sourceHash: action.sourceHash,
-        targetHash: action.targetHash,
-      },
-      deadlineMs,
-      targetPath: join(targetDir, action.relativePath),
-    };
-
-    // Evidence for policy evaluation
-    const evidence: EvaluationInput = {
+    const result = await wheel.spin({
       principalId: ownerId,
-      principalType: "agent",
       action: "copy-file",
       resource: `file:${action.relativePath}`,
-      tags: ["write", "file-sync"],
       context: {
-        mfaPassed: true,         // Agent runs under owner session
+        mfaPassed: true,
         ownerSupervised: true,
-        riskScore: 10,           // File copy = low risk
+        riskScore: 10,
       },
-    };
-
-    const result: WheelResult = await wheel.spin(spec, evidence);
+      deadlineMs,
+      execute: async () => copyAndVerify(sourceDir, targetDir, action),
+    });
 
     if (result.phase === Phase.SEALED) {
       sealed++;
@@ -236,7 +210,6 @@ async function main() {
       );
     }
 
-    // Print receipt chain for each spoke
     console.log(`           receipts: ${result.receipts.length} phases, ` +
       `chain: ${result.receipts.map(r => r.phase).join(" → ")}`
     );

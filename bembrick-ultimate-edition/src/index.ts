@@ -66,7 +66,12 @@ async function bootstrap() {
   const audit = new AuditService({ logDir: auditDir });
   const keys = loadOrCreateKeys(keyDir);
   const signer = new Ed25519Signer(keys);
-  const sso = new GenesisSSO(jwtSecret, evaluator, audit);
+  const sso = new GenesisSSO({
+    jwtSecret,
+    tokenTtlSeconds: 3600,
+    evaluator,
+    audit,
+  });
 
   // Wheel — persistent machine. Created once, spun many times. (Charter §3.1)
   const wheel = new Wheel(evaluator, audit);
@@ -144,7 +149,14 @@ async function main() {
   // token and sign are single-operation, no lifecycle needed.
   if (cmd === "token") {
     const subject = rest[0] || ownerId;
-    process.stdout.write(sso.issueToken(subject, ["admin"]) + "\n");
+    const token = sso.issueToken({
+      subjectId: subject,
+      email: `${subject}@genesis.local`,
+      roles: ["admin"],
+      mfa: true,
+      provider: "local",
+    });
+    process.stdout.write(token + "\n");
     return;
   }
 

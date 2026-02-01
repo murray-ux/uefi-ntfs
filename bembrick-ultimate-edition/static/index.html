@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GENESIS 2.0 — Security Dashboard</title>
+<style>
+  :root { --bg: #0a0e17; --surface: #111827; --border: #1f2937; --text: #e5e7eb; --accent: #3b82f6; --ok: #22c55e; --warn: #f59e0b; --fail: #ef4444; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
+  h1 { font-size: 20px; color: var(--accent); margin-bottom: 8px; }
+  .subtitle { color: #6b7280; font-size: 12px; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 13px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .status { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+  .dot.warn { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+  .dot.fail { background: var(--fail); box-shadow: 0 0 6px var(--fail); }
+  .dot.loading { background: #6b7280; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .metric { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .metric:last-child { border-bottom: none; }
+  .metric .label { color: #9ca3af; }
+  .metric .value { color: var(--text); font-weight: bold; }
+  .endpoints { font-size: 12px; }
+  .endpoints li { list-style: none; padding: 3px 0; color: #9ca3af; }
+  .endpoints .method { color: var(--accent); font-weight: bold; min-width: 50px; display: inline-block; }
+  #error { color: var(--fail); font-size: 12px; margin-top: 8px; }
+  .refresh { background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; margin-bottom: 16px; }
+  .refresh:hover { opacity: 0.85; }
+  .footer { text-align: center; color: #4b5563; font-size: 11px; margin-top: 32px; }
+</style>
+</head>
+<body>
+  <h1>GENESIS 2.0 — SECURITY DASHBOARD</h1>
+  <div class="subtitle">Charter-governed. Audit-trailed. Citation-backed.</div>
+  <button class="refresh" onclick="refresh()">Refresh</button>
+
+  <div class="grid">
+    <div class="card">
+      <h2>System Health</h2>
+      <div class="status"><div class="dot loading" id="health-dot"></div><span id="health-status">Loading...</span></div>
+      <div id="health-metrics"></div>
+    </div>
+
+    <div class="card">
+      <h2>Policy Engine</h2>
+      <div class="status"><div class="dot loading" id="policy-dot"></div><span id="policy-status">Loading...</span></div>
+      <div id="policy-metrics"></div>
+    </div>
+
+    <div class="card">
+      <h2>Chain of Custody</h2>
+      <div class="status"><div class="dot loading" id="chain-dot"></div><span id="chain-status">Loading...</span></div>
+      <div id="chain-metrics"></div>
+    </div>
+
+    <div class="card">
+      <h2>Hardening Report</h2>
+      <div class="status"><div class="dot loading" id="harden-dot"></div><span id="harden-status">Loading...</span></div>
+      <div id="harden-metrics"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>API Endpoints</h2>
+    <ul class="endpoints">
+      <li><span class="method">GET</span>  /health — System health check</li>
+      <li><span class="method">POST</span> /evaluate — Policy decision point</li>
+      <li><span class="method">POST</span> /authenticate — JWT validation</li>
+      <li><span class="method">POST</span> /authorise — Action authorization</li>
+      <li><span class="method">POST</span> /issue-token — Issue JWT (owner)</li>
+      <li><span class="method">POST</span> /sign — Ed25519 sign data</li>
+      <li><span class="method">POST</span> /verify-signature — Verify Ed25519</li>
+      <li><span class="method">GET</span>  /audit/chain — Custody chain integrity</li>
+      <li><span class="method">POST</span> /audit/record — Record custody event</li>
+      <li><span class="method">GET</span>  /shield/health — Device health</li>
+      <li><span class="method">GET</span>  /shield/hardening — Hardening report</li>
+    </ul>
+  </div>
+
+  <div class="footer">GENESIS 2.0 — Apache-2.0</div>
+
+<script>
+function setStatus(prefix, ok, text) {
+  const dot = document.getElementById(prefix + '-dot');
+  const stat = document.getElementById(prefix + '-status');
+  dot.className = 'dot ' + (ok === null ? 'loading' : ok ? 'ok' : 'fail');
+  stat.textContent = text;
+}
+
+function renderMetrics(id, pairs) {
+  const el = document.getElementById(id);
+  el.innerHTML = pairs.map(([k,v]) =>
+    `<div class="metric"><span class="label">${k}</span><span class="value">${v}</span></div>`
+  ).join('');
+}
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function refresh() {
+  // Health
+  try {
+    const h = await fetchJSON('/health');
+    const ok = h.status === 'healthy';
+    setStatus('health', ok, h.status);
+    renderMetrics('health-metrics', [
+      ['Doctrine', h.doctrine || '-'],
+      ['Signer Key', (h.signerKeyId || '-').slice(0, 16) + '...'],
+      ['Owner', h.ownerId || '-'],
+    ]);
+  } catch(e) { setStatus('health', false, 'Unreachable'); }
+
+  // Policy — test default deny
+  try {
+    const d = await fetchJSON('/health');
+    setStatus('policy', true, 'Doctrine v' + (d.doctrine || '?'));
+    renderMetrics('policy-metrics', [
+      ['Version', d.doctrine || '-'],
+      ['Default', 'DENY (fail-closed)'],
+      ['MFA Required', 'Yes'],
+    ]);
+  } catch(e) { setStatus('policy', false, 'Error'); }
+
+  // Chain
+  try {
+    const c = await fetchJSON('/audit/chain');
+    const ok = c.valid !== false;
+    setStatus('chain', ok, ok ? 'Intact' : 'BROKEN');
+    renderMetrics('chain-metrics', [
+      ['Valid', String(c.valid)],
+      ['Records', String(c.totalRecords || 0)],
+      ['Message', c.message || '-'],
+    ]);
+  } catch(e) { setStatus('chain', false, 'Unreachable'); }
+
+  // Hardening
+  try {
+    const r = await fetchJSON('/shield/hardening');
+    const passRate = r.checks ? r.checks.filter(c => c.passed).length + '/' + r.checks.length : '-';
+    const allPass = r.checks ? r.checks.every(c => c.passed) : false;
+    setStatus('harden', allPass, allPass ? 'All Passed' : 'Issues Found');
+    renderMetrics('harden-metrics', [
+      ['Checks', passRate],
+      ['Standard', r.standard || 'CIS Benchmark'],
+    ]);
+  } catch(e) { setStatus('harden', false, 'Unreachable'); }
+}
+
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>

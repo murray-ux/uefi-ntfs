@@ -16,11 +16,16 @@
     "sourceMap": true
   },
   "include": [
+    "src/**/*.ts",
     "security/**/*.ts",
     "identity/**/*.ts",
     "legal/**/*.ts",
     "cert_master/**/*.ts",
-    "orchestration/**/*.ts"
+    "orchestration/**/*.ts",
+    "config/**/*.ts",
+    "db/**/*.ts",
+    "ai/**/*.ts",
+    "test/**/*.ts"
   ],
   "exclude": [
     "node_modules",
