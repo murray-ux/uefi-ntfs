@@ -255,6 +255,7 @@
     animation: shimmer 3s linear infinite;
   }
   @keyframes shimmer { to { transform: translateX(50%); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   .autogen-bar h2 { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
   .autogen-bar h2 .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); animation: pulse 2s infinite; }
   .autogen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
@@ -522,46 +523,68 @@
   <div class="pentagon-vis">
     <h2>Pentagon Underfloor — Room Map</h2>
     <div class="layer-row">
-      <div class="layer-label">L4 Manifold — Orchestration</div>
+      <div class="layer-label">L4 Manifold — Orchestration (9 rooms)</div>
       <div class="room-chips">
         <span class="room-chip" onclick="queryRoom('engine')"><span class="room-dot l4"></span>Engine</span>
         <span class="room-chip" onclick="queryRoom('wings')"><span class="room-dot l4"></span>Wings</span>
         <span class="room-chip" onclick="queryRoom('mods')"><span class="room-dot l4"></span>Mods</span>
         <span class="room-chip" onclick="queryRoom('exhaust')"><span class="room-dot l4"></span>Exhaust</span>
+        <span class="room-chip" onclick="queryRoom('turbo')"><span class="room-dot l4"></span>Turbo</span>
+        <span class="room-chip" onclick="queryRoom('chassis')"><span class="room-dot l4"></span>Chassis</span>
+        <span class="room-chip" onclick="queryRoom('bumper')"><span class="room-dot l4"></span>Bumper</span>
+        <span class="room-chip" onclick="queryRoom('spoiler')"><span class="room-dot l4"></span>Spoiler</span>
+        <span class="room-chip" onclick="queryRoom('wheels')"><span class="room-dot l4"></span>Wheels</span>
       </div>
     </div>
     <div class="layer-row">
-      <div class="layer-label">L3 Valve — Policy & Control</div>
+      <div class="layer-label">L3 Valve — Policy & Control (9 rooms)</div>
       <div class="room-chips">
         <span class="room-chip" onclick="queryRoom('brakes')"><span class="room-dot l3"></span>Brakes</span>
         <span class="room-chip" onclick="queryRoom('tint')"><span class="room-dot l3"></span>Tint</span>
         <span class="room-chip" onclick="queryRoom('wipers')"><span class="room-dot l3"></span>Wipers</span>
         <span class="room-chip" onclick="queryRoom('fuel')"><span class="room-dot l3"></span>Fuel</span>
+        <span class="room-chip" onclick="queryRoom('clutch')"><span class="room-dot l3"></span>Clutch</span>
+        <span class="room-chip" onclick="queryRoom('gears')"><span class="room-dot l3"></span>Gears</span>
+        <span class="room-chip" onclick="queryRoom('pedals')"><span class="room-dot l3"></span>Pedals</span>
+        <span class="room-chip" onclick="queryRoom('gauges')"><span class="room-dot l3"></span>Gauges</span>
+        <span class="room-chip" onclick="queryRoom('seatbelts')"><span class="room-dot l3"></span>Seatbelts</span>
       </div>
     </div>
     <div class="layer-row">
-      <div class="layer-label">L2 Reservoir — State & Storage</div>
+      <div class="layer-label">L2 Reservoir — State & Storage (8 rooms)</div>
       <div class="room-chips">
         <span class="room-chip" onclick="queryRoom('trunk')"><span class="room-dot l2"></span>Trunk</span>
         <span class="room-chip" onclick="queryRoom('spares')"><span class="room-dot l2"></span>Spares</span>
         <span class="room-chip" onclick="queryRoom('coolant')"><span class="room-dot l2"></span>Coolant</span>
         <span class="room-chip" onclick="queryRoom('wash')"><span class="room-dot l2"></span>Wash</span>
+        <span class="room-chip" onclick="queryRoom('tank')"><span class="room-dot l2"></span>Tank</span>
+        <span class="room-chip" onclick="queryRoom('filter')"><span class="room-dot l2"></span>Filter</span>
+        <span class="room-chip" onclick="queryRoom('jack')"><span class="room-dot l2"></span>Jack</span>
+        <span class="room-chip" onclick="queryRoom('glove')"><span class="room-dot l2"></span>Glove</span>
       </div>
     </div>
     <div class="layer-row">
-      <div class="layer-label">L1 Conduit — Messaging</div>
+      <div class="layer-label">L1 Conduit — Messaging (7 rooms)</div>
       <div class="room-chips">
         <span class="room-chip" onclick="queryRoom('flares')"><span class="room-dot l1"></span>Flares</span>
         <span class="room-chip" onclick="queryRoom('locks')"><span class="room-dot l1"></span>Locks</span>
         <span class="room-chip" onclick="queryRoom('doors')"><span class="room-dot l1"></span>Doors</span>
+        <span class="room-chip" onclick="queryRoom('horn')"><span class="room-dot l1"></span>Horn</span>
+        <span class="room-chip" onclick="queryRoom('mirrors')"><span class="room-dot l1"></span>Mirrors</span>
+        <span class="room-chip" onclick="queryRoom('antenna')"><span class="room-dot l1"></span>Antenna</span>
+        <span class="room-chip" onclick="queryRoom('relay')"><span class="room-dot l1"></span>Relay</span>
       </div>
     </div>
     <div class="layer-row">
-      <div class="layer-label">L0 Kernel — Crypto & Primitives</div>
+      <div class="layer-label">L0 Kernel — Crypto & Primitives (7 rooms)</div>
       <div class="room-chips">
         <span class="room-chip" onclick="queryRoom('thermostat')"><span class="room-dot l0"></span>Thermostat</span>
         <span class="room-chip" onclick="queryRoom('chip')"><span class="room-dot l0"></span>Chip</span>
         <span class="room-chip" onclick="queryRoom('battery')"><span class="room-dot l0"></span>Battery</span>
+        <span class="room-chip" onclick="queryRoom('clock')"><span class="room-dot l0"></span>Clock</span>
+        <span class="room-chip" onclick="queryRoom('compass')"><span class="room-dot l0"></span>Compass</span>
+        <span class="room-chip" onclick="queryRoom('fuse')"><span class="room-dot l0"></span>Fuse</span>
+        <span class="room-chip" onclick="queryRoom('spark')"><span class="room-dot l0"></span>Spark</span>
       </div>
     </div>
     <div class="room-detail" id="room-detail">
@@ -650,7 +673,7 @@ const COMMANDS = [
   { icon: 'T', label: 'Resilience Probe', action: 'dev-resilience' },
 ];
 COMMANDS.push(
-  ...['thermostat','chip','battery','flares','locks','doors','trunk','spares','coolant','wash','brakes','tint','wipers','fuel','engine','wings','mods','exhaust']
+  ...['thermostat','chip','battery','clock','compass','fuse','spark','flares','locks','doors','horn','mirrors','antenna','relay','trunk','spares','coolant','wash','tank','filter','jack','glove','brakes','tint','wipers','fuel','clutch','gears','pedals','gauges','seatbelts','engine','wings','mods','exhaust','turbo','chassis','bumper','spoiler','wheels']
     .map(r => ({ icon: r[0].toUpperCase(), label: `Room: ${r}`, action: `room:${r}` }))
 );
 

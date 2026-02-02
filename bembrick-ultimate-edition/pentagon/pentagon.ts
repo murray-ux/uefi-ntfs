@@ -44,25 +44,47 @@ import { Manifold, Step, ManifoldResult } from "./underfloor/layer4-manifold";
 import { Thermostat } from "./underfloor/L0-kernel/thermostat";
 import { Chip } from "./underfloor/L0-kernel/chip";
 import { Battery } from "./underfloor/L0-kernel/battery";
+import { Clock } from "./underfloor/L0-kernel/clock";
+import { Compass } from "./underfloor/L0-kernel/compass";
+import { Fuse } from "./underfloor/L0-kernel/fuse";
+import { Spark } from "./underfloor/L0-kernel/spark";
 // L1 Conduit rooms
 import { Flares } from "./underfloor/L1-conduit/flares";
 import { Locks } from "./underfloor/L1-conduit/locks";
 import { Doors } from "./underfloor/L1-conduit/doors";
+import { Horn } from "./underfloor/L1-conduit/horn";
+import { Mirrors } from "./underfloor/L1-conduit/mirrors";
+import { Antenna } from "./underfloor/L1-conduit/antenna";
+import { Relay } from "./underfloor/L1-conduit/relay";
 // L2 Reservoir rooms
 import { Trunk } from "./underfloor/L2-reservoir/trunk";
 import { Spares } from "./underfloor/L2-reservoir/spares";
 import { Coolant } from "./underfloor/L2-reservoir/coolant";
 import { Wash } from "./underfloor/L2-reservoir/wash";
+import { Tank } from "./underfloor/L2-reservoir/tank";
+import { Filter } from "./underfloor/L2-reservoir/filter";
+import { Jack } from "./underfloor/L2-reservoir/jack";
+import { Glove } from "./underfloor/L2-reservoir/glove";
 // L3 Valve rooms
 import { Brakes } from "./underfloor/L3-valve/brakes";
 import { Tint } from "./underfloor/L3-valve/tint";
 import { Wipers } from "./underfloor/L3-valve/wipers";
 import { Fuel } from "./underfloor/L3-valve/fuel";
+import { Clutch } from "./underfloor/L3-valve/clutch";
+import { Gears } from "./underfloor/L3-valve/gears";
+import { Pedals } from "./underfloor/L3-valve/pedals";
+import { Gauges } from "./underfloor/L3-valve/gauges";
+import { Seatbelts } from "./underfloor/L3-valve/seatbelts";
 // L4 Manifold rooms
 import { Engine } from "./underfloor/L4-manifold/engine";
 import { Wings } from "./underfloor/L4-manifold/wings";
 import { Mods } from "./underfloor/L4-manifold/mods";
 import { Exhaust } from "./underfloor/L4-manifold/exhaust";
+import { Turbo } from "./underfloor/L4-manifold/turbo";
+import { Chassis } from "./underfloor/L4-manifold/chassis";
+import { Bumper } from "./underfloor/L4-manifold/bumper";
+import { Spoiler } from "./underfloor/L4-manifold/spoiler";
+import { Wheels } from "./underfloor/L4-manifold/wheels";
 
 // ---------------------------------------------------------------------------
 // Pentagon config — the ONLY thing the consumer provides
@@ -133,24 +155,51 @@ export class Pentagon {
   private readonly ownerId: string;
 
   // ── Rooms ─────────────────────────────────────────────────────────────
+  // L0 Kernel
   private readonly thermostat: Thermostat;
   private readonly chip: Chip;
   private readonly battery: Battery;
+  private readonly clock: Clock;
+  private readonly compass: Compass;
+  private readonly fuse: Fuse;
+  private readonly spark: Spark;
+  // L1 Conduit
   private readonly flares: Flares;
   private readonly locks: Locks;
   private readonly doors: Doors;
+  private readonly horn: Horn;
+  private readonly mirrors: Mirrors;
+  private readonly antenna: Antenna;
+  private readonly relay: Relay;
+  // L2 Reservoir
   private readonly trunk: Trunk;
   private readonly spares: Spares;
   private readonly coolant: Coolant;
   private readonly wash: Wash;
+  private readonly tank: Tank;
+  private readonly filter: Filter;
+  private readonly jack: Jack;
+  private readonly glove: Glove;
+  // L3 Valve
   private readonly brakes: Brakes;
   private readonly tint: Tint;
   private readonly wipers: Wipers;
   private readonly fuel: Fuel;
+  private readonly clutch: Clutch;
+  private readonly gears: Gears;
+  private readonly pedals: Pedals;
+  private readonly gauges: Gauges;
+  private readonly seatbelts: Seatbelts;
+  // L4 Manifold
   private readonly engine: Engine;
   private readonly wings: Wings;
   private readonly mods: Mods;
   private readonly exhaust: Exhaust;
+  private readonly turbo: Turbo;
+  private readonly chassis: Chassis;
+  private readonly bumper: Bumper;
+  private readonly spoiler: Spoiler;
+  private readonly wheels: Wheels;
 
   constructor(config: PentagonConfig) {
     this.ownerId = config.ownerId;
@@ -206,25 +255,47 @@ export class Pentagon {
     this.thermostat = new Thermostat(this.kernel);
     this.chip = new Chip(this.kernel);
     this.battery = new Battery(this.kernel);
+    this.clock = new Clock(this.kernel);
+    this.compass = new Compass(this.kernel);
+    this.fuse = new Fuse(this.kernel);
+    this.spark = new Spark(this.kernel);
     // L1 Conduit rooms
     this.flares = new Flares(this.kernel, this.conduit);
     this.locks = new Locks(this.kernel);
     this.doors = new Doors(this.kernel);
+    this.horn = new Horn(this.kernel, this.conduit);
+    this.mirrors = new Mirrors(this.kernel, this.conduit);
+    this.antenna = new Antenna(this.kernel, this.conduit);
+    this.relay = new Relay(this.kernel, this.conduit);
     // L2 Reservoir rooms
     this.trunk = new Trunk(this.kernel, config.dataDir);
     this.spares = new Spares(this.kernel, config.dataDir);
     this.coolant = new Coolant(this.kernel);
     this.wash = new Wash(this.kernel);
+    this.tank = new Tank(this.kernel);
+    this.filter = new Filter(this.kernel);
+    this.jack = new Jack(this.kernel);
+    this.glove = new Glove(this.kernel);
     // L3 Valve rooms
     this.brakes = new Brakes(this.kernel);
     this.tint = new Tint(this.kernel);
     this.wipers = new Wipers(this.kernel);
     this.fuel = new Fuel(this.kernel);
+    this.clutch = new Clutch(this.kernel);
+    this.gears = new Gears(this.kernel);
+    this.pedals = new Pedals(this.kernel);
+    this.gauges = new Gauges(this.kernel);
+    this.seatbelts = new Seatbelts(this.kernel);
     // L4 Manifold rooms
     this.engine = new Engine(this.kernel);
     this.wings = new Wings(this.kernel);
     this.mods = new Mods(this.kernel);
     this.exhaust = new Exhaust(this.kernel);
+    this.turbo = new Turbo(this.kernel);
+    this.chassis = new Chassis(this.kernel);
+    this.bumper = new Bumper(this.kernel);
+    this.spoiler = new Spoiler(this.kernel);
+    this.wheels = new Wheels(this.kernel);
 
     // ── Cross-wire rooms ───────────────────────────────────────────────
     // Wipers auto-clean: flush coolant cache
@@ -319,6 +390,51 @@ export class Pentagon {
                 return this.mods.stats();
               case "exhaust":
                 return this.exhaust.snapshot();
+              // ── New rooms ────────────────────────────────
+              case "clock":
+                return this.clock.stats();
+              case "compass":
+                return this.compass.stats();
+              case "fuse":
+                return this.fuse.stats();
+              case "spark":
+                return this.spark.stats();
+              case "horn":
+                return this.horn.stats();
+              case "mirrors":
+                return this.mirrors.stats();
+              case "antenna":
+                return this.antenna.stats();
+              case "relay":
+                return this.relay.stats();
+              case "tank":
+                return this.tank.stats();
+              case "filter":
+                return this.filter.stats();
+              case "jack":
+                return this.jack.stats();
+              case "glove":
+                return this.glove.stats();
+              case "clutch":
+                return this.clutch.stats();
+              case "gears":
+                return this.gears.stats();
+              case "pedals":
+                return this.pedals.stats();
+              case "gauges":
+                return this.gauges.stats();
+              case "seatbelts":
+                return this.seatbelts.stats();
+              case "turbo":
+                return this.turbo.stats();
+              case "chassis":
+                return this.chassis.stats();
+              case "bumper":
+                return this.bumper.stats();
+              case "spoiler":
+                return this.spoiler.stats();
+              case "wheels":
+                return this.wheels.stats();
               default:
                 return { command: name, input: inp, handled: false };
             }
@@ -507,18 +623,45 @@ export class Pentagon {
         limiters: this.valve.limiterStates(),
       },
       rooms: {
+        // L0
         thermostat: this.thermostat.sweep(),
         battery: this.battery.charge(),
+        clock: this.clock.stats(),
+        compass: this.compass.stats(),
+        fuse: this.fuse.stats(),
+        spark: this.spark.stats(),
+        // L1
         flares: this.flares.stats(),
         locks: this.locks.stats(),
         doors: this.doors.stats(),
-        brakes: this.brakes.stats(),
+        horn: this.horn.stats(),
+        mirrors: this.mirrors.stats(),
+        antenna: this.antenna.stats(),
+        relay: this.relay.stats(),
+        // L2
         coolant: this.coolant.stats(),
+        tank: this.tank.stats(),
+        filter: this.filter.stats(),
+        jack: this.jack.stats(),
+        glove: this.glove.stats(),
+        // L3
+        brakes: this.brakes.stats(),
         fuel: this.fuel.gauge(),
+        clutch: this.clutch.stats(),
+        gears: this.gears.stats(),
+        pedals: this.pedals.stats(),
+        gauges: this.gauges.stats(),
+        seatbelts: this.seatbelts.stats(),
+        // L4
         engine: this.engine.stats(),
         wings: this.wings.stats(),
         mods: this.mods.stats(),
         exhaust: this.exhaust.stats(),
+        turbo: this.turbo.stats(),
+        chassis: this.chassis.stats(),
+        bumper: this.bumper.stats(),
+        spoiler: this.spoiler.stats(),
+        wheels: this.wheels.stats(),
       },
     };
   }

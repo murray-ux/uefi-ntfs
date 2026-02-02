@@ -206,11 +206,16 @@ describe("Pentagon — public surface only", () => {
 
   describe("Rooms via CMD", () => {
     const roomNames = [
-      "thermostat", "chip", "battery",
-      "flares", "locks", "doors",
-      "trunk", "spares", "coolant", "wash",
-      "brakes", "tint", "wipers", "fuel",
-      "engine", "wings", "mods", "exhaust",
+      // L0 Kernel (7)
+      "thermostat", "chip", "battery", "clock", "compass", "fuse", "spark",
+      // L1 Conduit (7)
+      "flares", "locks", "doors", "horn", "mirrors", "antenna", "relay",
+      // L2 Reservoir (8)
+      "trunk", "spares", "coolant", "wash", "tank", "filter", "jack", "glove",
+      // L3 Valve (9)
+      "brakes", "tint", "wipers", "fuel", "clutch", "gears", "pedals", "gauges", "seatbelts",
+      // L4 Manifold (9)
+      "engine", "wings", "mods", "exhaust", "turbo", "chassis", "bumper", "spoiler", "wheels",
     ];
 
     for (const room of roomNames) {
@@ -234,6 +239,10 @@ describe("Pentagon — public surface only", () => {
       assert.ok("fuel" in rooms);
       assert.ok("engine" in rooms);
       assert.ok("exhaust" in rooms);
+      assert.ok("clock" in rooms);
+      assert.ok("turbo" in rooms);
+      assert.ok("bumper" in rooms);
+      assert.ok("wheels" in rooms);
     });
   });
 });
