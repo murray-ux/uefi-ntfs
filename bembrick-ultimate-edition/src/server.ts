@@ -30,6 +30,7 @@ import { Ed25519Signer, loadOrCreateKeys } from "../identity/ed25519_signer";
 import { GenesisSSO } from "../identity/sso_master";
 import { QuantumShieldCore } from "../security/quantum_shield_core";
 import { AiOrchestrator } from "../ai/ai_orchestrator";
+import { YubiKeyBridge, createYubiKeyBridge } from "../security/yubikey_bridge";
 
 // ---------------------------------------------------------------------------
 // Config from environment
@@ -75,6 +76,23 @@ const shield = new QuantumShieldCore({
 });
 
 let custodyChain: CustodyChain | null = null;
+
+// YubiKey bridge — hardware security key integration
+const YUBIKEY_MODE = (process.env.GENESIS_YUBIKEY_MODE || "otp") as "webauthn" | "challenge-response" | "otp" | "piv";
+const YUBIKEY_RP_ID = process.env.GENESIS_YUBIKEY_RP_ID || "localhost";
+const YUBIKEY_CLIENT_ID = process.env.GENESIS_YUBIKEY_CLIENT_ID;
+const YUBIKEY_SECRET_KEY = process.env.GENESIS_YUBIKEY_SECRET_KEY;
+const YUBIKEY_HMAC_SECRET = process.env.GENESIS_YUBIKEY_HMAC_SECRET;
+
+const yubikey = createYubiKeyBridge({
+  mode: YUBIKEY_MODE,
+  rpId: YUBIKEY_RP_ID,
+  rpName: "GENESIS 2.0",
+  yubicoClientId: YUBIKEY_CLIENT_ID,
+  yubicoSecretKey: YUBIKEY_SECRET_KEY,
+  hmacSecret: YUBIKEY_HMAC_SECRET,
+});
+console.log(`[GENESIS] YubiKey bridge active (mode: ${YUBIKEY_MODE})`);
 
 // AI orchestrator — only active when an LLM API key is configured
 let aiOrchestrator: AiOrchestrator | null = null;
@@ -310,6 +328,104 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
         message: `${type} pipeline initialised with ${stages.length} stages`,
         generatedAt: new Date().toISOString(),
       });
+      return;
+    }
+
+    // YubiKey: status
+    if (url === "/yubikey/status" && method === "GET") {
+      json(res, 200, yubikey.stats());
+      return;
+    }
+
+    // YubiKey: WebAuthn registration options
+    if (url === "/yubikey/register/options" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const options = yubikey.generateRegistrationOptions(
+        body.userId || OWNER_ID,
+        body.userName || OWNER_ID,
+        body.displayName,
+      );
+      json(res, 200, options);
+      return;
+    }
+
+    // YubiKey: WebAuthn registration verify
+    if (url === "/yubikey/register/verify" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const result = yubikey.verifyRegistration(
+        body.userId || OWNER_ID,
+        body.challenge,
+        body.credentialId,
+        body.publicKey,
+        body.attestationObject,
+      );
+      json(res, 200, result);
+      return;
+    }
+
+    // YubiKey: WebAuthn authentication options
+    if (url === "/yubikey/auth/options" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const options = yubikey.generateAuthenticationOptions(body.userId || OWNER_ID);
+      if (!options) {
+        json(res, 400, { error: "No credential registered for user" });
+        return;
+      }
+      json(res, 200, options);
+      return;
+    }
+
+    // YubiKey: WebAuthn authentication verify
+    if (url === "/yubikey/auth/verify" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const result = yubikey.verifyAuthentication(
+        body.userId || OWNER_ID,
+        body.challenge,
+        body.credentialId,
+        body.signature,
+        body.authenticatorData,
+        body.clientDataJSON,
+      );
+      json(res, 200, result);
+      return;
+    }
+
+    // YubiKey: HMAC challenge-response — generate challenge
+    if (url === "/yubikey/challenge" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const challenge = yubikey.generateHmacChallenge(body.userId || OWNER_ID);
+      json(res, 200, {
+        ...challenge,
+        instruction: `Run: ykchalresp -2 ${challenge.challenge}`,
+      });
+      return;
+    }
+
+    // YubiKey: HMAC challenge-response — verify response
+    if (url === "/yubikey/challenge/verify" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const result = yubikey.verifyHmacResponse(
+        body.userId || OWNER_ID,
+        body.challenge,
+        body.response,
+      );
+      json(res, 200, result);
+      return;
+    }
+
+    // YubiKey: OTP validation
+    if (url === "/yubikey/otp" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const result = await yubikey.validateOtp(body.otp);
+      json(res, 200, result);
+      return;
+    }
+
+    // YubiKey: unified MFA verify (auto-detects mode)
+    if (url === "/yubikey/mfa" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const result = await yubikey.verifyMfa(body.userId || OWNER_ID, body);
+      json(res, 200, result);
       return;
     }
 
