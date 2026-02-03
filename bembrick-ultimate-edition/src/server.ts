@@ -31,6 +31,7 @@ import { GenesisSSO } from "../identity/sso_master";
 import { QuantumShieldCore } from "../security/quantum_shield_core";
 import { AiOrchestrator } from "../ai/ai_orchestrator";
 import { YubiKeyBridge, createYubiKeyBridge } from "../security/yubikey_bridge";
+import { NetgearBridge, createNetgearBridge } from "../network/netgear_bridge";
 
 // ---------------------------------------------------------------------------
 // Config from environment
@@ -93,6 +94,10 @@ const yubikey = createYubiKeyBridge({
   hmacSecret: YUBIKEY_HMAC_SECRET,
 });
 console.log(`[GENESIS] YubiKey bridge active (mode: ${YUBIKEY_MODE})`);
+
+// Netgear network bridge — router and NAS integration
+const netgear = createNetgearBridge();
+console.log(`[GENESIS] Netgear bridge active (router: ${process.env.GENESIS_NETGEAR_ROUTER_IP || "192.168.1.1"})`);
 
 // AI orchestrator — only active when an LLM API key is configured
 let aiOrchestrator: AiOrchestrator | null = null;
@@ -426,6 +431,90 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
       const body = JSON.parse(await readBody(req));
       const result = await yubikey.verifyMfa(body.userId || OWNER_ID, body);
       json(res, 200, result);
+      return;
+    }
+
+    // -------------------------------------------------------------------------
+    // Netgear Network Endpoints
+    // -------------------------------------------------------------------------
+
+    // Network: router status
+    if (url === "/network/status" && method === "GET") {
+      const status = await netgear.getStatus();
+      json(res, 200, status || { error: "Unable to connect to router" });
+      return;
+    }
+
+    // Network: connected devices
+    if (url === "/network/devices" && method === "GET") {
+      const devices = await netgear.getConnectedDevices();
+      json(res, 200, { devices, count: devices.length });
+      return;
+    }
+
+    // Network: traffic stats
+    if (url === "/network/traffic" && method === "GET") {
+      const stats = await netgear.getTrafficStats();
+      json(res, 200, stats || { error: "Unable to fetch traffic stats" });
+      return;
+    }
+
+    // Network: WiFi networks
+    if (url === "/network/wifi" && method === "GET") {
+      const networks = await netgear.getWifiNetworks();
+      json(res, 200, { networks });
+      return;
+    }
+
+    // Network: security status
+    if (url === "/network/security" && method === "GET") {
+      const security = await netgear.getSecurityStatus();
+      json(res, 200, security);
+      return;
+    }
+
+    // Network: reboot router (admin only)
+    if (url === "/network/reboot" && method === "POST") {
+      const success = await netgear.reboot();
+      json(res, 200, { success, message: success ? "Reboot initiated" : "Reboot failed" });
+      return;
+    }
+
+    // Network: block device (access control)
+    if (url === "/network/block" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      if (!body.mac) {
+        json(res, 400, { error: "MAC address required" });
+        return;
+      }
+      const success = await netgear.blockDevice(body.mac);
+      json(res, 200, { success, mac: body.mac, action: "blocked" });
+      return;
+    }
+
+    // Network: unblock device
+    if (url === "/network/unblock" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      if (!body.mac) {
+        json(res, 400, { error: "MAC address required" });
+        return;
+      }
+      const success = await netgear.unblockDevice(body.mac);
+      json(res, 200, { success, mac: body.mac, action: "unblocked" });
+      return;
+    }
+
+    // Network: guest WiFi control
+    if (url === "/network/guest-wifi" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const success = await netgear.setGuestWifi(body.enabled, body.ssid, body.password);
+      json(res, 200, { success, enabled: body.enabled });
+      return;
+    }
+
+    // Network: bridge stats
+    if (url === "/network/stats" && method === "GET") {
+      json(res, 200, netgear.stats());
       return;
     }
 
