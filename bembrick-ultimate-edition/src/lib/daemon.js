@@ -27,8 +27,25 @@ const DEFAULT_CONFIG = {
     errorRate: 5
   },
   enableAlerts: true,
-  logToFile: true
+  logToFile: true,
+  alertChannels: {
+    console: true,
+    webhook: process.env.ALERT_WEBHOOK_URL || null,
+    email: process.env.ALERT_EMAIL || null
+  },
+  deduplication: {
+    enabled: true,
+    windowMs: 300000 // 5 minutes
+  },
+  escalation: {
+    enabled: true,
+    criticalThreshold: 3, // Escalate after 3 critical alerts
+    escalateToWebhook: process.env.ESCALATION_WEBHOOK_URL || null
+  }
 };
+
+// Alert deduplication cache
+const alertCache = new Map();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Health Daemon Class
@@ -207,16 +224,29 @@ export class HealthDaemon extends EventEmitter {
   }
 
   /**
-   * Emit alert
+   * Emit alert with deduplication and multi-channel dispatch
    */
   alert(code, message, severity = 'warning') {
     if (!this.config.enableAlerts) return;
+
+    // Deduplication check
+    if (this.config.deduplication.enabled) {
+      const cacheKey = `${code}:${severity}`;
+      const now = Date.now();
+      const lastAlert = alertCache.get(cacheKey);
+
+      if (lastAlert && (now - lastAlert) < this.config.deduplication.windowMs) {
+        return; // Skip duplicate alert within window
+      }
+      alertCache.set(cacheKey, now);
+    }
 
     const alert = {
       code,
       message,
       severity,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      source: 'genesis-daemon'
     };
 
     this.alerts.push(alert);
@@ -226,8 +256,104 @@ export class HealthDaemon extends EventEmitter {
       this.alerts = this.alerts.slice(-100);
     }
 
+    // Count critical alerts for escalation
+    if (severity === 'critical') {
+      this.criticalCount = (this.criticalCount || 0) + 1;
+      if (this.config.escalation.enabled &&
+          this.criticalCount >= this.config.escalation.criticalThreshold) {
+        this.escalate(alert);
+        this.criticalCount = 0;
+      }
+    }
+
+    // Dispatch to channels
+    this.dispatchAlert(alert);
+
     this.emit('alert', alert);
     this.log(`ALERT [${severity.toUpperCase()}] ${code}: ${message}`, severity);
+  }
+
+  /**
+   * Dispatch alert to configured channels
+   */
+  async dispatchAlert(alert) {
+    const { alertChannels } = this.config;
+
+    // Console (always shown via emit)
+    if (alertChannels.console) {
+      const colors = { critical: '\x1b[31m', warning: '\x1b[33m', info: '\x1b[36m' };
+      console.log(`${colors[alert.severity] || ''}[ALERT] ${alert.code}: ${alert.message}\x1b[0m`);
+    }
+
+    // Webhook
+    if (alertChannels.webhook) {
+      this.sendWebhook(alertChannels.webhook, alert);
+    }
+
+    // Email (via webhook or SMTP - simplified to webhook format)
+    if (alertChannels.email) {
+      this.sendEmailAlert(alert);
+    }
+  }
+
+  /**
+   * Send webhook notification
+   */
+  async sendWebhook(url, payload) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...payload,
+          system: 'GENESIS 2.0',
+          environment: process.env.NODE_ENV || 'production'
+        }),
+        signal: AbortSignal.timeout(5000)
+      });
+
+      if (!response.ok) {
+        this.log(`Webhook failed: ${response.status}`, 'error');
+      }
+    } catch (err) {
+      this.log(`Webhook error: ${err.message}`, 'error');
+    }
+  }
+
+  /**
+   * Send email alert (via email webhook or logging)
+   */
+  async sendEmailAlert(alert) {
+    // Log for now - in production, integrate with email service
+    this.log(`EMAIL ALERT to ${this.config.alertChannels.email}: ${alert.code}`, 'info');
+
+    // If SMTP webhook is configured, use it
+    if (process.env.EMAIL_WEBHOOK_URL) {
+      await this.sendWebhook(process.env.EMAIL_WEBHOOK_URL, {
+        to: this.config.alertChannels.email,
+        subject: `[GENESIS ALERT] ${alert.severity.toUpperCase()}: ${alert.code}`,
+        body: `${alert.message}\n\nTimestamp: ${alert.timestamp}\nSource: ${alert.source}`
+      });
+    }
+  }
+
+  /**
+   * Escalate alert
+   */
+  async escalate(alert) {
+    const escalation = {
+      ...alert,
+      escalated: true,
+      escalationReason: `${this.config.escalation.criticalThreshold} critical alerts reached`,
+      escalatedAt: new Date().toISOString()
+    };
+
+    this.log(`ESCALATION: ${alert.code}`, 'critical');
+    this.emit('escalation', escalation);
+
+    if (this.config.escalation.escalateToWebhook) {
+      await this.sendWebhook(this.config.escalation.escalateToWebhook, escalation);
+    }
   }
 
   /**

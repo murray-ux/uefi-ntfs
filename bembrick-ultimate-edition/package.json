@@ -8,7 +8,8 @@
   "type": "module",
   "bin": {
     "genesis": "./src/cli/genesis.js",
-    "cert-master": "./src/cli/cert-master.js"
+    "cert-master": "./src/cli/cert-master.js",
+    "genesis-evidence": "./src/cli/evidence.js"
   },
   "scripts": {
     "genesis": "node src/cli/genesis.js",
@@ -18,7 +19,11 @@
     "pentagon": "node src/cli/genesis.js pentagon",
     "network": "node src/cli/genesis.js network",
     "ai": "node src/cli/genesis.js ai",
-    "evidence": "node src/cli/genesis.js evidence",
+    "evidence": "node src/cli/evidence.js",
+    "evidence:interactive": "node src/cli/evidence.js interactive",
+    "evidence:list": "node src/cli/evidence.js list",
+    "evidence:verify": "node src/cli/evidence.js verify",
+    "evidence:export": "node src/cli/evidence.js export",
     "daemon": "node -e \"import('./src/lib/daemon.js').then(m => m.runDaemon())\"",
     "setup": "node scripts/setup.js",
     "start": "npx tsx src/server.ts",
