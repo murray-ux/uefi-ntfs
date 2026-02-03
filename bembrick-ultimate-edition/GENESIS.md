@@ -151,6 +151,16 @@ GENESIS 2.0
 | POST | `/yubikey/challenge/verify` | Verify HMAC response |
 | POST | `/yubikey/otp` | Validate OTP |
 | POST | `/yubikey/mfa` | Unified MFA |
+| GET | `/network/status` | Router status |
+| GET | `/network/devices` | Connected devices |
+| GET | `/network/traffic` | Bandwidth stats |
+| GET | `/network/wifi` | WiFi networks |
+| GET | `/network/security` | Firewall/Armor status |
+| POST | `/network/reboot` | Reboot router |
+| POST | `/network/block` | Block device by MAC |
+| POST | `/network/unblock` | Unblock device |
+| POST | `/network/guest-wifi` | Guest WiFi control |
+| GET | `/network/stats` | Bridge diagnostics |
 
 ---
 
@@ -480,6 +490,93 @@ bembrick-ultimate-edition/
 
 ---
 
+## Network Integration (Netgear)
+
+```bash
+# Configure in .env
+GENESIS_NETGEAR_ROUTER_IP=192.168.1.1
+GENESIS_NETGEAR_ADMIN_USER=admin
+GENESIS_NETGEAR_ADMIN_PASS=your-password
+
+# Query router status
+curl http://localhost:8080/network/status
+
+# List connected devices
+curl http://localhost:8080/network/devices
+
+# Traffic stats
+curl http://localhost:8080/network/traffic
+
+# Block a device
+curl -X POST http://localhost:8080/network/block \
+  -H "Content-Type: application/json" \
+  -d '{"mac":"AA:BB:CC:DD:EE:FF"}'
+
+# Control guest WiFi
+curl -X POST http://localhost:8080/network/guest-wifi \
+  -H "Content-Type: application/json" \
+  -d '{"enabled":true,"ssid":"Guest-Network","password":"guest123"}'
+```
+
+Supports:
+- Nighthawk routers (R7000, R8000, RAX series)
+- Orbi mesh systems
+- ReadyNAS devices
+- NETGEAR Armor (if enabled)
+
+---
+
+## Owner Configuration
+
+Owner profile stored in `config/owner-profile.json`:
+
+```json
+{
+  "owner": {
+    "id": "murray@bembrick.org",
+    "name": "Murray Bembrick",
+    "role": "ADMIN",
+    "exclusiveOwner": true
+  },
+  "authorization": {
+    "role": "ADMIN",
+    "level": "exclusive",
+    "permissions": ["*"]
+  },
+  "emails": {
+    "primary": "murray@bembrick.org",
+    "all": [
+      "murray@bembrick.org",
+      "m.bembrick@icloud.com",
+      "m_bembrick@icloud.com",
+      "murraybembrick@gmail.com",
+      "murraybembrick1@gmail.com",
+      "mabembrick@outlook.com",
+      "Miet@live.com",
+      "Murray@firetechnics.com.au",
+      "Admin@alternatemaintenance.com.au"
+    ]
+  },
+  "yubikey": {
+    "model": "YubiKey 5C FIPS",
+    "serial": "31695265"
+  },
+  "domains": [
+    "bembrick.org",
+    "bembrick.com.au",
+    "bembrick.net.au",
+    "firetechnics.com.au",
+    "alternatemaintenance.com.au"
+  ],
+  "businesses": {
+    "firetechnics": { "email": "Murray@firetechnics.com.au" },
+    "alternatemaintenance": { "email": "Admin@alternatemaintenance.com.au" }
+  }
+}
+```
+
+---
+
 ## Session Summary
 
 This session added:
@@ -487,8 +584,10 @@ This session added:
 1. **22 new Pentagon rooms** (total: 40 rooms across 5 layers)
 2. **YubiKey hardware security** (4 modes: OTP, WebAuthn, Challenge-Response, PIV)
 3. **9 YubiKey API endpoints**
-4. **Bug fixes** (OODA methods inside class, unused import removed)
-5. **UI updates** (40-room map, YubiKey endpoints in explorer)
+4. **10 Netgear network endpoints** (router, devices, traffic, WiFi, security)
+5. **Owner profile configuration** (all 9 email accounts, ADMIN exclusive rights)
+6. **Bug fixes** (OODA methods inside class, unused import removed)
+7. **UI updates** (40-room map, YubiKey endpoints in explorer)
 
 ---
 
