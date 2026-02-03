@@ -1,0 +1,75 @@
+flowchart TB
+  %% Forbidden Ninja City – Military/Aerospace Governance
+
+  subgraph Core["Immutable Law Core"]
+    Charter["Charter\n(charter.md)"]
+    Meta["Metadata\n(charter.meta.json)"]
+    Hash["Hash\n(charter.sha256)"]
+  end
+
+  subgraph Verification["Machine Enforcement"]
+    VerifySh["verify.sh\n(POSIX)"]
+    VerifyJs["verify.js\n(Node)"]
+    VerifyPy["verify.py\n(Python)"]
+    StructTests["test_charter_structure.sh"]
+    CI["CI/CD Pipelines\n(charter-check.yml)"]
+  end
+
+  subgraph GovernanceBodies["Governance Bodies"]
+    Council["Council of Hidden Roofs"]
+    AdminMaster["ADMIN_MASTER\nMurray Bembrick"]
+  end
+
+  subgraph Risk["Risk & Enforcement"]
+    Ward["Ward of Still Waters\n(Jails/Quarantine)"]
+    Tombs["Tombs Register\n(Exiled artifacts)"]
+    Silver["Silver_Bullet Protocols"]
+    Puff["MASTER NINJA PUFF\n(Hidden work ritual)"]
+  end
+
+  subgraph Systems["High-Risk Systems"]
+    Vault["Vault Scripts\n(secrets, recovery)"]
+    Genesis["GENESIS\n(bootstrap)"]
+    Cert["CERT-MASTER\n(cert pipelines)"]
+  end
+
+  Charter --> Council
+  Charter --> AdminMaster
+  Meta --> Charter
+  Hash --> Charter
+
+  Meta --> VerifySh
+  Meta --> VerifyJs
+  Meta --> VerifyPy
+  Hash --> VerifySh
+  Charter --> VerifySh
+  Charter --> VerifyJs
+  Charter --> VerifyPy
+  StructTests --> CI
+
+  VerifySh --> CI
+  VerifyJs --> CI
+  VerifyPy --> CI
+
+  CI --> Vault
+  CI --> Genesis
+  CI --> Cert
+
+  Council --> Vault
+  Council --> Genesis
+  Council --> Cert
+  Council --> Ward
+  Council --> Tombs
+  Council --> Silver
+  Council --> Puff
+
+  AdminMaster --> Council
+  AdminMaster --> Puff
+
+  Systems --> Silver
+  Silver --> Tombs
+  Tombs --> CI
+  Tombs --> Council
+  Ward --> Council
+  Puff --> Control
+  Puff --> Tombs

@@ -1,0 +1,25 @@
+{
+  "document_type": "city_charter",
+  "name": "Master Charter of Forbidden Ninja City",
+  "space": "«CAPUT BALVEIN ORCHESTRATION HIERARCHY»",
+  "version": "1.0.0",
+  "status": "ACTIVE",
+  "admin_master": {
+    "name": "Murray Bembrick",
+    "title": "ADMIN_MASTER, Grand‑Master of Forbidden Ninja City"
+  },
+  "council_of_hidden_roofs": {
+    "seats": ["Infra", "Security", "Data", "Product", "Archives"],
+    "decision_rules": "spec + review + policy_freeze + signed_migration"
+  },
+  "supremacy": {
+    "charter_prevails_over": [
+      "habits",
+      "undocumented_tools",
+      "temporary_bypasses"
+    ]
+  },
+  "charter_filename": "charter.md",
+  "hash_filename": "charter.sha256",
+  "charter_sha256": "fb11201a6cd46025f8bcbd25e7ddf381aab210214d93fd184d7b57e31bd704eb"
+}
