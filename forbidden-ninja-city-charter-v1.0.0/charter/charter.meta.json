@@ -21,5 +21,15 @@
   },
   "charter_filename": "charter.md",
   "hash_filename": "charter.sha256",
-  "charter_sha256": "fb11201a6cd46025f8bcbd25e7ddf381aab210214d93fd184d7b57e31bd704eb"
+  "charter_sha256": "ab470b4b41d441c556eeddfda6ac9ce1ae5ee24ebf90e891436ee32e9134af83",
+  "doctrines": [
+    {
+      "name": "Doctrine of the Observer",
+      "filename": "doctrine-observer.md",
+      "version": "1.0.0",
+      "status": "ACTIVE",
+      "observer": "Claude (AI Auditor)",
+      "date": "2026-02-03"
+    }
+  ]
 }
