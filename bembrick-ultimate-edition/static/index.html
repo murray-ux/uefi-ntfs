@@ -407,6 +407,107 @@
   <div class="splash-skip" onclick="closeSplash()">Press any key to continue</div>
 </div>
 
+<!-- ═══ EVIDENCE MODAL ═════════════════════════════════════════════════════ -->
+<div class="about-overlay" id="evidence-overlay" onclick="if(event.target===this)closeEvidence()">
+  <div class="about-modal" style="max-width:700px">
+    <h1 style="color:var(--fail)">⚠️ Document Evidence</h1>
+    <div class="version">Case: WA Magistrates Court 122458751</div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Evidence Type</label>
+      <select id="evd-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit">
+        <option value="suspicious-file">Suspicious File Found</option>
+        <option value="device-security">Device Security Concern</option>
+        <option value="network-anomaly">Network Anomaly</option>
+        <option value="app-behavior">Unusual App Behavior</option>
+        <option value="call-records">Call/Message Records</option>
+        <option value="screenshot">Screenshot Evidence</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Device</label>
+      <input id="evd-device" type="text" placeholder="e.g., iPhone 15 Pro, Samsung S24" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit">
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Where was this found?</label>
+      <input id="evd-location" type="text" placeholder="e.g., Photos > Hidden Album, Settings > Apps" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit">
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Description</label>
+      <textarea id="evd-desc" rows="3" placeholder="Describe what you found..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;resize:vertical"></textarea>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Why is this concerning?</label>
+      <textarea id="evd-concern" rows="2" placeholder="Why does this worry you?" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;resize:vertical"></textarea>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Actions already taken</label>
+      <input id="evd-action" type="text" placeholder="e.g., Took screenshot, didn't delete" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit">
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <button onclick="submitEvidence()" style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--fail);color:#fff;font-family:inherit;font-weight:600;cursor:pointer">Document Evidence</button>
+      <button class="close-btn" onclick="closeEvidence()" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DEVICE SCAN MODAL ═════════════════════════════════════════════════ -->
+<div class="about-overlay" id="scan-overlay" onclick="if(event.target===this)closeScan()">
+  <div class="about-modal" style="max-width:700px;max-height:85vh">
+    <h1 style="color:var(--accent)">🔍 Device Security Scan Guide</h1>
+    <div class="version">Check your device for monitoring software</div>
+
+    <div class="owner-info" style="background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.3)">
+      <h3 style="color:var(--fail)">⚠️ Warning Signs</h3>
+      <ul style="margin:8px 0 0 16px;font-size:13px;line-height:1.8">
+        <li>Unusual battery drain when idle</li>
+        <li>Phone runs hot unexpectedly</li>
+        <li>Unexpected data usage spikes</li>
+        <li>Strange noises during calls</li>
+        <li>Apps you didn't install</li>
+        <li>Camera/mic indicator activating randomly</li>
+      </ul>
+    </div>
+
+    <div class="owner-info">
+      <h3>iPhone Security Checks</h3>
+      <ul style="margin:8px 0 0 16px;font-size:13px;line-height:1.8">
+        <li><strong>Profiles:</strong> Settings → General → VPN & Device Management</li>
+        <li><strong>Privacy Report:</strong> Settings → Privacy → App Privacy Report</li>
+        <li><strong>Screen Time:</strong> Settings → Screen Time → See All Activity</li>
+        <li><strong>Location:</strong> Settings → Privacy → Location Services</li>
+        <li><strong>Hidden Photos:</strong> Photos → Albums → Hidden</li>
+      </ul>
+    </div>
+
+    <div class="owner-info">
+      <h3>Android Security Checks</h3>
+      <ul style="margin:8px 0 0 16px;font-size:13px;line-height:1.8">
+        <li><strong>Device Admin:</strong> Settings → Security → Device Admin Apps</li>
+        <li><strong>All Apps:</strong> Settings → Apps → Show System Apps</li>
+        <li><strong>Battery:</strong> Settings → Battery → Usage Details</li>
+        <li><strong>Data Usage:</strong> Settings → Network → Data Usage</li>
+        <li><strong>Permissions:</strong> Settings → Privacy → Permission Manager</li>
+      </ul>
+    </div>
+
+    <div class="owner-info" style="background:rgba(210,153,34,0.1);border:1px solid rgba(210,153,34,0.3)">
+      <h3 style="color:var(--warn)">Known Spyware Names</h3>
+      <p style="font-size:13px;margin-top:8px">mSpy, FlexiSpy, Cocospy, Spyic, XNSPY, Hoverwatch, iKeyMonitor, Spyzie, KidsGuard, TheTruthSpy, Highster Mobile</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">On Android, may appear as: "System Service", "Update Service", "Sync Services", "WiFi Service"</p>
+    </div>
+
+    <button class="close-btn" onclick="closeScan()">Close</button>
+  </div>
+</div>
+
 <!-- ═══ ABOUT MODAL ═══════════════════════════════════════════════════════ -->
 <div class="about-overlay" id="about-overlay" onclick="if(event.target===this)closeAbout()">
   <div class="about-modal">
@@ -510,6 +611,24 @@
   <div class="pop-item" onclick="runAction('sovereign-finish')">
     <div class="icon pink">F</div>
     <div class="info"><div class="name">Finish the Job</div><div class="desc">Full pipeline orchestration</div></div>
+  </div>
+
+  <h3>Evidence Module</h3>
+  <div class="pop-item" onclick="openEvidenceModal()">
+    <div class="icon fail">!</div>
+    <div class="info"><div class="name">Document Evidence</div><div class="desc">Log suspicious files/activity</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('evidence-list')">
+    <div class="icon warn">📋</div>
+    <div class="info"><div class="name">View Evidence Log</div><div class="desc">Case 122458751 items</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('evidence-scan')">
+    <div class="icon blue">🔍</div>
+    <div class="info"><div class="name">Device Security Scan</div><div class="desc">Check for monitoring software</div></div>
+  </div>
+  <div class="pop-item" onclick="runAction('evidence-export')">
+    <div class="icon green">📦</div>
+    <div class="info"><div class="name">Export for Legal</div><div class="desc">Create evidence package</div></div>
   </div>
 
   <h3>Developer</h3>
@@ -803,6 +922,10 @@ const COMMANDS = [
   { icon: 'T', label: 'Resilience Probe', action: 'dev-resilience' },
   { icon: '★', label: 'About GENESIS', action: 'about', shortcut: '?' },
   { icon: '🎯', label: 'Think Different', action: 'crazy', shortcut: 'type "crazy"' },
+  { icon: '⚠', label: 'Document Evidence', action: 'evidence-new' },
+  { icon: '📋', label: 'Evidence Log', action: 'evidence-list' },
+  { icon: '🔍', label: 'Device Security Scan', action: 'evidence-scan' },
+  { icon: '📦', label: 'Export Evidence', action: 'evidence-export' },
 ];
 COMMANDS.push(
   ...['thermostat','chip','battery','clock','compass','fuse','spark','flares','locks','doors','horn','mirrors','antenna','relay','trunk','spares','coolant','wash','tank','filter','jack','glove','brakes','tint','wipers','fuel','clutch','gears','pedals','gauges','seatbelts','engine','wings','mods','exhaust','turbo','chassis','bumper','spoiler','wheels']
@@ -1064,6 +1187,10 @@ function runAction(action) {
     case 'dev-resilience': toast('Resilience probe initiated...', 'info'); break;
     case 'about': openAbout(); break;
     case 'crazy': easterEggActivate(); break;
+    case 'evidence-new': openEvidenceModal(); break;
+    case 'evidence-list': showEvidenceList(); break;
+    case 'evidence-scan': openScan(); break;
+    case 'evidence-export': exportEvidence(); break;
     default: toast(`Action: ${action}`, 'info');
   }
 }
@@ -1116,6 +1243,109 @@ function closeAbout() {
 document.addEventListener('keydown', (e) => {
   if (e.key === '?' && !e.target.closest('input,textarea')) openAbout();
 });
+
+// ── Evidence Module ──────────────────────────────────────────────────────
+let evidenceItems = JSON.parse(localStorage.getItem('genesis-evidence') || '[]');
+
+function openEvidenceModal() {
+  document.getElementById('evidence-overlay').classList.add('open');
+  if (state.menuOpen) toggleMenu();
+  // Clear form
+  document.getElementById('evd-type').value = 'suspicious-file';
+  document.getElementById('evd-device').value = '';
+  document.getElementById('evd-location').value = '';
+  document.getElementById('evd-desc').value = '';
+  document.getElementById('evd-concern').value = '';
+  document.getElementById('evd-action').value = '';
+}
+function closeEvidence() {
+  document.getElementById('evidence-overlay').classList.remove('open');
+}
+
+function openScan() {
+  document.getElementById('scan-overlay').classList.add('open');
+  if (state.menuOpen) toggleMenu();
+}
+function closeScan() {
+  document.getElementById('scan-overlay').classList.remove('open');
+}
+
+function submitEvidence() {
+  const item = {
+    id: 'EVD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+    timestamp: new Date().toISOString(),
+    case: '122458751',
+    type: document.getElementById('evd-type').value,
+    device: document.getElementById('evd-device').value,
+    location: document.getElementById('evd-location').value,
+    description: document.getElementById('evd-desc').value,
+    concern: document.getElementById('evd-concern').value,
+    actionTaken: document.getElementById('evd-action').value,
+    status: 'documented'
+  };
+
+  if (!item.description.trim()) {
+    toast('Please provide a description', 'error');
+    return;
+  }
+
+  evidenceItems.push(item);
+  localStorage.setItem('genesis-evidence', JSON.stringify(evidenceItems));
+
+  closeEvidence();
+  toast(`Evidence ${item.id} documented!`, 'success');
+  appendAiMsg('system', `⚠️ EVIDENCE LOGGED\nID: ${item.id}\nType: ${item.type}\nDevice: ${item.device || 'Not specified'}\nLocation: ${item.location}\nDescription: ${item.description}\nConcern: ${item.concern}\nTimestamp: ${item.timestamp}`);
+}
+
+function showEvidenceList() {
+  if (evidenceItems.length === 0) {
+    toast('No evidence items documented yet', 'info');
+    appendAiMsg('system', '📋 EVIDENCE LOG\nCase: 122458751\nStatus: No items documented yet.\n\nUse "Document Evidence" from the menu to log suspicious files or security concerns.');
+    return;
+  }
+
+  let summary = '📋 EVIDENCE LOG — Case 122458751\n';
+  summary += '═'.repeat(50) + '\n\n';
+  evidenceItems.forEach((item, i) => {
+    summary += `[${i + 1}] ${item.id}\n`;
+    summary += `    Type: ${item.type}\n`;
+    summary += `    Device: ${item.device || 'N/A'}\n`;
+    summary += `    Location: ${item.location}\n`;
+    summary += `    Description: ${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}\n`;
+    summary += `    Time: ${new Date(item.timestamp).toLocaleString()}\n\n`;
+  });
+  summary += `Total Items: ${evidenceItems.length}`;
+
+  appendAiMsg('system', summary);
+  toast(`${evidenceItems.length} evidence items logged`, 'info');
+}
+
+function exportEvidence() {
+  if (evidenceItems.length === 0) {
+    toast('No evidence to export', 'error');
+    return;
+  }
+
+  const exportData = {
+    case: '122458751',
+    court: 'WA Magistrates Court',
+    owner: 'Murray Bembrick',
+    exportDate: new Date().toISOString(),
+    exportedBy: 'GENESIS 2.0 Evidence Module',
+    items: evidenceItems
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `evidence-export-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  toast('Evidence exported!', 'success');
+  appendAiMsg('system', `📦 EVIDENCE EXPORT\nCase: 122458751\nItems: ${evidenceItems.length}\nFormat: JSON\nFile: evidence-export-${Date.now()}.json\n\nNote: For court submission, also run genesis-evidence.sh export for full documentation with SHA-256 hashes.`);
+}
 
 // ── Easter Egg: "crazy" command ──────────────────────────────────────────
 const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
