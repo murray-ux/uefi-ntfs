@@ -36,7 +36,7 @@
 import { Kernel } from "./underfloor/layer0-kernel";
 import { Conduit } from "./underfloor/layer1-conduit";
 import { Reservoir } from "./underfloor/layer2-reservoir";
-import { Valve, PolicyRule, ValveDecision } from "./underfloor/layer3-valve";
+import { Valve, PolicyRule } from "./underfloor/layer3-valve";
 import { Manifold, Step, ManifoldResult } from "./underfloor/layer4-manifold";
 
 // ── Room imports ──────────────────────────────────────────────────────────

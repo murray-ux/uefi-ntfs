@@ -340,7 +340,6 @@ export class Grandmaster {
       details: result as unknown as Record<string, unknown>,
     };
   }
-}
 
   // -------------------------------------------------------------------------
   // OODA Loop — Autonomous cyber-defence agent
