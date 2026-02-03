@@ -27,6 +27,22 @@ echo [92m  Mode:  USB Portable[0m
 echo [96m═══════════════════════════════════════════════════════════════[0m
 echo.
 
+:: Think Different Manifesto
+echo [93m┌───────────────────────────────────────────────────────────────┐[0m
+echo [93m│[0m                                                               [93m│[0m
+echo [93m│[0m  [97mHere's to the crazy ones.[0m                                    [93m│[0m
+echo [93m│[0m  [90mThe rebels. The troublemakers. The round pegs.[0m              [93m│[0m
+echo [93m│[0m  [90mThe ones who see things differently.[0m                        [93m│[0m
+echo [93m│[0m                                                               [93m│[0m
+echo [93m│[0m  [97mThey invent. They imagine. They heal.[0m                        [93m│[0m
+echo [93m│[0m  [97mThey explore. They create. They inspire.[0m                     [93m│[0m
+echo [93m│[0m                                                               [93m│[0m
+echo [93m│[0m  [96mWe make tools for these kinds of people.[0m                    [93m│[0m
+echo [93m│[0m                                                               [93m│[0m
+echo [93m└───────────────────────────────────────────────────────────────┘[0m
+echo.
+timeout /t 2 /nobreak >nul
+
 :: Get USB drive letter
 set "USB_DRIVE=%~d0"
 set "GENESIS_ROOT=%~dp0"

@@ -40,6 +40,25 @@ echo -e "${GREEN}  Mode:  USB Portable${NC}"
 echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}"
 echo
 
+# Think Different Manifesto
+echo -e "${YELLOW}"
+cat << 'MANIFESTO'
+┌───────────────────────────────────────────────────────────────┐
+│                                                               │
+│  Here's to the crazy ones.                                    │
+│  The rebels. The troublemakers. The round pegs.               │
+│  The ones who see things differently.                         │
+│                                                               │
+│  They invent. They imagine. They heal.                        │
+│  They explore. They create. They inspire.                     │
+│                                                               │
+│  We make tools for these kinds of people.                     │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+MANIFESTO
+echo -e "${NC}"
+sleep 2
+
 echo -e "${YELLOW}[GENESIS]${NC} USB Root: ${SCRIPT_DIR}"
 echo
 

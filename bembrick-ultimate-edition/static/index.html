@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GENESIS 2.0 — Developer Pro</title>
+<title>GENESIS 2.0 — Developer Pro | Murray Bembrick</title>
 <style>
   :root {
     --bg: #06090f; --surface: #0d1117; --surface2: #161b22; --border: #21262d;
@@ -318,9 +318,124 @@
     .autogen-grid { grid-template-columns: 1fr 1fr; }
     main { padding: 60px 12px 12px; }
   }
+
+  /* ── Splash Screen ───────────────────────────────────────────────────── */
+  .splash-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #000 0%, #0a0a0a 50%, #111 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px; text-align: center; transition: opacity 0.8s, visibility 0.8s;
+  }
+  .splash-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .splash-logo {
+    width: 80px; height: 80px; border-radius: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--purple), var(--pink));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 900; color: #fff; margin-bottom: 30px;
+    animation: logoGlow 2s ease-in-out infinite alternate;
+  }
+  @keyframes logoGlow {
+    from { box-shadow: 0 0 30px rgba(88,166,255,0.3), 0 0 60px rgba(188,140,255,0.2); }
+    to { box-shadow: 0 0 50px rgba(88,166,255,0.5), 0 0 100px rgba(247,120,186,0.3); }
+  }
+  .splash-manifesto {
+    max-width: 600px; font-size: 15px; line-height: 1.8; color: var(--muted);
+    margin-bottom: 40px; animation: fadeIn 1.5s ease-out;
+  }
+  .splash-manifesto .highlight { color: var(--text); font-weight: 500; }
+  .splash-manifesto .opening { font-size: 22px; color: var(--accent); font-weight: 600; margin-bottom: 16px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  .splash-owner {
+    font-size: 13px; color: var(--purple); margin-bottom: 20px;
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+  .splash-enter {
+    padding: 12px 40px; border-radius: 30px; border: 2px solid var(--accent);
+    background: transparent; color: var(--accent); font-family: inherit;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .splash-enter:hover { background: var(--accent); color: #fff; transform: scale(1.05); }
+  .splash-skip { color: var(--muted); font-size: 11px; margin-top: 16px; cursor: pointer; }
+  .splash-skip:hover { color: var(--text); }
+
+  /* ── About Modal ─────────────────────────────────────────────────────── */
+  .about-overlay {
+    position: fixed; inset: 0; z-index: 5000;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center; padding: 40px;
+  }
+  .about-overlay.open { display: flex; }
+  .about-modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    max-width: 640px; max-height: 80vh; overflow-y: auto; padding: 40px;
+    animation: slideUp 0.3s ease-out;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+  .about-modal h1 { font-size: 28px; margin-bottom: 8px; background: linear-gradient(90deg, var(--accent), var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .about-modal .version { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .about-modal .manifesto { line-height: 1.8; color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .about-modal .manifesto .em { color: var(--text); font-weight: 500; }
+  .about-modal .owner-info { background: var(--surface2); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+  .about-modal .owner-info h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .about-modal .owner-info p { margin: 4px 0; font-size: 13px; }
+  .about-modal .close-btn {
+    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); font-family: inherit; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .about-modal .close-btn:hover { border-color: var(--accent); }
 </style>
 </head>
 <body>
+
+<!-- ═══ SPLASH SCREEN ═════════════════════════════════════════════════════ -->
+<div class="splash-overlay" id="splash">
+  <div class="splash-logo">G</div>
+  <div class="splash-manifesto">
+    <div class="opening">Here's to the crazy ones.</div>
+    <span class="highlight">The rebels. The troublemakers.</span> The round pegs in the square holes. The ones who see things differently.<br><br>
+    They're not fond of rules. And they have no respect for the status quo.<br><br>
+    You can praise them, disagree with them, quote them, disbelieve them, glorify or vilify them. About the only thing you can't do is <span class="highlight">ignore them</span>. Because they change things.<br><br>
+    <span class="highlight">They invent. They imagine. They heal. They explore. They create. They inspire.</span><br><br>
+    They push the human race forward.<br><br>
+    Maybe they have to be crazy. How else can you stare at an empty canvas and see a work of art? Or sit in silence and hear a song that's never been written? Or gaze at a red planet and see a laboratory on wheels?<br><br>
+    <span class="highlight">We make tools for these kinds of people.</span>
+  </div>
+  <div class="splash-owner">Murray Bembrick • Sovereign Security Platform</div>
+  <button class="splash-enter" onclick="closeSplash()">Enter GENESIS</button>
+  <div class="splash-skip" onclick="closeSplash()">Press any key to continue</div>
+</div>
+
+<!-- ═══ ABOUT MODAL ═══════════════════════════════════════════════════════ -->
+<div class="about-overlay" id="about-overlay" onclick="if(event.target===this)closeAbout()">
+  <div class="about-modal">
+    <h1>GENESIS 2.0</h1>
+    <div class="version">Bembrick Ultimate Edition • v2.0.0</div>
+    <div class="manifesto">
+      <em class="em">Here's to the crazy ones.</em> The rebels. The troublemakers. The round pegs in the square holes. The ones who see things differently.<br><br>
+      They're not fond of rules. And they have no respect for the status quo.<br><br>
+      You can praise them, disagree with them, quote them, disbelieve them, glorify or vilify them. About the only thing you can't do is <em class="em">ignore them</em>. Because they change things.<br><br>
+      <em class="em">They invent. They imagine. They heal. They explore. They create. They inspire.</em><br><br>
+      They push the human race forward.<br><br>
+      Maybe they have to be crazy. How else can you stare at an empty canvas and see a work of art? Or sit in silence and hear a song that's never been written? Or gaze at a red planet and see a laboratory on wheels?<br><br>
+      <em class="em">We make tools for these kinds of people.</em>
+    </div>
+    <div class="owner-info">
+      <h3>Owner</h3>
+      <p><strong>Murray Bembrick</strong></p>
+      <p>murray@bembrick.org</p>
+      <p>YubiKey 5C FIPS (31695265)</p>
+      <p>Exclusive Admin • Australian Jurisdiction</p>
+    </div>
+    <div class="owner-info">
+      <h3>Pentagon Architecture</h3>
+      <p>5 Layers • 40 Rooms • Charter-governed</p>
+      <p>Audit-trailed • AI-assisted • YubiKey-secured</p>
+    </div>
+    <button class="close-btn" onclick="closeAbout()">Close</button>
+  </div>
+</div>
 
 <!-- ═══ TOP BAR ═══════════════════════════════════════════════════════════ -->
 <div class="topbar">
@@ -409,6 +524,17 @@
   <div class="pop-item" onclick="runAction('dev-resilience')">
     <div class="icon fail">R</div>
     <div class="info"><div class="name">Resilience Probe</div><div class="desc">Chaos testing + validation</div></div>
+  </div>
+
+  <h3>About</h3>
+  <div class="pop-item" onclick="openAbout()">
+    <div class="icon pink">★</div>
+    <div class="info"><div class="name">About GENESIS</div><div class="desc">The crazy ones manifesto</div></div>
+    <span class="kbd">?</span>
+  </div>
+  <div class="pop-item" onclick="showSplash()">
+    <div class="icon purple">G</div>
+    <div class="info"><div class="name">Show Splash</div><div class="desc">Think Different</div></div>
   </div>
 </div>
 
@@ -675,6 +801,8 @@ const COMMANDS = [
   { icon: 'F', label: 'Finish the Job', action: 'sovereign-finish' },
   { icon: 'O', label: 'OODA Cycle', action: 'dev-ooda' },
   { icon: 'T', label: 'Resilience Probe', action: 'dev-resilience' },
+  { icon: '★', label: 'About GENESIS', action: 'about', shortcut: '?' },
+  { icon: '🎯', label: 'Think Different', action: 'crazy', shortcut: 'type "crazy"' },
 ];
 COMMANDS.push(
   ...['thermostat','chip','battery','clock','compass','fuse','spark','flares','locks','doors','horn','mirrors','antenna','relay','trunk','spares','coolant','wash','tank','filter','jack','glove','brakes','tint','wipers','fuel','clutch','gears','pedals','gauges','seatbelts','engine','wings','mods','exhaust','turbo','chassis','bumper','spoiler','wheels']
@@ -934,6 +1062,8 @@ function runAction(action) {
     case 'dev-endpoints': document.getElementById('endpoint-list').scrollIntoView({behavior:'smooth'}); break;
     case 'dev-ooda': autoGen('ooda'); break;
     case 'dev-resilience': toast('Resilience probe initiated...', 'info'); break;
+    case 'about': openAbout(); break;
+    case 'crazy': easterEggActivate(); break;
     default: toast(`Action: ${action}`, 'info');
   }
 }
@@ -954,9 +1084,89 @@ async function tryEndpoint(method, path) {
   }
 }
 
+// ── Splash Screen ────────────────────────────────────────────────────────
+function closeSplash() {
+  document.getElementById('splash').classList.add('hidden');
+  localStorage.setItem('genesis-splash-seen', 'true');
+}
+function showSplash() {
+  document.getElementById('splash').classList.remove('hidden');
+  if (state.menuOpen) toggleMenu();
+}
+// Auto-close splash on any key
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('splash').classList.contains('hidden')) {
+    closeSplash();
+  }
+});
+// Skip splash if already seen today
+if (localStorage.getItem('genesis-splash-seen') === 'true') {
+  document.getElementById('splash').classList.add('hidden');
+}
+
+// ── About Modal ──────────────────────────────────────────────────────────
+function openAbout() {
+  document.getElementById('about-overlay').classList.add('open');
+  if (state.menuOpen) toggleMenu();
+}
+function closeAbout() {
+  document.getElementById('about-overlay').classList.remove('open');
+}
+// Keyboard shortcut for about
+document.addEventListener('keydown', (e) => {
+  if (e.key === '?' && !e.target.closest('input,textarea')) openAbout();
+});
+
+// ── Easter Egg: "crazy" command ──────────────────────────────────────────
+const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiPos = 0;
+const CRAZY = ['c','r','a','z','y'];
+let crazyPos = 0;
+document.addEventListener('keydown', (e) => {
+  // Konami code
+  if (e.key === KONAMI[konamiPos]) {
+    konamiPos++;
+    if (konamiPos === KONAMI.length) {
+      konamiPos = 0;
+      easterEggActivate();
+    }
+  } else {
+    konamiPos = 0;
+  }
+  // "crazy" typed anywhere
+  if (e.key.toLowerCase() === CRAZY[crazyPos]) {
+    crazyPos++;
+    if (crazyPos === CRAZY.length) {
+      crazyPos = 0;
+      easterEggActivate();
+    }
+  } else if (e.key.toLowerCase() === 'c') {
+    crazyPos = 1;
+  } else {
+    crazyPos = 0;
+  }
+});
+function easterEggActivate() {
+  toast('🎯 Here\'s to the crazy ones!', 'success');
+  showSplash();
+  // Add rainbow effect briefly
+  document.body.style.animation = 'rainbow 2s linear';
+  setTimeout(() => document.body.style.animation = '', 2000);
+}
+
 // ── Boot ─────────────────────────────────────────────────────────────────
 refreshAll();
 setInterval(refreshAll, 30000);
+
+// Add rainbow animation to stylesheet
+const rainbowStyle = document.createElement('style');
+rainbowStyle.textContent = `
+  @keyframes rainbow {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+`;
+document.head.appendChild(rainbowStyle);
 </script>
 </body>
 </html>

@@ -29,6 +29,25 @@ cat << 'BANNER'
 BANNER
 echo -e "${NC}"
 
+# Think Different Manifesto
+echo -e "${YELLOW}"
+cat << 'MANIFESTO'
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║  Here's to the crazy ones.                                                ║
+║  The rebels. The troublemakers. The round pegs in the square holes.       ║
+║  The ones who see things differently.                                     ║
+║                                                                           ║
+║  They invent. They imagine. They heal. They explore.                      ║
+║  They create. They inspire. They push the human race forward.             ║
+║                                                                           ║
+║  We make tools for these kinds of people.                                 ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+MANIFESTO
+echo -e "${NC}"
+sleep 2
+
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}  Owner: Murray Bembrick (murray@bembrick.org)${NC}"
 echo -e "${GREEN}  Mode: ${GENESIS_MODE:-live}${NC}"
