@@ -13,6 +13,7 @@
   "scripts": {
     "genesis": "node src/cli/genesis.js",
     "cert": "node src/cli/cert-master.js",
+    "connect": "node src/cli/connect.js",
     "health": "node src/cli/genesis.js health",
     "pentagon": "node src/cli/genesis.js pentagon",
     "network": "node src/cli/genesis.js network",

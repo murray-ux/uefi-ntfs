@@ -147,6 +147,65 @@ npx tsx src/index.ts resilience
 
 Every command runs through the Wheel state machine (BORN → GATED → ATTESTED → EXECUTING → SEALED).
 
+### Run via GENESIS CLI (Unified)
+
+The unified CLI provides direct access to all GENESIS subsystems:
+
+```bash
+# System health check
+npm run genesis health
+
+# Pentagon room commands
+npm run genesis pentagon list           # List all 40 rooms
+npm run genesis pentagon room spark generate  # Generate crypto key
+npm run genesis pentagon layer L0       # Show kernel layer
+
+# Network/router integration
+npm run genesis network devices         # List attached devices
+npm run genesis network traffic         # Traffic statistics
+npm run genesis network wan             # WAN connection status
+
+# AI assistant (multi-provider)
+npm run genesis ai                      # Interactive chat mode
+npm run genesis ai query "your message" # Single query
+
+# Certificate management
+npm run cert generate                   # Generate Ed25519 certificate
+npm run cert list                       # List all certificates
+
+# Evidence documentation
+npm run genesis evidence interactive    # Document evidence
+```
+
+### Test Service Connections
+
+Before using network or AI features, test your connections:
+
+```bash
+npm run connect
+```
+
+This validates:
+- Pentagon architecture initialization
+- Netgear router connectivity (if configured)
+- AI provider availability (OpenAI/Anthropic/Ollama/Offline)
+- Charter verification
+- YubiKey configuration
+
+### Run Health Daemon
+
+Continuous system monitoring with alerting:
+
+```bash
+npm run daemon
+```
+
+Optional: expose metrics endpoint:
+```bash
+DAEMON_METRICS_PORT=9090 npm run daemon
+# Then: curl http://localhost:9090/health
+```
+
 ### Run via HTTP Server
 
 ```bash
@@ -220,28 +279,20 @@ Consumer → pentagon.command("health")
 | **EXE** | `execute(action, steps, input?, pattern?)` | Pipeline, fan-out, or saga |
 | **OUT** | `output(type, artifacts)` | Bundled output with integrity hash |
 
-### 18 Rooms
+### 40 Rooms (8 per Layer)
 
-| Layer | Room | Purpose |
-|-------|------|---------|
-| L0 Kernel | **Thermostat** | System temperature across 8 zones (cpu, memory, disk, etc.) |
-| L0 Kernel | **Chip** | Crypto accelerator — AES-256-GCM, HMAC, key derivation |
-| L0 Kernel | **Battery** | Entropy pool (8KB), power budgets, charge monitoring |
-| L1 Conduit | **Flares** | Alert system — 5 severity levels, de-duplication, handlers |
-| L1 Conduit | **Locks** | Mutex, rwlock, semaphore with TTL reaping |
-| L1 Conduit | **Doors** | Layer ingress/egress, directional enforcement, lockdown |
-| L2 Reservoir | **Trunk** | Content-addressed storage — SHA-256 dedup, shard dirs |
-| L2 Reservoir | **Spares** | Snapshot management with hash-chain verification |
-| L2 Reservoir | **Coolant** | Cache eviction — LRU/LFU/TTL, pressure monitoring |
-| L2 Reservoir | **Wash** | PII sanitisation — regex rules for email, TFN, ABN, etc. |
-| L3 Valve | **Brakes** | Emergency stop — ABS (progressive), EBRAKE (instant), COAST |
-| L3 Valve | **Tint** | Data masking — CLEAR / FROSTED / BLACKOUT levels |
-| L3 Valve | **Wipers** | Periodic cleanup tasks with configurable intervals |
-| L3 Valve | **Fuel** | Resource allocation pools — compute, io, network, crypto |
-| L4 Manifold | **Engine** | Core execution — timeout, retry, concurrency control |
-| L4 Manifold | **Wings** | Horizontal scaling — round-robin, least-loaded, hash-pinned |
-| L4 Manifold | **Mods** | Plugin system — install, dispatch events, query services |
-| L4 Manifold | **Exhaust** | Output telemetry — counters, gauges, histograms |
+| Layer | Rooms | Purpose |
+|-------|-------|---------|
+| **L0 Kernel** | thermostat, chip, clock, spark, battery, fuse, ground, coil | Crypto primitives, timing, entropy, power management |
+| **L1 Conduit** | flares, locks, doors, relay, antenna, buffer, bridge, tunnel | Messaging, synchronization, routing, connectivity |
+| **L2 Reservoir** | trunk, spares, coolant, wash, glove, tank, pump, filter | State storage, caching, data sanitization |
+| **L3 Valve** | brakes, tint, wipers, fuel, gauges, gears, horn, seatbelts | Policy enforcement, access control, safety systems |
+| **L4 Manifold** | engine, wings, mods, exhaust, wheels, bumper, mirrors, chassis | Orchestration, scaling, plugins, observability |
+
+All 40 rooms are accessible via the CMD facade:
+```bash
+npm run genesis pentagon room <room-name> <action> [payload]
+```
 
 ## Sovereign Suite
 
