@@ -1,18 +1,30 @@
 {
   "name": "genesis-ultimate-edition",
   "version": "2.0.0",
-  "description": "MuzzL3d Dictionary — Hardened automation stack",
-  "author": "MuzzL3d Dictionary Contributors",
+  "description": "GENESIS 2.0 — Forbidden Ninja City Sovereign Security Platform",
+  "author": "Murray Bembrick <murray@bembrick.org>",
   "license": "Apache-2.0",
   "private": true,
+  "type": "module",
+  "bin": {
+    "genesis": "./src/cli/genesis.js",
+    "cert-master": "./src/cli/cert-master.js"
+  },
   "scripts": {
+    "genesis": "node src/cli/genesis.js",
+    "cert": "node src/cli/cert-master.js",
+    "health": "node src/cli/genesis.js health",
+    "pentagon": "node src/cli/genesis.js pentagon",
+    "network": "node src/cli/genesis.js network",
+    "ai": "node src/cli/genesis.js ai",
+    "evidence": "node src/cli/genesis.js evidence",
+    "daemon": "node -e \"import('./src/lib/daemon.js').then(m => m.runDaemon())\"",
     "setup": "node scripts/setup.js",
     "start": "npx tsx src/server.ts",
     "dev": "npx tsx watch src/server.ts",
     "gate": "npx tsx src/index.ts",
     "build": "tsc",
     "test": "node --import tsx --test test/*.test.ts",
-    "health": "npx tsx src/index.ts health",
     "harden": "npx tsx src/index.ts harden",
     "ooda": "npx tsx src/index.ts ooda",
     "verify": "./verify/full_verify.sh --verbose",
@@ -27,5 +39,8 @@
   "devDependencies": {
     "typescript": "^5.3.0",
     "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
