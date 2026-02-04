@@ -12,6 +12,22 @@ import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EventEmitter } from 'node:events';
 
+// MABUL Persistence Layer
+let mabul = null;
+async function getMabul() {
+  if (!mabul) {
+    try {
+      const { default: Mabul } = await import('../lib/mabul-persistence.js');
+      mabul = new Mabul();
+      await mabul.initialize();
+    } catch (e) {
+      console.warn('MABUL layer not available:', e.message);
+      return null;
+    }
+  }
+  return mabul;
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -483,6 +499,182 @@ const apiRoutes = {
     const alert = store.alerts.find(a => a.id === params.id);
     if (alert) alert.read = true;
     return { success: true };
+  },
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // MABUL Persistence Layer API
+  // ═════════════════════════════════════════════════════════════════════════
+
+  'GET /api/mabul/status': async () => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+    return m.status();
+  },
+
+  'GET /api/mabul/health': async () => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+    return m.health();
+  },
+
+  'GET /api/mabul/memories': async (params, body, query) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const list = await m.ark.list({
+      category: query?.category,
+      tags: query?.tags?.split(',')
+    });
+
+    return {
+      success: true,
+      count: list.length,
+      memories: list.map(r => ({
+        key: r.id,
+        category: r.category,
+        tags: r.tags,
+        timestamp: r.timestamp,
+        preview: typeof r.value === 'string' ?
+          r.value.slice(0, 200) + (r.value.length > 200 ? '...' : '') :
+          JSON.stringify(r.value).slice(0, 200)
+      }))
+    };
+  },
+
+  'POST /api/mabul/store': async (params, body) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const { key, content, category, tags } = body;
+    if (!key || !content) {
+      return { error: 'Key and content are required' };
+    }
+
+    const record = await m.store(key, content, { category, tags });
+    broadcaster.broadcast('mabul', { action: 'stored', key: record.id });
+
+    return {
+      success: true,
+      key: record.id,
+      timestamp: record.timestamp
+    };
+  },
+
+  'GET /api/mabul/retrieve/:key': async (params) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const record = await m.retrieve(params.key);
+    if (!record) return { error: 'Memory not found' };
+
+    return {
+      success: true,
+      key: record.id,
+      value: record.value,
+      category: record.category,
+      tags: record.tags,
+      timestamp: record.timestamp
+    };
+  },
+
+  'DELETE /api/mabul/delete/:key': async (params) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const deleted = await m.ark.delete(params.key);
+    broadcaster.broadcast('mabul', { action: 'deleted', key: params.key });
+
+    return { success: true, deleted };
+  },
+
+  'POST /api/mabul/search': async (params, body) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const { query, limit, threshold } = body;
+    if (!query) return { error: 'Query is required' };
+
+    const results = await m.search(query, {
+      limit: limit || 10,
+      threshold: threshold || 0.3
+    });
+
+    return {
+      success: true,
+      query,
+      count: results.length,
+      results: results.map(r => ({
+        key: r.id,
+        value: r.value,
+        category: r.category,
+        similarity: r.similarity,
+        timestamp: r.timestamp
+      }))
+    };
+  },
+
+  'POST /api/mabul/context': async (params, body) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const { query, maxItems } = body;
+    if (!query) return { error: 'Query is required' };
+
+    const context = await m.buildContext(query, { maxContext: maxItems || 10 });
+
+    return {
+      success: true,
+      ...context
+    };
+  },
+
+  'GET /api/mabul/checkpoints': async () => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const checkpoints = await m.checkpoint.listCheckpoints();
+    return { success: true, checkpoints };
+  },
+
+  'POST /api/mabul/checkpoint': async (params, body) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const checkpoint = await m.createCheckpoint(body.name);
+    broadcaster.broadcast('mabul', { action: 'checkpoint', id: checkpoint.id });
+
+    return {
+      success: true,
+      checkpoint: {
+        id: checkpoint.id,
+        timestamp: checkpoint.timestamp,
+        memoriesCount: checkpoint.memoriesCount
+      }
+    };
+  },
+
+  'POST /api/mabul/restore/:checkpointId': async (params) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const restored = await m.checkpoint.restoreCheckpoint(params.checkpointId);
+    broadcaster.broadcast('mabul', { action: 'restored', checkpointId: params.checkpointId });
+
+    return {
+      success: true,
+      restored: {
+        id: restored.id,
+        memoriesCount: restored.memoriesCount
+      }
+    };
+  },
+
+  'POST /api/mabul/recover': async (params, body) => {
+    const m = await getMabul();
+    if (!m) return { error: 'MABUL layer not initialized' };
+
+    const result = await m.recovery.recover(body.strategy || 'checkpoint');
+    return result;
   }
 };
 

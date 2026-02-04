@@ -202,7 +202,9 @@ const router = {
       workflows: 'Automation Workflows',
       metrics: 'System Metrics',
       terminal: 'Terminal',
-      settings: 'Settings'
+      settings: 'Settings',
+      mabul: 'MABUL Memory Layer',
+      maestro: 'MAESTRO Orchestration'
     };
     return titles[page] || 'GENESIS';
   },
@@ -1845,6 +1847,770 @@ const settingsPage = {
 router.register('settings', settingsPage);
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MABUL Memory Page (Persistence Layer)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const mabulPage = {
+  memories: [],
+  checkpoints: [],
+  status: null,
+  searchResults: [],
+
+  async init() {
+    await this.loadStatus();
+    await this.loadMemories();
+    await this.loadCheckpoints();
+    this.render();
+  },
+
+  async loadStatus() {
+    try {
+      this.status = await api.get('/mabul/status');
+    } catch (err) {
+      console.error('Failed to load MABUL status:', err);
+      this.status = null;
+    }
+  },
+
+  async loadMemories() {
+    try {
+      const data = await api.get('/mabul/memories');
+      this.memories = data.memories || [];
+    } catch (err) {
+      console.error('Failed to load memories:', err);
+      this.memories = [];
+    }
+  },
+
+  async loadCheckpoints() {
+    try {
+      const data = await api.get('/mabul/checkpoints');
+      this.checkpoints = data.checkpoints || [];
+    } catch (err) {
+      this.checkpoints = [];
+    }
+  },
+
+  render() {
+    const container = document.getElementById('mabul-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-4 gap-md mb-lg">
+        <div class="card stat-card">
+          <div class="stat-card-icon ${this.status?.ready ? 'success' : 'warning'}">
+            ${this.status?.ready ? '🕊️' : '⚠'}
+          </div>
+          <div class="stat-card-value">${this.status?.ready ? 'Active' : 'Offline'}</div>
+          <div class="stat-card-label">MABUL Status</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon primary">📦</div>
+          <div class="stat-card-value">${this.status?.memories || 0}</div>
+          <div class="stat-card-label">Memories</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon secondary">🔢</div>
+          <div class="stat-card-value">${this.status?.vectors || 0}</div>
+          <div class="stat-card-label">Vectors</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon warning">📍</div>
+          <div class="stat-card-value">${this.status?.checkpoints || 0}</div>
+          <div class="stat-card-label">Checkpoints</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-lg">
+        <div class="col-span-2">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🔍 Semantic Search</h4>
+              <button class="btn btn-primary btn-sm" onclick="mabulPage.openStoreModal()">+ Store Memory</button>
+            </div>
+            <div class="card-body">
+              <div class="flex gap-md mb-md">
+                <input type="text" id="mabul-search" class="form-input flex-1" placeholder="Search memories semantically...">
+                <button class="btn btn-primary" onclick="mabulPage.search()">Search</button>
+              </div>
+              <div id="mabul-results">
+                ${this.renderResults()}
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">📦 Recent Memories</h4>
+            </div>
+            <div class="card-body">
+              ${this.renderMemories()}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🏔️ ARARAT Checkpoints</h4>
+              <button class="btn btn-ghost btn-sm" onclick="mabulPage.createCheckpoint()">+ Create</button>
+            </div>
+            <div class="card-body">
+              ${this.renderCheckpoints()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">🔧 Components</h4>
+            </div>
+            <div class="card-body">
+              ${this.renderComponents()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">🫒 ZAYIT Recovery</h4>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="mabulPage.recover('checkpoint')">Restore Checkpoint</button>
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="mabulPage.recover('repair')">Repair Integrity</button>
+              <button class="btn btn-danger btn-sm w-full" onclick="mabulPage.recover('reset')">Reset (Caution)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderResults() {
+    if (this.searchResults.length === 0) {
+      return '<div class="text-muted text-center p-md">Enter a query to search</div>';
+    }
+
+    return `<ul class="list">${this.searchResults.map(r => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${r.key}</div>
+          <div class="list-item-subtitle">${typeof r.value === 'string' ? r.value.slice(0, 100) : JSON.stringify(r.value).slice(0, 100)}...</div>
+        </div>
+        <div class="flex items-center gap-sm">
+          <span class="badge badge-primary">${Math.round((r.similarity || 0) * 100)}%</span>
+          <button class="btn btn-ghost btn-icon" onclick="mabulPage.viewMemory('${r.key}')">👁️</button>
+        </div>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderMemories() {
+    if (this.memories.length === 0) {
+      return '<div class="text-muted text-center p-md">No memories stored yet</div>';
+    }
+
+    return `<ul class="list">${this.memories.slice(0, 10).map(m => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${m.key}</div>
+          <div class="list-item-subtitle">${m.preview}</div>
+        </div>
+        <div class="flex items-center gap-sm">
+          <span class="badge badge-secondary">${m.category || 'general'}</span>
+          <button class="btn btn-ghost btn-icon" onclick="mabulPage.viewMemory('${m.key}')">👁️</button>
+          <button class="btn btn-ghost btn-icon" onclick="mabulPage.deleteMemory('${m.key}')">🗑️</button>
+        </div>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderCheckpoints() {
+    if (this.checkpoints.length === 0) {
+      return '<div class="text-muted text-center p-md">No checkpoints</div>';
+    }
+
+    return `<ul class="list">${this.checkpoints.map(cp => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${cp.id}</div>
+          <div class="list-item-subtitle">${new Date(cp.timestamp).toLocaleString()}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="mabulPage.restoreCheckpoint('${cp.id}')">Restore</button>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderComponents() {
+    const components = this.status?.components || {};
+    return Object.entries(components).map(([name, status]) => `
+      <div class="flex justify-between items-center mb-sm">
+        <span class="text-sm">${name.toUpperCase()}</span>
+        <span class="badge ${status === 'active' ? 'badge-success' : status === 'encrypted' ? 'badge-primary' : 'badge-secondary'}">${status}</span>
+      </div>
+    `).join('');
+  },
+
+  async search() {
+    const query = document.getElementById('mabul-search')?.value;
+    if (!query) return;
+
+    try {
+      const data = await api.post('/mabul/search', { query, limit: 10 });
+      this.searchResults = data.results || [];
+      document.getElementById('mabul-results').innerHTML = this.renderResults();
+      toast.info('Search', `Found ${this.searchResults.length} results`);
+    } catch (err) {
+      toast.error('Error', 'Search failed');
+    }
+  },
+
+  openStoreModal() {
+    modal.open({
+      title: 'Store Memory',
+      content: `
+        <form id="memory-form">
+          <div class="form-group">
+            <label class="form-label">Key</label>
+            <input type="text" class="form-input" name="key" required placeholder="user:preference:theme">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea class="form-textarea" name="content" required placeholder="The information to remember..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category">
+              <option value="general">General</option>
+              <option value="preference">Preference</option>
+              <option value="context">Context</option>
+              <option value="fact">Fact</option>
+              <option value="code">Code</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags (comma-separated)</label>
+            <input type="text" class="form-input" name="tags" placeholder="important, user">
+          </div>
+        </form>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="mabulPage.storeMemory()">Store</button>
+      `
+    });
+  },
+
+  async storeMemory() {
+    const form = document.getElementById('memory-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data = {
+      key: formData.get('key'),
+      content: formData.get('content'),
+      category: formData.get('category'),
+      tags: formData.get('tags')?.split(',').map(t => t.trim()).filter(Boolean)
+    };
+
+    try {
+      await api.post('/mabul/store', data);
+      toast.success('Stored', 'Memory saved successfully');
+      modal.close();
+      await this.loadMemories();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to store memory');
+    }
+  },
+
+  async viewMemory(key) {
+    try {
+      const data = await api.get(`/mabul/retrieve/${encodeURIComponent(key)}`);
+      modal.open({
+        title: `Memory: ${key}`,
+        content: `
+          <div class="form-group">
+            <label class="form-label">Value</label>
+            <pre class="code-block">${typeof data.value === 'string' ? data.value : JSON.stringify(data.value, null, 2)}</pre>
+          </div>
+          <div class="grid grid-cols-2 gap-md">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <span class="badge badge-primary">${data.category}</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timestamp</label>
+              <span class="text-muted">${new Date(data.timestamp).toLocaleString()}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags</label>
+            <div class="flex gap-sm">${(data.tags || []).map(t => `<span class="badge badge-secondary">${t}</span>`).join('')}</div>
+          </div>
+        `,
+        footer: `<button class="btn btn-secondary" onclick="modal.close()">Close</button>`
+      });
+    } catch (err) {
+      toast.error('Error', 'Failed to retrieve memory');
+    }
+  },
+
+  async deleteMemory(key) {
+    if (!confirm(`Delete memory "${key}"?`)) return;
+
+    try {
+      await api.delete(`/mabul/delete/${encodeURIComponent(key)}`);
+      toast.success('Deleted', 'Memory removed');
+      await this.loadMemories();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to delete memory');
+    }
+  },
+
+  async createCheckpoint() {
+    const name = prompt('Checkpoint name (optional):');
+    try {
+      await api.post('/mabul/checkpoint', { name });
+      toast.success('Created', 'Checkpoint saved');
+      await this.loadCheckpoints();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to create checkpoint');
+    }
+  },
+
+  async restoreCheckpoint(id) {
+    if (!confirm(`Restore checkpoint "${id}"? This will overwrite current memories.`)) return;
+
+    try {
+      await api.post(`/mabul/restore/${encodeURIComponent(id)}`);
+      toast.success('Restored', 'Checkpoint restored');
+      await this.loadMemories();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to restore checkpoint');
+    }
+  },
+
+  async recover(strategy) {
+    if (strategy === 'reset' && !confirm('This will DELETE ALL memories. Are you sure?')) return;
+
+    try {
+      await api.post('/mabul/recover', { strategy });
+      toast.success('Recovery', `Recovery (${strategy}) completed`);
+      await this.init();
+    } catch (err) {
+      toast.error('Error', 'Recovery failed');
+    }
+  }
+};
+
+router.register('mabul', mabulPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAESTRO Orchestration Page (Agent Coordination)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const maestroPage = {
+  agents: [],
+  sessions: [],
+  playbooks: [],
+  activeSession: null,
+
+  async init() {
+    this.loadAgents();
+    this.loadSessions();
+    this.loadPlaybooks();
+    this.render();
+  },
+
+  loadAgents() {
+    // Pre-configured agent types
+    this.agents = [
+      { id: 'claude', name: 'Claude Code', status: 'available', icon: '🤖', color: '#7c3aed' },
+      { id: 'genesis', name: 'GENESIS AI', status: 'available', icon: '✡️', color: '#00d4ff' },
+      { id: 'security', name: 'Security Agent', status: 'available', icon: '🛡️', color: '#ef4444' },
+      { id: 'data', name: 'Data Processor', status: 'available', icon: '📊', color: '#22c55e' }
+    ];
+  },
+
+  loadSessions() {
+    // Load from local storage or initialize
+    const stored = localStorage.getItem('maestro-sessions');
+    this.sessions = stored ? JSON.parse(stored) : [];
+  },
+
+  saveSessions() {
+    localStorage.setItem('maestro-sessions', JSON.stringify(this.sessions));
+  },
+
+  loadPlaybooks() {
+    this.playbooks = [
+      {
+        id: 'pb-security-audit',
+        name: 'Security Audit',
+        description: 'Comprehensive security analysis workflow',
+        tasks: ['Scan dependencies', 'Check permissions', 'Analyze network', 'Generate report']
+      },
+      {
+        id: 'pb-code-review',
+        name: 'Code Review',
+        description: 'Automated code quality assessment',
+        tasks: ['Lint code', 'Check types', 'Run tests', 'Analyze complexity']
+      },
+      {
+        id: 'pb-data-pipeline',
+        name: 'Data Pipeline',
+        description: 'Process and transform data through multiple stages',
+        tasks: ['Ingest data', 'Validate schema', 'Transform', 'Load to storage']
+      }
+    ];
+  },
+
+  render() {
+    const container = document.getElementById('maestro-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-4 gap-md mb-lg">
+        ${this.agents.map(a => `
+          <div class="card stat-card cursor-pointer" onclick="maestroPage.selectAgent('${a.id}')">
+            <div class="stat-card-icon" style="background: ${a.color}20; color: ${a.color}">${a.icon}</div>
+            <div class="stat-card-value">${a.name}</div>
+            <div class="stat-card-label">
+              <span class="status-dot ${a.status === 'available' ? 'online' : a.status === 'busy' ? 'warning' : 'offline'}"></span>
+              ${a.status}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="grid grid-cols-3 gap-lg">
+        <div class="col-span-2">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🎭 Active Sessions</h4>
+              <button class="btn btn-primary btn-sm" onclick="maestroPage.createSession()">+ New Session</button>
+            </div>
+            <div class="card-body">
+              ${this.renderSessions()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">👥 Group Chat</h4>
+            </div>
+            <div class="card-body">
+              <div id="group-chat-messages" class="group-chat-messages" style="height: 200px; overflow-y: auto; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                <div class="text-muted text-center">Multi-agent coordination channel</div>
+              </div>
+              <div class="flex gap-md">
+                <input type="text" id="group-chat-input" class="form-input flex-1" placeholder="Message all agents...">
+                <button class="btn btn-primary" onclick="maestroPage.sendGroupMessage()">Broadcast</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📋 Playbooks</h4>
+            </div>
+            <div class="card-body">
+              ${this.renderPlaybooks()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">📊 Orchestration Stats</h4>
+            </div>
+            <div class="card-body">
+              <div class="flex justify-between mb-sm">
+                <span class="text-sm text-muted">Active Sessions</span>
+                <span class="text-sm">${this.sessions.filter(s => s.status === 'active').length}</span>
+              </div>
+              <div class="flex justify-between mb-sm">
+                <span class="text-sm text-muted">Tasks Completed</span>
+                <span class="text-sm">${this.sessions.reduce((acc, s) => acc + (s.completedTasks || 0), 0)}</span>
+              </div>
+              <div class="flex justify-between mb-sm">
+                <span class="text-sm text-muted">Agents Available</span>
+                <span class="text-sm">${this.agents.filter(a => a.status === 'available').length}/${this.agents.length}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">🔧 Quick Actions</h4>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="maestroPage.runParallel()">Run Parallel Tasks</button>
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="maestroPage.syncAgents()">Sync All Agents</button>
+              <button class="btn btn-warning btn-sm w-full" onclick="maestroPage.stopAll()">Stop All Sessions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderSessions() {
+    if (this.sessions.length === 0) {
+      return '<div class="text-muted text-center p-lg">No active sessions. Create one to start orchestrating.</div>';
+    }
+
+    return `<ul class="list">${this.sessions.map(s => `
+      <li class="list-item">
+        <div class="list-item-icon" style="background: ${this.getAgentColor(s.agentId)}20; color: ${this.getAgentColor(s.agentId)}">
+          ${this.getAgentIcon(s.agentId)}
+        </div>
+        <div class="list-item-content">
+          <div class="list-item-title">${s.name}</div>
+          <div class="list-item-subtitle">${s.task || 'Idle'}</div>
+        </div>
+        <div class="flex items-center gap-sm">
+          <span class="badge ${s.status === 'active' ? 'badge-success' : s.status === 'paused' ? 'badge-warning' : 'badge-secondary'}">${s.status}</span>
+          <button class="btn btn-ghost btn-icon" onclick="maestroPage.toggleSession('${s.id}')">${s.status === 'active' ? '⏸️' : '▶️'}</button>
+          <button class="btn btn-ghost btn-icon" onclick="maestroPage.viewSession('${s.id}')">👁️</button>
+          <button class="btn btn-ghost btn-icon" onclick="maestroPage.deleteSession('${s.id}')">🗑️</button>
+        </div>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderPlaybooks() {
+    return `<ul class="list">${this.playbooks.map(pb => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${pb.name}</div>
+          <div class="list-item-subtitle">${pb.tasks.length} tasks</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="maestroPage.runPlaybook('${pb.id}')">Run</button>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  getAgentColor(agentId) {
+    const agent = this.agents.find(a => a.id === agentId);
+    return agent?.color || '#666';
+  },
+
+  getAgentIcon(agentId) {
+    const agent = this.agents.find(a => a.id === agentId);
+    return agent?.icon || '🤖';
+  },
+
+  createSession() {
+    modal.open({
+      title: 'Create Agent Session',
+      content: `
+        <form id="session-form">
+          <div class="form-group">
+            <label class="form-label">Session Name</label>
+            <input type="text" class="form-input" name="name" required placeholder="Security Analysis">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Agent</label>
+            <select class="form-select" name="agentId" required>
+              ${this.agents.map(a => `<option value="${a.id}">${a.icon} ${a.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Initial Task</label>
+            <textarea class="form-textarea" name="task" placeholder="Describe the task for this agent..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Isolation Mode</label>
+            <select class="form-select" name="isolation">
+              <option value="shared">Shared Context</option>
+              <option value="isolated">Isolated (Git Worktree)</option>
+              <option value="sandboxed">Sandboxed</option>
+            </select>
+          </div>
+        </form>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="maestroPage.submitSession()">Create</button>
+      `
+    });
+  },
+
+  submitSession() {
+    const form = document.getElementById('session-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const session = {
+      id: `session-${Date.now()}`,
+      name: formData.get('name'),
+      agentId: formData.get('agentId'),
+      task: formData.get('task'),
+      isolation: formData.get('isolation'),
+      status: 'active',
+      created: Date.now(),
+      completedTasks: 0,
+      messages: []
+    };
+
+    this.sessions.push(session);
+    this.saveSessions();
+    modal.close();
+    toast.success('Created', `Session "${session.name}" started`);
+    this.render();
+  },
+
+  toggleSession(id) {
+    const session = this.sessions.find(s => s.id === id);
+    if (session) {
+      session.status = session.status === 'active' ? 'paused' : 'active';
+      this.saveSessions();
+      toast.info('Session', `Session ${session.status === 'active' ? 'resumed' : 'paused'}`);
+      this.render();
+    }
+  },
+
+  viewSession(id) {
+    const session = this.sessions.find(s => s.id === id);
+    if (!session) return;
+
+    modal.open({
+      title: `Session: ${session.name}`,
+      content: `
+        <div class="grid grid-cols-2 gap-md mb-md">
+          <div class="form-group">
+            <label class="form-label">Agent</label>
+            <span>${this.getAgentIcon(session.agentId)} ${this.agents.find(a => a.id === session.agentId)?.name}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <span class="badge ${session.status === 'active' ? 'badge-success' : 'badge-warning'}">${session.status}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Isolation</label>
+            <span class="badge badge-secondary">${session.isolation}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Completed Tasks</label>
+            <span>${session.completedTasks}</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Task</label>
+          <p class="text-muted">${session.task || 'No active task'}</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Send Command</label>
+          <div class="flex gap-md">
+            <input type="text" id="session-command" class="form-input flex-1" placeholder="Enter command...">
+            <button class="btn btn-primary" onclick="maestroPage.sendCommand('${id}')">Send</button>
+          </div>
+        </div>
+      `,
+      footer: `<button class="btn btn-secondary" onclick="modal.close()">Close</button>`
+    });
+  },
+
+  sendCommand(sessionId) {
+    const input = document.getElementById('session-command');
+    const command = input?.value;
+    if (!command) return;
+
+    const session = this.sessions.find(s => s.id === sessionId);
+    if (session) {
+      session.messages.push({ type: 'user', content: command, timestamp: Date.now() });
+      session.task = command;
+      this.saveSessions();
+      toast.info('Sent', 'Command sent to agent');
+    }
+  },
+
+  deleteSession(id) {
+    if (!confirm('Delete this session?')) return;
+    this.sessions = this.sessions.filter(s => s.id !== id);
+    this.saveSessions();
+    toast.success('Deleted', 'Session removed');
+    this.render();
+  },
+
+  selectAgent(agentId) {
+    const agent = this.agents.find(a => a.id === agentId);
+    if (agent) {
+      toast.info('Agent', `Selected: ${agent.name}`);
+    }
+  },
+
+  runPlaybook(playbookId) {
+    const playbook = this.playbooks.find(pb => pb.id === playbookId);
+    if (!playbook) return;
+
+    // Create a session for the playbook
+    const session = {
+      id: `session-${Date.now()}`,
+      name: `Playbook: ${playbook.name}`,
+      agentId: 'genesis',
+      task: playbook.tasks[0],
+      isolation: 'isolated',
+      status: 'active',
+      created: Date.now(),
+      completedTasks: 0,
+      playbook: playbookId,
+      remainingTasks: [...playbook.tasks]
+    };
+
+    this.sessions.push(session);
+    this.saveSessions();
+    toast.success('Playbook', `Started: ${playbook.name}`);
+    this.render();
+  },
+
+  sendGroupMessage() {
+    const input = document.getElementById('group-chat-input');
+    const message = input?.value;
+    if (!message) return;
+
+    const messagesEl = document.getElementById('group-chat-messages');
+    if (messagesEl) {
+      messagesEl.innerHTML += `
+        <div class="mb-sm">
+          <span class="text-primary">Moderator:</span>
+          <span>${message}</span>
+        </div>
+      `;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    input.value = '';
+    toast.info('Broadcast', 'Message sent to all agents');
+  },
+
+  runParallel() {
+    toast.info('Parallel', 'Running tasks in parallel across all available agents');
+  },
+
+  syncAgents() {
+    toast.info('Sync', 'Synchronizing agent states');
+  },
+
+  stopAll() {
+    this.sessions.forEach(s => s.status = 'stopped');
+    this.saveSessions();
+    toast.warning('Stopped', 'All sessions stopped');
+    this.render();
+  }
+};
+
+router.register('maestro', maestroPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Event Handlers
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1901,6 +2667,18 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('GENESIS 2.0 Dashboard initialized');
 });
 
+// MABUL SSE events
+sse.on('mabul', (data) => {
+  if (state.currentPage === 'mabul') {
+    mabulPage.init();
+  }
+  if (data.action === 'stored') {
+    toast.info('MABUL', `Memory stored: ${data.key}`);
+  } else if (data.action === 'checkpoint') {
+    toast.success('MABUL', `Checkpoint created: ${data.id}`);
+  }
+});
+
 // Export for global access
 window.router = router;
 window.toast = toast;
@@ -1914,3 +2692,5 @@ window.workflowsPage = workflowsPage;
 window.metricsPage = metricsPage;
 window.terminalPage = terminalPage;
 window.settingsPage = settingsPage;
+window.mabulPage = mabulPage;
+window.maestroPage = maestroPage;
