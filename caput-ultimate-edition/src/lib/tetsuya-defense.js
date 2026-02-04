@@ -2,6 +2,23 @@
  * TETSUYA DEFENSE & RISK MANAGEMENT SYSTEM
  * ══════════════════════════════════════════════════════════════════════════════
  *
+ * Copyright 2025 Murray Bembrick
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════
+ *
  * 鉄夜 (Tetsuya) = Iron Night — Unbreakable defense in the darkness
  *
  * Comprehensive defense system with:
@@ -16,6 +33,7 @@
  * "In the iron night, we stand vigilant. No threat unseen, no weakness unguarded."
  *
  * @module TETSUYA
+ * @author Murray Bembrick <Founder & Lead Developer>
  * @version 2.0.0
  * @license Apache-2.0
  */
