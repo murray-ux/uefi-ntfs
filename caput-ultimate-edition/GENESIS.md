@@ -470,6 +470,17 @@ caput-ultimate-edition/
 ├── ai/
 │   └── ai_orchestrator.ts
 │
+├── src/lib/                      # GENESIS 2.0 Core Modules (Biblical Names)
+│   ├── ruach-neural.js           # RUACH Neural Processing Engine
+│   ├── ohr-observability.js      # OHR Observability System
+│   ├── hadaat-decision.js        # HADAAT Decision Engine
+│   ├── keruv-security.js         # KERUV Zero-Trust Security Gateway
+│   ├── nephesh-hooks.js          # NEPHESH Claude Code Hooks
+│   ├── eben-evidence.js          # EBEN Evidence Management System
+│   ├── shinobi-security.js       # SHINOBI Ninja Security Layer
+│   ├── tetsuya-defense.js        # TETSUYA Defense & Risk Management
+│   └── viz-engine.js             # VIZ Visualization Engine
+│
 ├── legal/
 │   └── legal_automation.ts
 │
@@ -577,6 +588,80 @@ Owner profile stored in `config/owner-profile.json`:
 
 ---
 
+## GENESIS 2.0 Core Modules (Biblical Names)
+
+| Module | Hebrew | Meaning | Purpose |
+|--------|--------|---------|---------|
+| **RUACH** | רוח | Spirit/Wind | Neural Processing Engine — AI inference, embeddings |
+| **OHR** | אור | Light | Observability System — metrics, tracing, logging |
+| **HADAAT** | הדעת | Knowledge | Decision Engine — intelligent routing, policy decisions |
+| **KERUV** | כרוב | Cherubim | Zero-Trust Security Gateway — mTLS, RBAC/ABAC |
+| **NEPHESH** | נפש | Soul | Claude Code Hooks — 13-hook lifecycle integration |
+| **EBEN** | אבן | Stone | Evidence Management — court-grade vault, chain of custody |
+| **SHINOBI** | 忍び | Ninja | Security Layer — hidden admin, shadow protection |
+| **TETSUYA** | 鉄夜 | Iron Night | Defense & Risk Management — AI agents, shockwave mitigation |
+| **VIZ** | — | Visualize | Visualization Engine — dashboards, real-time displays |
+
+### EBEN Evidence Vault (Admin-Only)
+
+```javascript
+import { Eben } from './src/lib/eben-evidence.js';
+
+const eben = new Eben({ vaultPath: './data/evidence' });
+
+// Store court-grade evidence
+const evidence = await eben.store({
+  caseId: 'CASE-2025-001',
+  type: 'document',
+  content: buffer,
+  metadata: { source: 'discovery', classification: 'confidential' }
+});
+
+// Automatic chain of custody
+const chain = await eben.getChainOfCustody(evidence.id);
+
+// Australian PII redaction
+const redacted = eben.redactPII(document, ['medicare', 'tfn', 'addresses']);
+```
+
+### SHINOBI Shadow Access
+
+```javascript
+import { Shinobi } from './src/lib/shinobi-security.js';
+
+const shinobi = new Shinobi({ mode: 'stealth' });
+
+// Hidden gateway (Konami code: ↑↑↓↓←→←→BA)
+shinobi.activateShadowGateway(secretKnockSequence);
+
+// Access levels: NONE → GUEST → USER → TRUSTED → OPERATOR → ADMIN → SHADOW_ADMIN → SHOGUN
+const access = shinobi.checkAccess(identity, 'SHADOW_ADMIN');
+```
+
+### TETSUYA Risk Management
+
+```javascript
+import { Tetsuya } from './src/lib/tetsuya-defense.js';
+
+const tetsuya = new Tetsuya();
+
+// AI Assessment Agent
+const assessment = await tetsuya.assessRisk({
+  component: 'database-cluster',
+  metrics: currentMetrics
+});
+
+// Repair Agent dispatch
+if (assessment.riskLevel > 0.7) {
+  await tetsuya.dispatchRepairAgent(assessment.componentId);
+}
+
+// Shockwave Mitigation
+tetsuya.activateMitigationNode('cascade-prevention');
+```
+
+---
+
 ## Session Summary
 
 This session added:
@@ -591,4 +676,4 @@ This session added:
 
 ---
 
-Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
+Copyright (c) 2025 Murray Bembrick — Founder & Lead Developer — Apache-2.0
