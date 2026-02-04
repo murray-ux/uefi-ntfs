@@ -1474,7 +1474,7 @@ const terminalPage = {
         await this.handleConfig(args);
         break;
       case 'whoami':
-        this.addLine('output', 'ADMIN_MASTER (Murray Bembrick)');
+        this.addLine('output', 'ADMIN_MASTER');
         this.addLine('output', 'Case: WA Magistrates Court 122458751');
         break;
       case 'version':

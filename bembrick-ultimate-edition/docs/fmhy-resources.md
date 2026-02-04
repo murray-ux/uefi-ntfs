@@ -610,5 +610,5 @@ Source: [uasoft-indonesia/badaso](https://github.com/uasoft-indonesia/badaso)
 
 *GENESIS 2.0 — Forbidden Ninja City Sovereign Security Platform*
 *Curated from FreeMediaHeckYeah (FMHY) and Awesome collections*
-*WA Magistrates Court Case 122458751*
+*Sovereign Security Platform*
 *Last updated: 2026-02-04*
