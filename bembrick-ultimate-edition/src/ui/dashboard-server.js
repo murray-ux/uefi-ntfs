@@ -28,6 +28,55 @@ async function getMabul() {
   return mabul;
 }
 
+// EBEN Evidence Management (Protected by SHINOBI)
+let eben = null;
+async function getEben() {
+  if (!eben) {
+    try {
+      const { default: Eben } = await import('../lib/eben-evidence.js');
+      eben = new Eben();
+    } catch (e) {
+      console.warn('EBEN vault not available:', e.message);
+      return null;
+    }
+  }
+  return eben;
+}
+
+// SHINOBI Security Layer
+let shinobi = null;
+async function getShinobi() {
+  if (!shinobi) {
+    try {
+      const { default: Shinobi } = await import('../lib/shinobi-security.js');
+      shinobi = new Shinobi();
+
+      // Protect EBEN with SHINOBI
+      const e = await getEben();
+      if (e) shinobi.protect(e);
+    } catch (e) {
+      console.warn('SHINOBI security not available:', e.message);
+      return null;
+    }
+  }
+  return shinobi;
+}
+
+// TETSUYA Defense & Risk Management
+let tetsuya = null;
+async function getTetsuya() {
+  if (!tetsuya) {
+    try {
+      const { default: Tetsuya } = await import('../lib/tetsuya-defense.js');
+      tetsuya = new Tetsuya({ autoCreateAgents: true });
+    } catch (e) {
+      console.warn('TETSUYA defense not available:', e.message);
+      return null;
+    }
+  }
+  return tetsuya;
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -675,6 +724,220 @@ const apiRoutes = {
 
     const result = await m.recovery.recover(body.strategy || 'checkpoint');
     return result;
+  },
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // EBEN Evidence Management API (Protected by SHINOBI)
+  // ═════════════════════════════════════════════════════════════════════════
+
+  'GET /api/eben/status': async () => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+    return eben.status();
+  },
+
+  'POST /api/eben/unlock': async (params, body) => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+
+    try {
+      const keyId = eben.unlock(body.passphrase);
+      return { success: true, keyId };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  'POST /api/eben/lock': async () => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+    eben.lock();
+    return { success: true };
+  },
+
+  'POST /api/eben/ingest': async (params, body) => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+
+    try {
+      const evidence = await eben.ingestEvidence(body.source, body.content, body.metadata);
+      return { success: true, evidence: evidence.toMetadata() };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  'GET /api/eben/evidence/:id': async (params) => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+
+    try {
+      const result = await eben.retrieveEvidence(params.id, { includeContent: false });
+      return { success: true, evidence: result.evidence };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  'POST /api/eben/search': async (params, body) => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+
+    const results = eben.search(body.query, body.options || {});
+    return {
+      success: true,
+      query: body.query,
+      count: results.length,
+      results: results.map(e => e.toMetadata())
+    };
+  },
+
+  'POST /api/eben/case': async (params, body) => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+
+    const legalCase = eben.createCase(body);
+    return { success: true, case: legalCase };
+  },
+
+  'GET /api/eben/audit': async () => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+
+    return {
+      success: true,
+      verification: eben.audit.verify(),
+      entries: eben.audit.entries.slice(-50)
+    };
+  },
+
+  'GET /api/eben/integrity': async () => {
+    const eben = await getEben();
+    if (!eben) return { error: 'EBEN vault not initialized' };
+
+    return eben.verifyAllIntegrity();
+  },
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // SHINOBI Security API
+  // ═════════════════════════════════════════════════════════════════════════
+
+  'GET /api/shinobi/status': async () => {
+    const shinobi = await getShinobi();
+    if (!shinobi) return { error: 'SHINOBI not initialized' };
+    return shinobi.status();
+  },
+
+  'POST /api/shinobi/authenticate': async (params, body) => {
+    const shinobi = await getShinobi();
+    if (!shinobi) return { error: 'SHINOBI not initialized' };
+
+    const verified = shinobi.verifyAdminToken(body.token);
+    if (verified) {
+      return { success: true, sessionToken: `session-${Date.now()}` };
+    }
+    return { success: false, error: 'Invalid token' };
+  },
+
+  'POST /api/shinobi/knock': async (params, body) => {
+    const shinobi = await getShinobi();
+    if (!shinobi) return { error: 'SHINOBI not initialized' };
+
+    shinobi.knock(body.signal);
+    return { success: true };
+  },
+
+  'POST /api/shinobi/stealth': async (params, body) => {
+    const shinobi = await getShinobi();
+    if (!shinobi) return { error: 'SHINOBI not initialized' };
+
+    if (body.enter) {
+      shinobi.enterStealth(body.level);
+    } else {
+      shinobi.exitStealth();
+    }
+    return { success: true, stealthMode: shinobi.stealthMode };
+  },
+
+  'GET /api/shinobi/threats': async () => {
+    const shinobi = await getShinobi();
+    if (!shinobi) return { error: 'SHINOBI not initialized' };
+
+    return shinobi.monitor.getThreatStatus();
+  },
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // TETSUYA Defense & Risk Management API
+  // ═════════════════════════════════════════════════════════════════════════
+
+  'GET /api/tetsuya/status': async () => {
+    const tetsuya = await getTetsuya();
+    if (!tetsuya) return { error: 'TETSUYA not initialized' };
+    return tetsuya.status();
+  },
+
+  'POST /api/tetsuya/assess': async (params, body) => {
+    const tetsuya = await getTetsuya();
+    if (!tetsuya) return { error: 'TETSUYA not initialized' };
+
+    const assessment = await tetsuya.assessRisk(body.context || {});
+    return { success: true, assessment };
+  },
+
+  'POST /api/tetsuya/mitigate': async (params, body) => {
+    const tetsuya = await getTetsuya();
+    if (!tetsuya) return { error: 'TETSUYA not initialized' };
+
+    const result = await tetsuya.mitigateShockwave(
+      body.source,
+      body.magnitude,
+      body.type
+    );
+    return { success: true, result };
+  },
+
+  'POST /api/tetsuya/repair': async (params, body) => {
+    const tetsuya = await getTetsuya();
+    if (!tetsuya) return { error: 'TETSUYA not initialized' };
+
+    const result = await tetsuya.dispatchRepair(
+      body.target,
+      body.issue,
+      body.priority
+    );
+    return { success: true, result };
+  },
+
+  'POST /api/tetsuya/protocol': async (params, body) => {
+    const tetsuya = await getTetsuya();
+    if (!tetsuya) return { error: 'TETSUYA not initialized' };
+
+    if (body.activate) {
+      tetsuya.activateProtocol(body.protocol);
+    } else {
+      tetsuya.deactivateProtocol(body.protocol);
+    }
+    return { success: true, activeProtocols: Array.from(tetsuya.activeProtocols) };
+  },
+
+  'GET /api/tetsuya/agents': async () => {
+    const tetsuya = await getTetsuya();
+    if (!tetsuya) return { error: 'TETSUYA not initialized' };
+
+    const agents = {};
+    for (const [id, agent] of tetsuya.agents) {
+      agents[id] = agent.status();
+    }
+    return { success: true, agents };
+  },
+
+  'GET /api/tetsuya/risk-prediction': async (params, body, query) => {
+    const tetsuya = await getTetsuya();
+    if (!tetsuya) return { error: 'TETSUYA not initialized' };
+
+    const horizon = parseInt(query?.horizon) || 24;
+    const prediction = tetsuya.riskEngine.predictRisk(horizon);
+    return { success: true, prediction };
   }
 };
 
