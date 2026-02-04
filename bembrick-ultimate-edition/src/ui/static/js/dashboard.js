@@ -443,19 +443,19 @@ router.register('dashboard', dashboardPage);
 
 const pentagonPage = {
   layers: [
-    { id: 'kernel', name: 'Kernel', color: '#ef4444', icon: '⚙️' },
-    { id: 'conduit', name: 'Conduit', color: '#f59e0b', icon: '🔗' },
-    { id: 'reservoir', name: 'Reservoir', color: '#22c55e', icon: '💾' },
-    { id: 'valve', name: 'Valve', color: '#00d4ff', icon: '🔒' },
-    { id: 'manifold', name: 'Manifold', color: '#7c3aed', icon: '📡' }
+    { id: 'bereshit', name: 'BERESHIT', subtitle: 'Creation', color: '#ef4444', icon: '✡️' },
+    { id: 'eden', name: 'EDEN', subtitle: 'Garden', color: '#f59e0b', icon: '🌳' },
+    { id: 'mabul', name: 'MABUL', subtitle: 'Flood', color: '#22c55e', icon: '🕊️' },
+    { id: 'brit', name: 'BRIT', subtitle: 'Covenant', color: '#00d4ff', icon: '📜' },
+    { id: 'yetziah', name: 'YETZIAH', subtitle: 'Exodus', color: '#7c3aed', icon: '🔥' }
   ],
 
   rooms: {
-    kernel: ['Core', 'Process', 'Memory', 'Scheduler', 'Interrupt', 'Driver', 'Syscall', 'Timer'],
-    conduit: ['Socket', 'Pipe', 'Queue', 'Signal', 'Event', 'Stream', 'Buffer', 'Channel'],
-    reservoir: ['Cache', 'Store', 'Index', 'Archive', 'Ledger', 'Vault', 'Registry', 'Journal'],
-    valve: ['Auth', 'Crypto', 'Guard', 'Filter', 'Sanitize', 'Verify', 'Token', 'ACL'],
-    manifold: ['Router', 'Gateway', 'Proxy', 'Load', 'DNS', 'CDN', 'Edge', 'Mesh']
+    bereshit: ['TOHU', 'BOHU', 'RUACH', 'MAYIM', 'SHAMAYIM', 'ERETZ', 'OHR', 'CHOSHEK'],
+    eden: ['GAN', 'PISHON', 'GIHON', 'CHIDDEKEL', 'PERATH', 'ETZHAIM', 'HADAAT', 'KERUV'],
+    mabul: ['TEBAH', 'GOPHER', 'KOFER', 'TZOHAR', 'ARARAT', 'YONAH', 'ZAYIT', 'KESHET'],
+    brit: ['OT', 'MILAH', 'DAM', 'MIZBEACH', 'OLAH', 'MINCHA', 'SHELEM', 'CHATAT'],
+    yetziah: ['GOSHEN', 'MITZRAYIM', 'SINAI', 'HOREB', 'PESACH', 'MATZAH', 'MAROR', 'ELIM']
   },
 
   async init() {
@@ -561,59 +561,59 @@ const pentagonPage = {
 
   getRoomDescription(layer, name) {
     const descriptions = {
-      kernel: {
-        Core: 'Central processing unit and execution engine',
-        Process: 'Process management and lifecycle control',
-        Memory: 'Memory allocation and garbage collection',
-        Scheduler: 'Task scheduling and priority management',
-        Interrupt: 'Interrupt handling and event dispatch',
-        Driver: 'Hardware abstraction and device drivers',
-        Syscall: 'System call interface and kernel boundary',
-        Timer: 'Time management and scheduling triggers'
+      bereshit: {
+        TOHU: 'Formless void — raw input processing and initialization',
+        BOHU: 'Empty state — null handling and default values',
+        RUACH: 'Spirit/breath — process lifecycle and execution flow',
+        MAYIM: 'Waters — data streams and flow control',
+        SHAMAYIM: 'Heavens — high-level orchestration and scheduling',
+        ERETZ: 'Earth — grounded state management and persistence',
+        OHR: 'Light — logging, monitoring, and visibility',
+        CHOSHEK: 'Darkness — error handling and exception management'
       },
-      conduit: {
-        Socket: 'Network socket management and connections',
-        Pipe: 'Inter-process communication channels',
-        Queue: 'Message queuing and async processing',
-        Signal: 'Signal handling and notifications',
-        Event: 'Event loop and async I/O management',
-        Stream: 'Data streaming and flow control',
-        Buffer: 'Data buffering and memory pools',
-        Channel: 'Bidirectional communication channels'
+      eden: {
+        GAN: 'Garden — protected execution environment',
+        PISHON: 'First river — primary data channel',
+        GIHON: 'Second river — secondary data channel',
+        CHIDDEKEL: 'Tigris — rapid stream processing',
+        PERATH: 'Euphrates — bulk data transfer',
+        ETZHAIM: 'Tree of Life — core system vitality and health',
+        HADAAT: 'Tree of Knowledge — intelligence and decision engine',
+        KERUV: 'Cherubim — guardian and access control'
       },
-      reservoir: {
-        Cache: 'High-speed data caching layer',
-        Store: 'Persistent key-value storage',
-        Index: 'Search indexing and retrieval',
-        Archive: 'Long-term data archival',
-        Ledger: 'Immutable transaction log',
-        Vault: 'Encrypted secure storage',
-        Registry: 'Configuration and service registry',
-        Journal: 'Write-ahead logging and recovery'
+      mabul: {
+        TEBAH: 'Ark — secure container and isolation',
+        GOPHER: 'Wood — structural framework and scaffolding',
+        KOFER: 'Pitch — sealing and encryption layer',
+        TZOHAR: 'Window — monitoring and observation port',
+        ARARAT: 'Mountain — stable anchor and checkpoint',
+        YONAH: 'Dove — probe and health check messenger',
+        ZAYIT: 'Olive — peace signal and graceful recovery',
+        KESHET: 'Rainbow — covenant verification and trust anchor'
       },
-      valve: {
-        Auth: 'Authentication and identity verification',
-        Crypto: 'Cryptographic operations and key management',
-        Guard: 'Access control and permission enforcement',
-        Filter: 'Input filtering and validation',
-        Sanitize: 'Data sanitization and cleaning',
-        Verify: 'Signature and integrity verification',
-        Token: 'Token management and JWT handling',
-        ACL: 'Access control lists and policies'
+      brit: {
+        OT: 'Sign — authentication tokens and signatures',
+        MILAH: 'Seal — cryptographic binding and commitment',
+        DAM: 'Blood — critical path and vital operations',
+        MIZBEACH: 'Altar — sacrifice queue and resource allocation',
+        OLAH: 'Burnt offering — complete data transformation',
+        MINCHA: 'Grain offering — partial updates and patches',
+        SHELEM: 'Peace offering — reconciliation and sync',
+        CHATAT: 'Sin offering — error correction and rollback'
       },
-      manifold: {
-        Router: 'Request routing and dispatch',
-        Gateway: 'API gateway and external interface',
-        Proxy: 'Reverse proxy and load distribution',
-        Load: 'Load balancing and health checks',
-        DNS: 'DNS resolution and service discovery',
-        CDN: 'Content delivery and edge caching',
-        Edge: 'Edge computing and local processing',
-        Mesh: 'Service mesh and inter-service communication'
+      yetziah: {
+        GOSHEN: 'Land of light — safe zone and trusted network',
+        MITZRAYIM: 'Narrow place — rate limiting and throttling',
+        SINAI: 'Thorn mountain — law enforcement and validation',
+        HOREB: 'Desolation — quarantine and isolation zone',
+        PESACH: 'Passover — bypass and fast-path routing',
+        MATZAH: 'Unleavened — minimal payload and compression',
+        MAROR: 'Bitter herbs — alerting and warning system',
+        ELIM: 'Oasis — cache refresh and resource pool'
       }
     };
 
-    return descriptions[layer]?.[name] || 'Pentagon subsystem component';
+    return descriptions[layer]?.[name] || 'GENESIS subsystem vector';
   },
 
   async inspectRoom(roomId) {

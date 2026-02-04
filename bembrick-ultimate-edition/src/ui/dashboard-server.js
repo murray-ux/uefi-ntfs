@@ -211,39 +211,44 @@ setInterval(() => {
 
 const PENTAGON_LAYERS = [
   {
-    id: 'kernel',
-    name: 'Kernel',
+    id: 'bereshit',
+    name: 'BERESHIT',
+    subtitle: 'Creation Layer',
     color: '#ef4444',
-    icon: '⚙️',
-    rooms: ['Core', 'Process', 'Memory', 'Scheduler', 'Interrupt', 'Driver', 'Syscall', 'Timer']
+    icon: '✡️',
+    rooms: ['TOHU', 'BOHU', 'RUACH', 'MAYIM', 'SHAMAYIM', 'ERETZ', 'OHR', 'CHOSHEK']
   },
   {
-    id: 'conduit',
-    name: 'Conduit',
+    id: 'eden',
+    name: 'EDEN',
+    subtitle: 'Garden Layer',
     color: '#f59e0b',
-    icon: '🔗',
-    rooms: ['Socket', 'Pipe', 'Queue', 'Signal', 'Event', 'Stream', 'Buffer', 'Channel']
+    icon: '🌳',
+    rooms: ['GAN', 'PISHON', 'GIHON', 'CHIDDEKEL', 'PERATH', 'ETZHAIM', 'HADAAT', 'KERUV']
   },
   {
-    id: 'reservoir',
-    name: 'Reservoir',
+    id: 'mabul',
+    name: 'MABUL',
+    subtitle: 'Flood Layer',
     color: '#22c55e',
-    icon: '💾',
-    rooms: ['Cache', 'Store', 'Index', 'Archive', 'Ledger', 'Vault', 'Registry', 'Journal']
+    icon: '🕊️',
+    rooms: ['TEBAH', 'GOPHER', 'KOFER', 'TZOHAR', 'ARARAT', 'YONAH', 'ZAYIT', 'KESHET']
   },
   {
-    id: 'valve',
-    name: 'Valve',
+    id: 'brit',
+    name: 'BRIT',
+    subtitle: 'Covenant Layer',
     color: '#00d4ff',
-    icon: '🔒',
-    rooms: ['Auth', 'Crypto', 'Guard', 'Filter', 'Sanitize', 'Verify', 'Token', 'ACL']
+    icon: '📜',
+    rooms: ['OT', 'MILAH', 'DAM', 'MIZBEACH', 'OLAH', 'MINCHA', 'SHELEM', 'CHATAT']
   },
   {
-    id: 'manifold',
-    name: 'Manifold',
+    id: 'yetziah',
+    name: 'YETZIAH',
+    subtitle: 'Exodus Layer',
     color: '#7c3aed',
-    icon: '📡',
-    rooms: ['Router', 'Gateway', 'Proxy', 'Load', 'DNS', 'CDN', 'Edge', 'Mesh']
+    icon: '🔥',
+    rooms: ['GOSHEN', 'MITZRAYIM', 'SINAI', 'HOREB', 'PESACH', 'MATZAH', 'MAROR', 'ELIM']
   }
 ];
 
