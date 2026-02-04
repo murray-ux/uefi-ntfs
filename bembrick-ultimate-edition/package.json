@@ -10,7 +10,8 @@
     "genesis": "./src/cli/genesis.js",
     "cert-master": "./src/cli/cert-master.js",
     "genesis-evidence": "./src/cli/evidence.js",
-    "genesis-db": "./src/cli/db.js"
+    "genesis-db": "./src/cli/db.js",
+    "genesis-ui": "./src/ui/dashboard-server.js"
   },
   "scripts": {
     "genesis": "node src/cli/genesis.js",
@@ -43,7 +44,10 @@
     "orchestrate": "python3 core/orchestrator.py",
     "master": "./bin/genesis_master.sh",
     "rust:build": "cargo build --release --manifest-path rust_boundary/Cargo.toml",
-    "rust:test": "cargo test --manifest-path rust_boundary/Cargo.toml"
+    "rust:test": "cargo test --manifest-path rust_boundary/Cargo.toml",
+    "ui": "node src/ui/dashboard-server.js",
+    "ui:dev": "node --watch src/ui/dashboard-server.js",
+    "dashboard": "node src/ui/dashboard-server.js"
   },
   "dependencies": {
     "tsx": "^4.7.0"
