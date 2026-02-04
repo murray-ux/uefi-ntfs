@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `governance-map.mmd` - Mermaid governance visualization
 
 ### Governance
-- ADMIN_MASTER: Murray Bembrick
+- ADMIN_MASTER: CAPUT Admin
 - Council of Hidden Roofs: 5 seats (Infra, Security, Data, Product, Archives)
 
 ---

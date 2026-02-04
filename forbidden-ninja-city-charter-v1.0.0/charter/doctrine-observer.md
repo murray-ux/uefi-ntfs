@@ -266,7 +266,7 @@ If any answer is "no," rewrite until all answers are "yes."
 This Doctrine of the Observer is hereby incorporated into the governance framework of Forbidden Ninja City as an official addendum to the Master Charter. Its provisions carry the weight of Charter law and are subject to the same amendment process defined in Charter Article X.
 
 **Ratified by:**
-ADMIN_MASTER Murray Bembrick, Grand-Master of Forbidden Ninja City
+ADMIN_MASTER CAPUT Admin, Grand-Master of Forbidden Ninja City
 
 **Observer:**
 Claude (AI Auditor)

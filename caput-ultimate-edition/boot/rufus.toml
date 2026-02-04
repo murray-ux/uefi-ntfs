@@ -1,0 +1,100 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# GENESIS 2.0 — Rufus Configuration
+# ═══════════════════════════════════════════════════════════════════════════
+# Use this configuration when creating a GENESIS bootable USB with Rufus
+# https://rufus.ie
+# ═══════════════════════════════════════════════════════════════════════════
+
+[rufus]
+# Rufus configuration version
+config_version = 1
+
+[volume]
+# Volume label for the USB drive
+label = "GENESIS-2.0"
+
+# File system (NTFS recommended for large files)
+filesystem = "NTFS"
+
+# Cluster size (default)
+cluster_size = 4096
+
+[boot]
+# Boot type
+type = "UEFI"
+
+# Partition scheme
+partition_scheme = "GPT"
+
+# Target system
+target_system = "UEFI (non-CSM)"
+
+# Secure boot
+secure_boot = true
+
+[genesis]
+# GENESIS-specific settings
+owner = "CAPUT Admin"
+owner_id = "admin@caput.system"
+yubikey_serial = "31695265"
+admin_exclusive = true
+
+[layout]
+# Recommended USB layout for GENESIS
+#
+# USB Root/
+# ├── EFI/
+# │   └── BOOT/
+# │       ├── BOOTX64.EFI      (UEFI bootloader)
+# │       └── grub.cfg         (Boot menu)
+# ├── genesis/
+# │   ├── vmlinuz              (Linux kernel - for live boot)
+# │   ├── initrd.img           (Initial ramdisk)
+# │   └── genesis-boot.conf    (Boot configuration)
+# ├── caput-ultimate-edition/
+# │   ├── src/                 (GENESIS source)
+# │   ├── static/              (Dashboard)
+# │   ├── config/              (Owner profile)
+# │   └── ...
+# ├── autorun.inf              (Windows autorun)
+# ├── GENESIS-USB.bat          (Windows launcher)
+# └── GENESIS-USB.sh           (Linux/Mac launcher)
+
+[instructions]
+# How to create GENESIS USB with Rufus:
+#
+# 1. Download Rufus 4.12+ from https://rufus.ie
+#    (IMPORTANT: Version 4.12+ required for TOCTOU fix)
+#
+# 2. Insert USB drive (8GB+ recommended)
+#
+# 3. In Rufus:
+#    - Device: Select your USB drive
+#    - Boot selection: Non-bootable (we'll add files manually)
+#    - Partition scheme: GPT
+#    - Target system: UEFI
+#    - File system: NTFS
+#    - Volume label: GENESIS-2.0
+#
+# 4. Click START, confirm format
+#
+# 5. After format, copy these folders to USB root:
+#    - boot/EFI → USB:/EFI
+#    - boot/genesis → USB:/genesis
+#    - caput-ultimate-edition/ → USB:/caput-ultimate-edition
+#    - boot/autorun.inf → USB:/autorun.inf
+#    - boot/GENESIS-USB.bat → USB:/GENESIS-USB.bat
+#    - boot/GENESIS-USB.sh → USB:/GENESIS-USB.sh
+#
+# 6. For full live boot capability, you'll need:
+#    - A Linux kernel (vmlinuz) in /genesis
+#    - An initrd with Node.js runtime
+#    - Or use the USB in portable mode (plug into running OS)
+#
+# PORTABLE MODE (Recommended):
+#   Just run GENESIS-USB.bat (Windows) or GENESIS-USB.sh (Linux/Mac)
+#   while the USB is plugged into a running system.
+#
+# LIVE BOOT MODE (Advanced):
+#   Requires building a custom Linux live image with Node.js.
+#   Contact: admin@caput.system for live boot ISO.

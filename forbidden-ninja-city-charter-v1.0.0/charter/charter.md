@@ -62,7 +62,7 @@ The Council oversees all demon‑grade systems, approves Charter amendments, rat
 
 **Section 3.2 – ADMIN_MASTER**
 
-The ADMIN_MASTER is the Grand‑Master of Forbidden Ninja City, holding ultimate executive authority. The current ADMIN_MASTER is **Murray Bembrick**.
+The ADMIN_MASTER is the Grand‑Master of Forbidden Ninja City, holding ultimate executive authority. The current ADMIN_MASTER is **CAPUT Admin**.
 
 The ADMIN_MASTER:
 - Convenes the Council
@@ -246,10 +246,10 @@ Previous Charter versions remain accessible for audit and historical reference. 
 
 ## Final Clause
 
-This Charter takes effect immediately upon publication and signature by ADMIN_MASTER Murray Bembrick and the Council of Hidden Roofs. All systems, demons, clans, and agents of Forbidden Ninja City are hereby bound by these Articles.
+This Charter takes effect immediately upon publication and signature by ADMIN_MASTER CAPUT Admin and the Council of Hidden Roofs. All systems, demons, clans, and agents of Forbidden Ninja City are hereby bound by these Articles.
 
 **Signed:**
-ADMIN_MASTER Murray Bembrick, Grand‑Master of Forbidden Ninja City
+ADMIN_MASTER CAPUT Admin, Grand‑Master of Forbidden Ninja City
 Council of Hidden Roofs
 
 **Date:** 2026-02-04

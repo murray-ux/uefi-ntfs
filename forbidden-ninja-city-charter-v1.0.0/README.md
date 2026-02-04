@@ -2,7 +2,7 @@
 
 Version: 1.0.0
 Status: ACTIVE
-Admin Master: Murray Bembrick
+Admin Master: CAPUT Admin
 
 - `charter/` – Charter text, metadata, hash
 - `governance/` – Verification, Tombs, governance tools

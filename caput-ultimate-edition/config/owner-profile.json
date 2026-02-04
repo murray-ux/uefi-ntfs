@@ -1,0 +1,234 @@
+{
+  "$schema": "genesis-owner-profile-v1",
+  "owner": {
+    "id": "admin@caput.system",
+    "name": "CAPUT Admin",
+    "email": "admin@caput.system",
+    "jurisdiction": "AU",
+    "timezone": "Australia/Sydney",
+    "role": "ADMIN",
+    "exclusiveOwner": true
+  },
+  "authorization": {
+    "role": "ADMIN",
+    "level": "exclusive",
+    "permissions": ["*"],
+    "capabilities": [
+      "system:admin",
+      "system:configure",
+      "system:audit",
+      "identity:manage",
+      "identity:impersonate",
+      "policy:override",
+      "evidence:seal",
+      "evidence:unseal",
+      "keys:generate",
+      "keys:rotate",
+      "keys:export",
+      "network:manage",
+      "devices:enroll",
+      "devices:revoke",
+      "users:create",
+      "users:delete",
+      "users:suspend"
+    ],
+    "restrictions": {
+      "requireMfa": true,
+      "requireYubikey": true,
+      "maxSessionHours": 24
+    }
+  },
+  "emails": {
+    "primary": "admin@caput.system",
+    "all": [
+      {
+        "address": "admin@caput.system",
+        "type": "primary",
+        "provider": "caput.system",
+        "verified": true
+      },
+      {
+        "address": "admin@caput.system",
+        "type": "personal",
+        "provider": "Apple iCloud",
+        "verified": true
+      },
+      {
+        "address": "admin@caput.system",
+        "type": "personal",
+        "provider": "Apple iCloud",
+        "verified": true
+      },
+      {
+        "address": "admin@caput.system",
+        "type": "personal",
+        "provider": "Google Gmail",
+        "verified": true
+      },
+      {
+        "address": "admin@caput.system",
+        "type": "personal",
+        "provider": "Google Gmail",
+        "verified": true
+      },
+      {
+        "address": "admin@caput.system",
+        "type": "personal",
+        "provider": "Microsoft Outlook",
+        "verified": true
+      },
+      {
+        "address": "Miet@live.com",
+        "type": "personal",
+        "provider": "Microsoft Live",
+        "verified": true
+      },
+      {
+        "address": "Murray@firetechnics.com.au",
+        "type": "business",
+        "provider": "Fire Technics",
+        "verified": true
+      },
+      {
+        "address": "Admin@alternatemaintenance.com.au",
+        "type": "business",
+        "provider": "Alternate Maintenance",
+        "verified": true,
+        "role": "admin"
+      }
+    ]
+  },
+  "yubikey": {
+    "model": "YubiKey 5C FIPS",
+    "serial": "31695265",
+    "connector": "USB-C",
+    "fips": true,
+    "capabilities": [
+      "FIDO2/WebAuthn",
+      "FIDO U2F",
+      "Yubico OTP",
+      "OATH-TOTP",
+      "OATH-HOTP",
+      "Smart Card (PIV)",
+      "OpenPGP",
+      "Challenge-Response"
+    ]
+  },
+  "devices": {
+    "primary": {
+      "name": "MSI Titan GT77 HX 13V",
+      "type": "laptop",
+      "os": "Windows 11 Pro",
+      "hostname": "msi-titan",
+      "trusted": true
+    }
+  },
+  "domains": [
+    {
+      "name": "caput.system",
+      "primary": true,
+      "services": ["email", "web", "dns"],
+      "role": "owner"
+    },
+    {
+      "name": "caput.system",
+      "primary": false,
+      "services": ["redirect"],
+      "role": "owner"
+    },
+    {
+      "name": "caput.system",
+      "primary": false,
+      "services": ["redirect"],
+      "role": "owner"
+    },
+    {
+      "name": "firetechnics.com.au",
+      "primary": false,
+      "services": ["email", "web"],
+      "role": "admin"
+    },
+    {
+      "name": "alternatemaintenance.com.au",
+      "primary": false,
+      "services": ["email", "web"],
+      "role": "admin"
+    }
+  ],
+  "network": {
+    "home": {
+      "name": "CAPUT Secure Network",
+      "subnet": "192.168.1.0/24",
+      "gateway": "192.168.1.1",
+      "dns": ["192.168.1.1", "8.8.8.8", "1.1.1.1"],
+      "devices": {
+        "router": {
+          "brand": "Netgear",
+          "ip": "192.168.1.1",
+          "admin": "admin"
+        }
+      }
+    }
+  },
+  "accounts": {
+    "icloud": {
+      "accounts": ["admin@caput.system", "admin@caput.system"],
+      "services": ["iCloud Drive", "Photos", "Keychain", "Find My"]
+    },
+    "google": {
+      "accounts": ["admin@caput.system", "admin@caput.system"],
+      "services": ["Gmail", "Drive", "Photos", "Calendar"]
+    },
+    "microsoft": {
+      "accounts": ["admin@caput.system", "Miet@live.com"],
+      "services": ["Outlook", "OneDrive", "Microsoft 365"]
+    },
+    "cloudflare": {
+      "account": "admin@caput.system",
+      "services": ["DNS", "CDN", "SSL", "Zero Trust"]
+    },
+    "github": {
+      "username": "murray-ux",
+      "services": ["repos", "actions", "packages"]
+    }
+  },
+  "businesses": {
+    "firetechnics": {
+      "name": "Fire Technics",
+      "domain": "firetechnics.com.au",
+      "email": "Murray@firetechnics.com.au",
+      "role": "principal"
+    },
+    "alternatemaintenance": {
+      "name": "Alternate Maintenance",
+      "domain": "alternatemaintenance.com.au",
+      "email": "Admin@alternatemaintenance.com.au",
+      "role": "admin"
+    }
+  },
+  "security": {
+    "mfaRequired": true,
+    "mfaMethods": ["yubikey-otp", "yubikey-webauthn", "yubikey-challenge-response", "totp"],
+    "passwordPolicy": {
+      "minLength": 16,
+      "requireSpecial": true,
+      "requireNumbers": true,
+      "maxAge": 90
+    },
+    "sessionTimeout": 3600,
+    "ipWhitelist": ["192.168.1.0/24"],
+    "adminExclusive": true
+  },
+  "preferences": {
+    "theme": "dark",
+    "notifications": {
+      "email": true,
+      "push": true,
+      "slack": false
+    },
+    "audit": {
+      "retentionDays": 365,
+      "signAllRecords": true
+    }
+  }
+}
