@@ -9,7 +9,8 @@
   "bin": {
     "genesis": "./src/cli/genesis.js",
     "cert-master": "./src/cli/cert-master.js",
-    "genesis-evidence": "./src/cli/evidence.js"
+    "genesis-evidence": "./src/cli/evidence.js",
+    "genesis-db": "./src/cli/db.js"
   },
   "scripts": {
     "genesis": "node src/cli/genesis.js",
@@ -24,6 +25,11 @@
     "evidence:list": "node src/cli/evidence.js list",
     "evidence:verify": "node src/cli/evidence.js verify",
     "evidence:export": "node src/cli/evidence.js export",
+    "db": "node src/cli/db.js",
+    "db:init": "node src/cli/db.js init",
+    "db:health": "node src/cli/db.js health",
+    "db:ledger": "node src/cli/db.js ledger",
+    "db:search": "node src/cli/db.js search",
     "daemon": "node -e \"import('./src/lib/daemon.js').then(m => m.runDaemon())\"",
     "setup": "node scripts/setup.js",
     "start": "npx tsx src/server.ts",
@@ -42,9 +48,14 @@
   "dependencies": {
     "tsx": "^4.7.0"
   },
+  "optionalDependencies": {
+    "pg": "^8.11.0",
+    "puppeteer": "^22.0.0"
+  },
   "devDependencies": {
     "typescript": "^5.3.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.10.0"
   },
   "engines": {
     "node": ">=18.0.0"
