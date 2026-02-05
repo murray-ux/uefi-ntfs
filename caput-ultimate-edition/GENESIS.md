@@ -662,6 +662,127 @@ tetsuya.activateMitigationNode('cascade-prevention');
 
 ---
 
+## Control System
+
+| Module | Script | Meaning | Purpose |
+|--------|--------|---------|---------|
+| **MERKAVA** | מרכבה | Chariot | Master Command Center — module orchestration, directives, sovereign controls |
+| **TZOFEH** | צופה | Watchman | Sentinel Watchdog — anomaly detection, guardians, canary deployments |
+| **MALAKH** | מלאך | Messenger | Message Bus — pub/sub, circuit breakers, distributed tracing |
+| **KISSEH** | כסא | Throne | Control Panel UI — module grid, health ring, alert dashboard |
+
+### Bootstrap (genesis-init.js)
+
+```bash
+# Start GENESIS with all modules
+node src/lib/genesis-init.js
+
+# Custom port
+node src/lib/genesis-init.js --port 8080
+
+# Set watch level
+node src/lib/genesis-init.js --watch-level sentinel
+```
+
+Boot sequence:
+1. **Phase 1** — MERKAVA + MALAKH (core infrastructure)
+2. **Phase 2** — KERUV + SHINOBI + EBEN (security & storage)
+3. **Phase 3** — RUACH + OHR + HADAAT + TETSUYA + NEPHESH + VIZ (AI & processing)
+4. **Phase 4** — Wire all modules through MERKAVA, configure MALAKH topics
+5. **Phase 5** — Start Dashboard server
+6. **Phase 6** — TZOFEH starts monitoring with guardian daemons
+
+### MERKAVA Command Center
+
+```javascript
+// Send directive to a module
+await merkava.sendDirective('TETSUYA', 'assessRisk', { component: 'db' });
+
+// Broadcast to all modules
+await merkava.broadcast('healthCheck');
+
+// Execute workflow
+await merkava.executeWorkflow('security:sweep');
+
+// Initiate lockdown
+await merkava.inititateLockdown('Security breach detected');
+
+// Sovereign control (MFA required)
+await merkava.sovereign.authorize({ passphrase, yubikey: otp });
+await merkava.sovereign.executePrivileged('fullReset');
+```
+
+### TZOFEH Sentinel
+
+```javascript
+// Deploy guardian daemon
+tzofeh.deployGuardian('database', dbInstance, { checkInterval: 5000 });
+
+// Set metric thresholds
+tzofeh.setMetricThreshold('cpu.usage', { warning: 70, critical: 90 });
+
+// Deploy canary
+tzofeh.deployCanary('new-feature', { endpoint: '/api/v2/test' });
+
+// Set watch level: PASSIVE(0) → ACTIVE(1) → ALERT(2) → COMBAT(3) → SENTINEL(4)
+tzofeh.setWatchLevel(3); // COMBAT mode
+```
+
+### MALAKH Message Bus
+
+```javascript
+// Publish event
+malakh.publish('security.alert', { type: 'intrusion', severity: 'high' });
+
+// Subscribe to topic
+malakh.subscribe('security.*', async (message) => {
+  console.log('Security event:', message.payload);
+});
+
+// Request/Reply pattern
+const result = await malakh.request('ai.query', { question: 'Assess risk' });
+
+// Broadcast to all
+malakh.broadcast('system.maintenance', { scheduled: true });
+```
+
+### KISSEH Throne UI
+
+Access via keyboard shortcut in the browser dashboard:
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+Shift+K` | Toggle Throne panel |
+| `Ctrl+Shift+S` | Toggle Sovereign controls |
+| `Escape` | Close panel |
+
+### Control System API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/merkava/status` | Command Center status |
+| GET | `/api/merkava/diagnostics` | Full diagnostics |
+| GET | `/api/merkava/alerts` | Active alerts |
+| GET | `/api/merkava/commands` | Command log |
+| POST | `/api/merkava/directive` | Send directive |
+| POST | `/api/merkava/broadcast` | Broadcast to all |
+| POST | `/api/merkava/workflow/:name` | Execute workflow |
+| POST | `/api/merkava/lockdown` | Initiate lockdown |
+| POST | `/api/merkava/sovereign/authorize` | Sovereign auth |
+| GET | `/api/modules/:id/status` | Module status |
+| GET | `/api/tzofeh/status` | Sentinel status |
+| GET | `/api/tzofeh/diagnostics` | Sentinel diagnostics |
+| GET | `/api/tzofeh/guardians` | Guardian daemons |
+| POST | `/api/tzofeh/watch-level` | Set watch level |
+| GET | `/api/tzofeh/anomalies` | Recent anomalies |
+| GET | `/api/malakh/status` | Message Bus status |
+| GET | `/api/malakh/queues` | Queue stats |
+| POST | `/api/malakh/publish` | Publish message |
+| POST | `/api/malakh/broadcast` | Broadcast message |
+| GET | `/api/malakh/circuit-breakers` | Circuit breaker states |
+
+---
+
 ## Session Summary
 
 This session added:

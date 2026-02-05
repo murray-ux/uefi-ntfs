@@ -77,6 +77,54 @@ async function getTetsuya() {
   return tetsuya;
 }
 
+// MERKAVA Command Center
+let merkava = null;
+async function getMerkava() {
+  if (!merkava) {
+    try {
+      const { default: Merkava } = await import('../lib/merkava-command.js');
+      merkava = new Merkava();
+      await merkava.initialize();
+    } catch (e) {
+      console.warn('MERKAVA not available:', e.message);
+      return null;
+    }
+  }
+  return merkava;
+}
+
+// TZOFEH Sentinel
+let tzofeh = null;
+async function getTzofeh() {
+  if (!tzofeh) {
+    try {
+      const { default: Tzofeh } = await import('../lib/tzofeh-sentinel.js');
+      tzofeh = new Tzofeh();
+      await tzofeh.initialize(merkava);
+    } catch (e) {
+      console.warn('TZOFEH not available:', e.message);
+      return null;
+    }
+  }
+  return tzofeh;
+}
+
+// MALAKH Message Bus
+let malakhBus = null;
+async function getMalakh() {
+  if (!malakhBus) {
+    try {
+      const { default: Malakh } = await import('../lib/malakh-bus.js');
+      malakhBus = new Malakh();
+      await malakhBus.initialize();
+    } catch (e) {
+      console.warn('MALAKH not available:', e.message);
+      return null;
+    }
+  }
+  return malakhBus;
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -938,6 +986,196 @@ const apiRoutes = {
     const horizon = parseInt(query?.horizon) || 24;
     const prediction = tetsuya.riskEngine.predictRisk(horizon);
     return { success: true, prediction };
+  },
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // MERKAVA Command Center API
+  // ═════════════════════════════════════════════════════════════════════════
+
+  'GET /api/merkava/status': async () => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+    return merkava.getStatus();
+  },
+
+  'GET /api/merkava/diagnostics': async () => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+    return merkava.getFullDiagnostics();
+  },
+
+  'GET /api/merkava/alerts': async () => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+    return merkava.alerts.getActiveAlerts();
+  },
+
+  'GET /api/merkava/commands': async (params, body, query) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+    const limit = parseInt(query?.limit) || 100;
+    return merkava.getCommandLog(limit);
+  },
+
+  'POST /api/merkava/directive': async (params, body) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+
+    try {
+      const result = await merkava.sendDirective(
+        body.module,
+        body.command,
+        body.params || {},
+        { priority: body.priority || 'immediate' }
+      );
+      return { success: true, result };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  'POST /api/merkava/broadcast': async (params, body) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+
+    const results = await merkava.broadcast(body.command, body.params || {});
+    return { success: true, results };
+  },
+
+  'POST /api/merkava/workflow/:name': async (params) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+
+    try {
+      const result = await merkava.executeWorkflow(params.name);
+      return { success: true, result };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  'POST /api/merkava/lockdown': async (params, body) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+
+    const result = await merkava.inititateLockdown(body.reason || 'Manual lockdown');
+    broadcaster.broadcast('system', { event: 'lockdown', ...result });
+    return result;
+  },
+
+  'POST /api/merkava/sovereign/authorize': async (params, body) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+
+    return await merkava.sovereign.authorize(body);
+  },
+
+  'POST /api/merkava/sovereign/:action': async (params, body) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+
+    try {
+      const result = await merkava.sovereign.executePrivileged(params.action, body);
+      return { success: true, result };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  'GET /api/modules/:moduleId/status': async (params) => {
+    const merkava = await getMerkava();
+    if (!merkava) return { error: 'MERKAVA not initialized' };
+
+    const connector = merkava.getModule(params.moduleId);
+    if (!connector) return { error: `Module ${params.moduleId} not found` };
+
+    return connector.getMetrics();
+  },
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // TZOFEH Sentinel API
+  // ═════════════════════════════════════════════════════════════════════════
+
+  'GET /api/tzofeh/status': async () => {
+    const tzofeh = await getTzofeh();
+    if (!tzofeh) return { error: 'TZOFEH not initialized' };
+    return tzofeh.getStatus();
+  },
+
+  'GET /api/tzofeh/diagnostics': async () => {
+    const tzofeh = await getTzofeh();
+    if (!tzofeh) return { error: 'TZOFEH not initialized' };
+    return tzofeh.getDiagnostics();
+  },
+
+  'GET /api/tzofeh/guardians': async () => {
+    const tzofeh = await getTzofeh();
+    if (!tzofeh) return { error: 'TZOFEH not initialized' };
+    return tzofeh.getAllGuardianStatus();
+  },
+
+  'POST /api/tzofeh/watch-level': async (params, body) => {
+    const tzofeh = await getTzofeh();
+    if (!tzofeh) return { error: 'TZOFEH not initialized' };
+
+    const result = tzofeh.setWatchLevel(body.level);
+    return { success: true, ...result };
+  },
+
+  'GET /api/tzofeh/anomalies': async () => {
+    const tzofeh = await getTzofeh();
+    if (!tzofeh) return { error: 'TZOFEH not initialized' };
+    return tzofeh.anomalyDetector.getRecentAnomalies(100);
+  },
+
+  'GET /api/tzofeh/canaries': async () => {
+    const tzofeh = await getTzofeh();
+    if (!tzofeh) return { error: 'TZOFEH not initialized' };
+    return tzofeh.canarySystem.getAllCanaries();
+  },
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // MALAKH Message Bus API
+  // ═════════════════════════════════════════════════════════════════════════
+
+  'GET /api/malakh/status': async () => {
+    const malakh = await getMalakh();
+    if (!malakh) return { error: 'MALAKH not initialized' };
+    return malakh.getStatus();
+  },
+
+  'GET /api/malakh/diagnostics': async () => {
+    const malakh = await getMalakh();
+    if (!malakh) return { error: 'MALAKH not initialized' };
+    return malakh.getDiagnostics();
+  },
+
+  'GET /api/malakh/queues': async () => {
+    const malakh = await getMalakh();
+    if (!malakh) return { error: 'MALAKH not initialized' };
+    return malakh.getQueueStats();
+  },
+
+  'POST /api/malakh/publish': async (params, body) => {
+    const malakh = await getMalakh();
+    if (!malakh) return { error: 'MALAKH not initialized' };
+
+    const result = malakh.publish(body.topic, body.payload, body.options || {});
+    return { success: true, ...result };
+  },
+
+  'POST /api/malakh/broadcast': async (params, body) => {
+    const malakh = await getMalakh();
+    if (!malakh) return { error: 'MALAKH not initialized' };
+
+    const result = malakh.broadcast(body.topic, body.payload);
+    return { success: true, ...result };
+  },
+
+  'GET /api/malakh/circuit-breakers': async () => {
+    const malakh = await getMalakh();
+    if (!malakh) return { error: 'MALAKH not initialized' };
+    return malakh.getCircuitBreakerStats();
   }
 };
 
