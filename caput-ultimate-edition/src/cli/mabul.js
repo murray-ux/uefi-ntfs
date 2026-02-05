@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// See LICENSE and NOTICE for terms.
+
 /**
  * MABUL CLI — Memory Persistence Layer Commands
  * ══════════════════════════════════════════════════════════════════════════════
@@ -22,6 +26,9 @@
  */
 
 import Mabul from '../lib/mabul-persistence.js';
+import { createLogger } from '../lib/kol-logger.js';
+
+const kolMabul = createLogger('MABUL');
 
 // Colors for terminal output
 const C = {

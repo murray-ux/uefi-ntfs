@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// See LICENSE and NOTICE for terms.
+
 /**
  * GENESIS 2.0 Dashboard Server
  * Modern Web UI for the Sovereign Security Platform

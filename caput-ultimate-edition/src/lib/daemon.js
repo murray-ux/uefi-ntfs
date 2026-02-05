@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// See LICENSE and NOTICE for terms.
+
 /**
  * GENESIS Health Monitoring Daemon
  * Continuous system monitoring with alerting

@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// See LICENSE and NOTICE for terms.
+
 /**
  * GENESIS Database CLI
  * Advanced PostgreSQL operations
@@ -10,6 +14,9 @@ import { createGenesisDB } from '../db/genesis-pg.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createLogger } from '../lib/kol-logger.js';
+
+const kolDb = createLogger('DB');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..');

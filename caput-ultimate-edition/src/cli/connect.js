@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// See LICENSE and NOTICE for terms.
+
 /**
  * GENESIS Connection Tester
  * Test and validate all service connections
@@ -7,6 +11,9 @@
  */
 
 import { ConnectionManager, loadEnv } from '../lib/connections.js';
+import { createLogger } from '../lib/kol-logger.js';
+
+const kolConnect = createLogger('CONNECT');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Colors

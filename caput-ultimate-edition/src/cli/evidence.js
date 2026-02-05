@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// See LICENSE and NOTICE for terms.
+
 /**
  * Evidence Documentation CLI
  * Interactive evidence collection and management
@@ -10,6 +14,9 @@ import { createInterface } from 'node:readline';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, basename } from 'node:path';
+import { createLogger } from '../lib/kol-logger.js';
+
+const kolEvidence = createLogger('EVIDENCE');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Configuration
