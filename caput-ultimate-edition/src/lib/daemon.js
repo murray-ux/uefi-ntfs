@@ -9,7 +9,9 @@ import { EventEmitter } from 'node:events';
 import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createLogger } from './kol-logger.js';
 
+const log = createLogger('DAEMON');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..');
 const LOG_DIR = join(ROOT_DIR, 'logs');
@@ -281,8 +283,9 @@ export class HealthDaemon extends EventEmitter {
 
     // Console (always shown via emit)
     if (alertChannels.console) {
-      const colors = { critical: '\x1b[31m', warning: '\x1b[33m', info: '\x1b[36m' };
-      console.log(`${colors[alert.severity] || ''}[ALERT] ${alert.code}: ${alert.message}\x1b[0m`);
+      const logFn = alert.severity === 'critical' ? log.error :
+                    alert.severity === 'warning' ? log.warn : log.info;
+      logFn(`${alert.code}: ${alert.message}`, { severity: alert.severity });
     }
 
     // Webhook
@@ -484,13 +487,13 @@ export async function runDaemon() {
   });
 
   // Event handlers
-  daemon.on('start', () => console.log('[DAEMON] Started'));
-  daemon.on('stop', () => console.log('[DAEMON] Stopped'));
+  daemon.on('start', () => log.success('Started'));
+  daemon.on('stop', () => log.info('Stopped'));
   daemon.on('check', ({ metrics }) => {
-    console.log(`[DAEMON] Check complete - CPU: ${metrics.system.cpu.toFixed(1)}%, Memory: ${metrics.system.memory.percentage}%`);
+    log.debug('Check complete', { cpu: metrics.system.cpu.toFixed(1) + '%', memory: metrics.system.memory.percentage + '%' });
   });
   daemon.on('alert', (alert) => {
-    console.log(`[ALERT] ${alert.severity.toUpperCase()}: ${alert.code} - ${alert.message}`);
+    log.warn(`${alert.code} - ${alert.message}`, { severity: alert.severity });
   });
 
   // Start daemon

@@ -43,6 +43,9 @@ import { createHash, randomUUID, createCipheriv, createDecipheriv, scryptSync, r
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync } from 'fs';
 import { join, basename, extname } from 'path';
 import { homedir } from 'os';
+import { createLogger } from './kol-logger.js';
+
+const log = createLogger('EBEN');
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS & CONFIGURATION
@@ -454,7 +457,7 @@ export class LegalAuditTrail {
         writeFileSync(logFile, line);
       }
     } catch (error) {
-      console.error('[EBEN] Failed to persist audit entry:', error.message);
+      log.error('Failed to persist audit entry', { error: error.message });
     }
   }
 }

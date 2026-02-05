@@ -11,6 +11,9 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EventEmitter } from 'node:events';
+import { createLogger } from '../lib/kol-logger.js';
+
+const dashLog = createLogger('DASHBOARD');
 
 // MABUL Persistence Layer
 let mabul = null;
@@ -21,7 +24,7 @@ async function getMabul() {
       mabul = new Mabul();
       await mabul.initialize();
     } catch (e) {
-      console.warn('MABUL layer not available:', e.message);
+      dashLog.debug('MABUL layer not available', { error: e.message });
       return null;
     }
   }
@@ -36,7 +39,7 @@ async function getEben() {
       const { default: Eben } = await import('../lib/eben-evidence.js');
       eben = new Eben();
     } catch (e) {
-      console.warn('EBEN vault not available:', e.message);
+      dashLog.debug('EBEN vault not available', { error: e.message });
       return null;
     }
   }
@@ -55,7 +58,7 @@ async function getShinobi() {
       const e = await getEben();
       if (e) shinobi.protect(e);
     } catch (e) {
-      console.warn('SHINOBI security not available:', e.message);
+      dashLog.debug('SHINOBI security not available', { error: e.message });
       return null;
     }
   }
@@ -70,7 +73,7 @@ async function getTetsuya() {
       const { default: Tetsuya } = await import('../lib/tetsuya-defense.js');
       tetsuya = new Tetsuya({ autoCreateAgents: true });
     } catch (e) {
-      console.warn('TETSUYA defense not available:', e.message);
+      dashLog.debug('TETSUYA defense not available', { error: e.message });
       return null;
     }
   }
@@ -86,7 +89,7 @@ async function getMerkava() {
       merkava = new Merkava();
       await merkava.initialize();
     } catch (e) {
-      console.warn('MERKAVA not available:', e.message);
+      dashLog.debug('MERKAVA not available', { error: e.message });
       return null;
     }
   }
@@ -102,7 +105,7 @@ async function getTzofeh() {
       tzofeh = new Tzofeh();
       await tzofeh.initialize(merkava);
     } catch (e) {
-      console.warn('TZOFEH not available:', e.message);
+      dashLog.debug('TZOFEH not available', { error: e.message });
       return null;
     }
   }
@@ -118,7 +121,7 @@ async function getMalakh() {
       malakhBus = new Malakh();
       await malakhBus.initialize();
     } catch (e) {
-      console.warn('MALAKH not available:', e.message);
+      dashLog.debug('MALAKH not available', { error: e.message });
       return null;
     }
   }
@@ -1446,7 +1449,7 @@ if (isMain) {
   const dashboard = createDashboardServer({ port });
 
   dashboard.start().catch(err => {
-    console.error('Failed to start dashboard:', err.message);
+    dashLog.error('Failed to start dashboard', { error: err.message });
     process.exit(1);
   });
 

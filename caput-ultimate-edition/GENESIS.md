@@ -786,6 +786,62 @@ Access via keyboard shortcut in the browser dashboard:
 | POST | `/api/malakh/publish` | Publish message |
 | POST | `/api/malakh/broadcast` | Broadcast message |
 | GET | `/api/malakh/circuit-breakers` | Circuit breaker states |
+| GET | `/api/system/health` | Unified health aggregation |
+| GET | `/api/system/modules` | All module listing |
+
+### Control CLI (genesis-control)
+
+Command-line access to the GENESIS 2.0 control system. Connects to a running
+dashboard via HTTP API, or instantiates modules directly.
+
+```bash
+# System overview
+genesis-control status
+npm run control:status
+
+# List all 13 modules
+genesis-control modules
+npm run control:modules
+
+# Aggregated health check
+genesis-control health
+npm run control:health
+
+# MERKAVA commands
+genesis-control merkava status
+genesis-control merkava directive KERUV healthCheck
+genesis-control merkava broadcast healthCheck
+genesis-control merkava lockdown "Incident response"
+genesis-control merkava alerts
+
+# TZOFEH commands
+genesis-control tzofeh status
+genesis-control tzofeh watch-level combat
+genesis-control tzofeh anomalies
+genesis-control tzofeh guardians
+
+# MALAKH commands
+genesis-control malakh status
+genesis-control malakh queues
+genesis-control malakh publish security.alert '{"severity":"high"}'
+genesis-control malakh circuit-breakers
+
+# Log level
+genesis-control log-level debug
+```
+
+### Config Validation
+
+The bootstrap validates configuration on every boot:
+
+- Node.js version (requires 20+)
+- `GENESIS_JWT_SECRET` presence and minimum length (32 chars)
+- Watch level validity (`passive`, `active`, `alert`, `combat`, `sentinel`)
+- Port range (1–65535)
+- Pulse interval minimum (1000ms)
+- Evidence directory existence (if configured)
+
+Warnings are surfaced through KOL before modules begin loading.
 
 ---
 

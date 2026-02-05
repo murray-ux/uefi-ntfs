@@ -32,6 +32,7 @@
 
 import { EventEmitter } from 'events';
 import { randomUUID } from 'crypto';
+import { existsSync } from 'fs';
 import { createLogger, setLogLevel, onLog } from './kol-logger.js';
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -145,6 +146,9 @@ export class GenesisBootstrap extends EventEmitter {
     printBanner();
     this.startTime = Date.now();
     this.state = 'booting';
+
+    // Validate config before anything else
+    this._validateConfig();
 
     log('GENESIS', '═══ BOOT SEQUENCE INITIATED ═══', C.magenta);
     console.log('');
@@ -442,6 +446,61 @@ export class GenesisBootstrap extends EventEmitter {
     }
 
     console.log('');
+  }
+
+  // ─── Config Validation ────────────────────────────────────────────────────
+
+  _validateConfig() {
+    const warnings = [];
+    const env = process.env;
+
+    // Check Node version
+    const [major] = process.versions.node.split('.').map(Number);
+    if (major < 20) {
+      warnings.push(`Node ${process.versions.node} detected — Node 20+ required for full functionality`);
+    }
+
+    // Check JWT secret
+    if (!env.GENESIS_JWT_SECRET) {
+      warnings.push('GENESIS_JWT_SECRET not set — authentication will fail');
+    } else if (env.GENESIS_JWT_SECRET.length < 32) {
+      warnings.push('GENESIS_JWT_SECRET is too short (min 32 chars)');
+    }
+
+    // Validate watch level
+    const validLevels = ['passive', 'active', 'alert', 'combat', 'sentinel'];
+    if (!validLevels.includes(this.config.watchLevel)) {
+      warnings.push(`Invalid watch level "${this.config.watchLevel}" — using "active"`);
+      this.config.watchLevel = 'active';
+    }
+
+    // Validate port
+    if (this.config.port < 1 || this.config.port > 65535) {
+      warnings.push(`Invalid port ${this.config.port} — using 3000`);
+      this.config.port = 3000;
+    }
+
+    // Validate pulse interval
+    if (this.config.pulseInterval < 1000) {
+      warnings.push(`Pulse interval ${this.config.pulseInterval}ms too low — using 5000ms`);
+      this.config.pulseInterval = 5000;
+    }
+
+    // Check optional directories
+    if (env.GENESIS_EVIDENCE_DIR && !existsSync(env.GENESIS_EVIDENCE_DIR)) {
+      warnings.push(`Evidence dir not found: ${env.GENESIS_EVIDENCE_DIR}`);
+    }
+
+    // Emit warnings via KOL
+    for (const w of warnings) {
+      kolGenesis.warn(w);
+    }
+
+    if (warnings.length === 0) {
+      kolGenesis.success('Config validated');
+    } else {
+      kolGenesis.warn(`${warnings.length} config warning(s) — review above`);
+    }
   }
 
   // ─── Shutdown ──────────────────────────────────────────────────────────────
