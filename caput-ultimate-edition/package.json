@@ -14,7 +14,8 @@
     "genesis-ui": "./src/ui/dashboard-server.js",
     "genesis-mabul": "./src/cli/mabul.js",
     "mabul": "./src/cli/mabul.js",
-    "genesis-boot": "./src/lib/genesis-init.js"
+    "genesis-boot": "./src/lib/genesis-init.js",
+    "genesis-control": "./src/cli/genesis-control.js"
   },
   "scripts": {
     "genesis": "node src/cli/genesis.js",
@@ -57,6 +58,10 @@
     "mabul:list": "node src/cli/mabul.js list",
     "mabul:search": "node src/cli/mabul.js search",
     "mabul:checkpoint": "node src/cli/mabul.js checkpoint",
+    "control": "node src/cli/genesis-control.js",
+    "control:status": "node src/cli/genesis-control.js status",
+    "control:health": "node src/cli/genesis-control.js health",
+    "control:modules": "node src/cli/genesis-control.js modules",
     "boot": "node src/lib/genesis-init.js",
     "boot:sentinel": "node src/lib/genesis-init.js --watch-level active",
     "test:modules": "node --test test/genesis-modules.test.js",

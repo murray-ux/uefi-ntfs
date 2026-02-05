@@ -42,6 +42,9 @@
 
 import { EventEmitter } from 'events';
 import { createHash, randomUUID } from 'crypto';
+import { createLogger } from './kol-logger.js';
+
+const log = createLogger('MERKAVA');
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS & CONFIGURATION
@@ -449,7 +452,7 @@ export class SovereignControl {
         return result.valid;
       }
     } catch (error) {
-      console.error('YubiKey verification failed:', error);
+      log.error('YubiKey verification failed', { error: error.message });
     }
     return false;
   }
@@ -676,7 +679,7 @@ export class AlertSystem {
       try {
         await handler(alert);
       } catch (error) {
-        console.error('Alert handler error:', error);
+        log.error('Alert handler error', { error: error.message });
       }
     }
 

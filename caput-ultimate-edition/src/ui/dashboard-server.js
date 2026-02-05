@@ -1176,6 +1176,69 @@ const apiRoutes = {
     const malakh = await getMalakh();
     if (!malakh) return { error: 'MALAKH not initialized' };
     return malakh.getCircuitBreakerStats();
+  },
+
+  // ─── Unified System Health ─────────────────────────────────────────────
+
+  'GET /api/system/health': async () => {
+    const checks = {};
+    const start = Date.now();
+
+    try {
+      const merkava = await getMerkava();
+      if (merkava) {
+        const s = merkava.getStatus();
+        checks.merkava = { status: 'online', state: s.status, modules: s.registeredModules };
+      } else { checks.merkava = { status: 'offline' }; }
+    } catch { checks.merkava = { status: 'error' }; }
+
+    try {
+      const tzofeh = await getTzofeh();
+      if (tzofeh) {
+        const s = tzofeh.getStatus();
+        checks.tzofeh = { status: 'online', watchLevel: s.currentWatchLevel, guardians: s.activeGuardians };
+      } else { checks.tzofeh = { status: 'offline' }; }
+    } catch { checks.tzofeh = { status: 'error' }; }
+
+    try {
+      const malakh = await getMalakh();
+      if (malakh) {
+        const s = malakh.getStatus();
+        checks.malakh = { status: 'online', queues: s.stats?.queues, messages: s.stats?.messagesPublished };
+      } else { checks.malakh = { status: 'offline' }; }
+    } catch { checks.malakh = { status: 'error' }; }
+
+    const online = Object.values(checks).filter(c => c.status === 'online').length;
+    const total = Object.keys(checks).length;
+    const overall = online === total ? 'healthy' : online > 0 ? 'degraded' : 'offline';
+
+    return {
+      status: overall,
+      timestamp: new Date().toISOString(),
+      responseTime: Date.now() - start,
+      checks,
+      summary: { online, total }
+    };
+  },
+
+  'GET /api/system/modules': async () => {
+    return {
+      modules: [
+        { name: 'MERKAVA', hebrew: 'מרכבה', role: 'Command Center', file: 'merkava-command.js' },
+        { name: 'TZOFEH', hebrew: 'צופה', role: 'Sentinel Watchdog', file: 'tzofeh-sentinel.js' },
+        { name: 'MALAKH', hebrew: 'מלאך', role: 'Message Bus', file: 'malakh-bus.js' },
+        { name: 'KISSEH', hebrew: 'כיסא', role: 'Control Panel UI', file: 'kisseh-throne.js' },
+        { name: 'RUACH', hebrew: 'רוח', role: 'Neural Engine', file: 'ruach-neural.js' },
+        { name: 'OHR', hebrew: 'אור', role: 'Observability', file: 'ohr-observability.js' },
+        { name: 'HADAAT', hebrew: 'הדעת', role: 'Decision Intelligence', file: 'hadaat-decision.js' },
+        { name: 'KERUV', hebrew: 'כרוב', role: 'Guardian Security', file: 'keruv-security.js' },
+        { name: 'NEPHESH', hebrew: 'נפש', role: 'Lifecycle Hooks', file: 'nephesh-hooks.js' },
+        { name: 'EBEN', hebrew: 'אבן', role: 'Evidence Management', file: 'eben-evidence.js' },
+        { name: 'SHINOBI', hebrew: '忍び', role: 'Stealth Security', file: 'shinobi-security.js' },
+        { name: 'TETSUYA', hebrew: '鉄矢', role: 'Predictive Defense', file: 'tetsuya-defense.js' },
+        { name: 'KOL', hebrew: 'קול', role: 'Shared Logger', file: 'kol-logger.js' }
+      ]
+    };
   }
 };
 

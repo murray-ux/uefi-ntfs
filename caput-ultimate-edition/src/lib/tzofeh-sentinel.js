@@ -41,6 +41,9 @@
 
 import { EventEmitter } from 'events';
 import { createHash, randomUUID } from 'crypto';
+import { createLogger } from './kol-logger.js';
+
+const log = createLogger('TZOFEH');
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS & CONFIGURATION
@@ -891,7 +894,7 @@ export class ResponseEngine {
     try {
       switch (action) {
         case RESPONSE_ACTIONS.LOG:
-          console.log(`[TZOFEH] ${event.type}: ${event.message}`);
+          log.info(`${event.type}: ${event.message}`);
           response.success = true;
           break;
 

@@ -481,3 +481,158 @@ describe('GENESIS Bootstrap', async () => {
     assert.ok(Array.isArray(status.modules));
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KOL — Shared Logger
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe('KOL — Shared Logger', async () => {
+  let createLogger, setLogLevel, setJsonMode, onLog, LogLevel, genesisLog;
+
+  before(async () => {
+    const mod = await import('../src/lib/kol-logger.js');
+    createLogger = mod.createLogger;
+    setLogLevel = mod.setLogLevel;
+    setJsonMode = mod.setJsonMode;
+    onLog = mod.onLog;
+    LogLevel = mod.LogLevel;
+    genesisLog = mod.genesisLog;
+  });
+
+  it('should export createLogger function', () => {
+    assert.equal(typeof createLogger, 'function');
+  });
+
+  it('should export LogLevel constants', () => {
+    assert.equal(LogLevel.SILENT, 0);
+    assert.equal(LogLevel.ERROR, 1);
+    assert.equal(LogLevel.WARN, 2);
+    assert.equal(LogLevel.INFO, 3);
+    assert.equal(LogLevel.SUCCESS, 4);
+    assert.equal(LogLevel.DEBUG, 5);
+    assert.equal(LogLevel.TRACE, 6);
+  });
+
+  it('should create a logger with all methods', () => {
+    const log = createLogger('TEST');
+    assert.equal(typeof log.info, 'function');
+    assert.equal(typeof log.warn, 'function');
+    assert.equal(typeof log.error, 'function');
+    assert.equal(typeof log.debug, 'function');
+    assert.equal(typeof log.success, 'function');
+    assert.equal(typeof log.trace, 'function');
+    assert.equal(typeof log.child, 'function');
+    assert.equal(typeof log.setLevel, 'function');
+  });
+
+  it('should create child loggers', () => {
+    const parent = createLogger('MERKAVA');
+    const child = parent.child('PULSE');
+    assert.ok(child);
+    assert.equal(typeof child.info, 'function');
+  });
+
+  it('should capture logs via onLog listener', () => {
+    const captured = [];
+    const unsub = onLog((entry) => captured.push(entry));
+
+    // Ensure level is high enough
+    setLogLevel('trace');
+    const log = createLogger('LISTENER_TEST');
+    log.info('test message', { key: 'value' });
+
+    unsub();
+    setLogLevel('info'); // reset
+
+    assert.ok(captured.length >= 1);
+    const entry = captured.find(e => e.module === 'LISTENER_TEST');
+    assert.ok(entry);
+    assert.equal(entry.message, 'test message');
+    assert.equal(entry.level, 'INF');
+    assert.deepEqual(entry.meta, { key: 'value' });
+  });
+
+  it('should respect log level filtering', () => {
+    const captured = [];
+    const unsub = onLog((entry) => captured.push(entry));
+
+    setLogLevel('error'); // Only errors
+    const log = createLogger('LEVEL_TEST');
+    log.debug('should not appear');
+    log.info('should not appear');
+    log.error('should appear');
+
+    unsub();
+    setLogLevel('info'); // reset
+
+    const entries = captured.filter(e => e.module === 'LEVEL_TEST');
+    assert.equal(entries.length, 1);
+    assert.equal(entries[0].level, 'ERR');
+  });
+
+  it('should unsubscribe listeners correctly', () => {
+    const captured = [];
+    const unsub = onLog((entry) => captured.push(entry));
+
+    setLogLevel('trace');
+    const log = createLogger('UNSUB_TEST');
+    log.info('before unsub');
+    unsub();
+    log.info('after unsub');
+    setLogLevel('info');
+
+    const entries = captured.filter(e => e.module === 'UNSUB_TEST');
+    assert.equal(entries.length, 1);
+  });
+
+  it('should export pre-built genesisLog', () => {
+    assert.ok(genesisLog);
+    assert.equal(typeof genesisLog.info, 'function');
+  });
+
+  it('should handle setLogLevel with string input', () => {
+    // Should not throw
+    setLogLevel('debug');
+    setLogLevel('WARN');
+    setLogLevel('silent');
+    setLogLevel('info'); // reset
+  });
+
+  it('should handle setLogLevel with numeric input', () => {
+    setLogLevel(LogLevel.DEBUG);
+    setLogLevel(LogLevel.INFO); // reset
+  });
+
+  it('should allow per-logger level override', () => {
+    const captured = [];
+    const unsub = onLog((entry) => captured.push(entry));
+
+    setLogLevel('info'); // global = info
+    const log = createLogger('OVERRIDE_TEST');
+    log.setLevel('trace'); // this logger = trace
+    log.trace('should appear');
+    log.debug('should appear');
+
+    unsub();
+
+    const entries = captured.filter(e => e.module === 'OVERRIDE_TEST');
+    assert.equal(entries.length, 2);
+  });
+
+  it('should include ISO timestamp in log entries', () => {
+    const captured = [];
+    const unsub = onLog((entry) => captured.push(entry));
+
+    setLogLevel('info');
+    const log = createLogger('TIME_TEST');
+    log.info('timestamp check');
+
+    unsub();
+
+    const entry = captured.find(e => e.module === 'TIME_TEST');
+    assert.ok(entry);
+    assert.ok(entry.time);
+    // Should be valid ISO date
+    assert.ok(!isNaN(new Date(entry.time).getTime()));
+  });
+});

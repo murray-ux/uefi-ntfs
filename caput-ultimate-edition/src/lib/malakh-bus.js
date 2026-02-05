@@ -41,6 +41,9 @@
 
 import { EventEmitter } from 'events';
 import { createHash, randomUUID } from 'crypto';
+import { createLogger } from './kol-logger.js';
+
+const log = createLogger('MALAKH');
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS & CONFIGURATION

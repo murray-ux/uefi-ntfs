@@ -32,11 +32,18 @@
 
 import { EventEmitter } from 'events';
 import { randomUUID } from 'crypto';
+import { createLogger, setLogLevel, onLog } from './kol-logger.js';
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CONSOLE BANNER
+// KOL LOGGERS (one per subsystem)
 // ══════════════════════════════════════════════════════════════════════════════
 
+const kolGenesis  = createLogger('GENESIS');
+const kolLoader   = createLogger('GENESIS').child('LOADER');
+const kolWire     = createLogger('GENESIS').child('WIRE');
+const kolShutdown = createLogger('GENESIS').child('SHUTDOWN');
+
+// Colours kept for banner / status box only
 const C = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -67,15 +74,12 @@ ${C.cyan}╚══════════════════════�
 `);
 }
 
-function log(module, message, color = C.green) {
-  const time = new Date().toISOString().split('T')[1].split('.')[0];
-  console.log(`${C.dim}[${time}]${C.reset} ${color}[${module}]${C.reset} ${message}`);
-}
-
-function logOk(module, message) { log(module, message, C.green); }
-function logWarn(module, message) { log(module, message, C.yellow); }
-function logErr(module, message) { log(module, message, C.red); }
-function logInfo(module, message) { log(module, message, C.cyan); }
+// Legacy log helpers — now delegate to KOL
+function log(module, message) { createLogger(module).info(message); }
+function logOk(module, message) { createLogger(module).success(message); }
+function logWarn(module, message) { createLogger(module).warn(message); }
+function logErr(module, message) { createLogger(module).error(message); }
+function logInfo(module, message) { createLogger(module).info(message); }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // MODULE LOADER
@@ -442,35 +446,53 @@ export class GenesisBootstrap extends EventEmitter {
 
   // ─── Shutdown ──────────────────────────────────────────────────────────────
 
-  async shutdown() {
-    log('GENESIS', '═══ SHUTDOWN SEQUENCE ═══', C.yellow);
+  async shutdown(options = {}) {
+    if (this.state === 'shutdown' || this.state === 'shutting_down') return;
+    this.state = 'shutting_down';
 
-    // Stop monitoring first
-    if (this.tzofeh) {
-      await this.tzofeh.shutdown();
-      logInfo('SHUTDOWN', 'TZOFEH stopped');
+    const timeout = options.timeout || 10000;
+    kolGenesis.warn('═══ SHUTDOWN SEQUENCE ═══');
+
+    const shutdownTimer = setTimeout(() => {
+      kolGenesis.error('Shutdown timed out — forcing exit');
+      process.exit(1);
+    }, timeout);
+
+    try {
+      // Phase 1: Stop monitoring first (so it doesn't fire alerts during teardown)
+      if (this.tzofeh) {
+        await this.tzofeh.shutdown?.();
+        kolShutdown.info('TZOFEH stopped');
+      }
+
+      // Phase 2: Stop dashboard (stop accepting new requests)
+      if (this.dashboard) {
+        await this.dashboard.stop?.();
+        kolShutdown.info('Dashboard stopped');
+      }
+
+      // Phase 3: Drain message bus
+      if (this.malakh) {
+        await this.malakh.shutdown?.();
+        kolShutdown.info('MALAKH drained and stopped');
+      }
+
+      // Phase 4: Stop command center last
+      if (this.merkava) {
+        await this.merkava.shutdown?.();
+        kolShutdown.info('MERKAVA stopped');
+      }
+
+      clearTimeout(shutdownTimer);
+      this.state = 'shutdown';
+      const uptime = this.startTime ? Math.round((Date.now() - this.startTime) / 1000) : 0;
+      kolGenesis.success(`Shutdown complete — uptime ${uptime}s`);
+      this.emit('shutdown', { uptime });
+    } catch (error) {
+      clearTimeout(shutdownTimer);
+      kolGenesis.error('Shutdown error', { error: error.message });
+      this.state = 'shutdown';
     }
-
-    // Stop message bus
-    if (this.malakh) {
-      await this.malakh.shutdown();
-      logInfo('SHUTDOWN', 'MALAKH stopped');
-    }
-
-    // Stop command center
-    if (this.merkava) {
-      await this.merkava.shutdown();
-      logInfo('SHUTDOWN', 'MERKAVA stopped');
-    }
-
-    // Stop dashboard
-    if (this.dashboard) {
-      await this.dashboard.stop();
-      logInfo('SHUTDOWN', 'Dashboard stopped');
-    }
-
-    this.state = 'shutdown';
-    log('GENESIS', 'Shutdown complete', C.green);
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -572,26 +594,40 @@ if (isMain) {
     } else if (args[i] === '--watch-level' && args[i + 1]) {
       config.watchLevel = args[i + 1];
       i++;
+    } else if (args[i] === '--log-level' && args[i + 1]) {
+      setLogLevel(args[i + 1]);
+      i++;
     }
   }
 
   const genesis = new GenesisBootstrap(config);
+  let shuttingDown = false;
 
   genesis.boot().catch(err => {
-    console.error('GENESIS boot failed:', err);
+    kolGenesis.error('Boot failed', { error: err.message });
     process.exit(1);
   });
 
-  // Graceful shutdown
-  process.on('SIGINT', async () => {
-    console.log('');
+  // Graceful shutdown — deduplicate signals
+  async function handleShutdown(signal) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    kolGenesis.info(`Received ${signal}`);
     await genesis.shutdown();
     process.exit(0);
+  }
+
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+
+  // Catch unhandled errors so the process doesn't silently die
+  process.on('uncaughtException', (err) => {
+    kolGenesis.error('Uncaught exception', { error: err.message, stack: err.stack });
+    handleShutdown('uncaughtException');
   });
 
-  process.on('SIGTERM', async () => {
-    await genesis.shutdown();
-    process.exit(0);
+  process.on('unhandledRejection', (reason) => {
+    kolGenesis.error('Unhandled rejection', { reason: String(reason) });
   });
 }
 
