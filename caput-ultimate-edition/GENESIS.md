@@ -471,6 +471,11 @@ caput-ultimate-edition/
 │   └── ai_orchestrator.ts
 │
 ├── src/lib/                      # GENESIS 2.0 Core Modules (Biblical Names)
+│   ├── genesis-init.js           # 6-phase bootstrap — single entry point
+│   ├── kol-logger.js             # KOL (Voice) — Shared logging utility
+│   ├── merkava-command.js        # MERKAVA — Master Command Center
+│   ├── tzofeh-sentinel.js        # TZOFEH — Watchdog Sentinel
+│   ├── malakh-bus.js             # MALAKH — High-perf Message Bus
 │   ├── ruach-neural.js           # RUACH Neural Processing Engine
 │   ├── ohr-observability.js      # OHR Observability System
 │   ├── hadaat-decision.js        # HADAAT Decision Engine
@@ -601,6 +606,7 @@ Owner profile stored in `config/owner-profile.json`:
 | **SHINOBI** | 忍び | Ninja | Security Layer — hidden admin, shadow protection |
 | **TETSUYA** | 鉄夜 | Iron Night | Defense & Risk Management — AI agents, shockwave mitigation |
 | **VIZ** | — | Visualize | Visualization Engine — dashboards, real-time displays |
+| **KOL** | קול | Voice | Shared Logging Utility — structured output, JSON mode, colour-coded |
 
 ### EBEN Evidence Vault (Admin-Only)
 

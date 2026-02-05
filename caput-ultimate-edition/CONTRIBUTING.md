@@ -48,11 +48,104 @@ Update Sovereign Suite keyword map with new ATO document types
 Tests live in `test/`. Run with:
 
 ```bash
-npm test                          # all tests
-node --import tsx --test test/wheel.test.ts   # single file
+npm test                          # TypeScript tests
+npm run test:modules              # GENESIS 2.0 control system tests
+npm run test:all                  # Everything
+node --import tsx --test test/wheel.test.ts   # single TS file
+node --test test/genesis-modules.test.js      # single JS file
 ```
 
 Every Pentagon room should be queryable via `pentagon.command("roomName")`.
+
+## GENESIS 2.0 Module Development
+
+### Biblical Naming Convention
+
+All control system modules use Hebrew/biblical names that reflect their purpose.
+New modules **must** follow this convention.
+
+| Name | Meaning | Purpose Pattern |
+|------|---------|-----------------|
+| MERKAVA | Chariot | Command & orchestration |
+| TZOFEH | Watchman | Monitoring & alerting |
+| MALAKH | Messenger | Communication & routing |
+| KISSEH | Throne | UI & control panel |
+| KERUV | Cherub | Security & guarding |
+| EBEN | Stone | Storage & evidence |
+| RUACH | Spirit | AI & neural processing |
+| OHR | Light | Observability & metrics |
+| HADAAT | Knowledge | Decision intelligence |
+| NEPHESH | Soul | Lifecycle & hooks |
+
+### Module Structure
+
+Every module must export a class with at minimum:
+
+```js
+export class MyModule {
+  constructor(config = {}) { /* ... */ }
+  async initialize()       { /* return this */ }
+  getStatus()              { /* return { status, health, uptime, ... } */ }
+  getHealth()              { /* return { healthy: bool, checks: [...] } */ }
+}
+```
+
+### Registration with MERKAVA
+
+Modules register via `ModuleConnector`:
+
+```js
+import { ModuleConnector } from './merkava-command.js';
+
+const connector = new ModuleConnector('myModule', myInstance, {
+  capabilities: ['query', 'command'],
+  priority: 5,
+});
+merkava.registerModule(connector);
+```
+
+### Message Bus (MALAKH)
+
+Modules communicate via the MALAKH pub/sub bus:
+
+```js
+// Subscribe
+malakh.subscribe('security.*', (message) => {
+  console.log('Security event:', message.payload);
+});
+
+// Publish
+malakh.publish('security.alert', {
+  severity: 'high',
+  module: 'keruv',
+  detail: 'Unauthorized access attempt',
+});
+```
+
+### Bootstrap Integration
+
+To add a module to the boot sequence, update `genesis-init.js`:
+
+1. Add the module path to the appropriate boot phase
+2. Register it with MERKAVA in the wiring phase
+3. Subscribe to relevant MALAKH topics
+
+### File Naming
+
+- Module files: `<hebrew-name>-<english-role>.js` (e.g., `keruv-security.js`)
+- All modules live in `src/lib/`
+- UI modules live in `src/ui/static/js/`
+- Tests go in `test/genesis-modules.test.js` (append to existing suite)
+
+### Apache 2.0 Header
+
+Every new source file must include the SPDX header:
+
+```js
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// See LICENSE and NOTICE for terms.
+```
 
 ## Pull Requests
 

@@ -1,8 +1,10 @@
 # GENESIS 2.0
 
 A hardened automation stack for document generation, device management,
-cryptographic audit trails, AI-assisted workflows, and multi-layer
-infrastructure orchestration.
+cryptographic audit trails, AI-assisted workflows, multi-layer
+infrastructure orchestration, and sovereign security control.
+
+> **Founded by Murray Bembrick — Founder & Lead Developer**
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
@@ -88,7 +90,29 @@ src/index.ts              ← GATE: single CLI entry point
   │     ├── genesis_platform.sql    PostgreSQL schema (RLS, hash-chain ledger)
   │     └── genesis_db.ts           Typed PostgreSQL client
   │
-  ├── static/             ← Developer Pro dashboard
+  ├── src/lib/             ← GENESIS 2.0 Control System (Biblical Names)
+  │     ├── genesis-init.js         6-phase bootstrap — single entry point
+  │     ├── merkava-command.js      MERKAVA — Master Command Center
+  │     ├── tzofeh-sentinel.js      TZOFEH — Watchdog Monitoring Sentinel
+  │     ├── malakh-bus.js           MALAKH — High-perf Message Bus
+  │     ├── ruach-neural.js         RUACH — Neural Network Engine
+  │     ├── ohr-observability.js    OHR — Observability & Light Metrics
+  │     ├── hadaat-decision.js      HADAAT — Decision Intelligence Engine
+  │     ├── keruv-security.js       KERUV — Guardian Security Layer
+  │     ├── nephesh-hooks.js        NEPHESH — Lifecycle Hook System
+  │     ├── eben-evidence.js        EBEN — Evidence Management (Stone)
+  │     ├── shinobi-security.js     SHINOBI — Stealth Security Framework
+  │     └── tetsuya-defense.js      TETSUYA — Predictive Defense (Iron)
+  │
+  ├── src/ui/              ← Developer Pro Dashboard + Control Panel
+  │     ├── dashboard-server.js     HTTP server (40+ endpoints, zero Express)
+  │     └── static/
+  │           ├── index.html        Drag-drop panels, pop menus, AI chat, room map
+  │           └── js/
+  │                 ├── shadow-panel.js     Pentagon visualisation
+  │                 └── kisseh-throne.js    KISSEH — Master Control Panel UI
+  │
+  ├── static/             ← Legacy Developer Pro dashboard
   │     └── index.html              Drag-drop panels, pop menus, AI chat, room map
   │
   └── deploy/
@@ -326,6 +350,78 @@ Immersive web UI served at `GET /`.
 | API explorer | Click endpoints to fire requests |
 | Toast notifications | Auto-dismiss on actions |
 
+## GENESIS 2.0 Control System
+
+The control layer uses a biblical/Hebrew naming convention. Each module is a
+self-contained sovereign component wired together via the bootstrap init system.
+
+### Boot
+
+```bash
+npm run boot                      # Full 6-phase bootstrap
+npm run boot:sentinel             # Boot with TZOFEH in active watch
+node src/lib/genesis-init.js --port 4000 --watch-level combat
+```
+
+The bootstrap runs six phases in order:
+
+1. **Core Infrastructure** — MERKAVA Command Center + MALAKH Message Bus
+2. **Security Layer** — KERUV Guardian + SHINOBI Stealth + EBEN Evidence
+3. **AI & Intelligence** — RUACH Neural + OHR Observability + HADAAT Decision + TETSUYA Defense + NEPHESH Hooks + VIZ Engine
+4. **Wire** — Module registration + topic subscriptions via MALAKH
+5. **Dashboard** — HTTP server with 40+ API endpoints
+6. **Monitoring** — TZOFEH Sentinel watchdog with guardian daemons
+
+### Core Modules
+
+| Module | Hebrew | Role |
+|--------|--------|------|
+| **MERKAVA** | מרכבה (Chariot) | Master command & orchestration center |
+| **TZOFEH** | צופה (Watchman) | Continuous monitoring sentinel |
+| **MALAKH** | מלאך (Messenger) | High-performance message bus |
+| **KISSEH** | כיסא (Throne) | Browser control panel UI |
+| **RUACH** | רוח (Spirit) | Neural network engine |
+| **OHR** | אור (Light) | Observability & metrics |
+| **HADAAT** | הדעת (Knowledge) | Decision intelligence |
+| **KERUV** | כרוב (Cherub) | Guardian security layer |
+| **NEPHESH** | נפש (Soul) | Lifecycle hooks |
+| **EBEN** | אבן (Stone) | Evidence management |
+| **SHINOBI** | 忍び (Stealth) | Stealth security framework |
+| **TETSUYA** | 鉄矢 (Iron Arrow) | Predictive defense system |
+
+### Control Panel (KISSEH)
+
+The browser-based throne control panel provides real-time oversight:
+
+- **Module grid** with health indicators for all 13 modules
+- **Health ring** SVG visualisation of system pulse
+- **Alert list** with severity badges and timestamps
+- **Command log** showing directive flow
+- Keyboard shortcuts: `Ctrl+Shift+K` (toggle panel), `Ctrl+Shift+S` (sovereign mode)
+
+### Control API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/merkava/status` | MERKAVA system status |
+| `POST` | `/api/merkava/directive` | Send directive to a module |
+| `POST` | `/api/merkava/broadcast` | Broadcast to all modules |
+| `POST` | `/api/merkava/workflow/:name` | Execute named workflow |
+| `POST` | `/api/merkava/lockdown` | Trigger system lockdown |
+| `GET` | `/api/tzofeh/status` | TZOFEH monitoring status |
+| `GET` | `/api/tzofeh/anomalies` | Recent anomaly detections |
+| `POST` | `/api/tzofeh/watch-level` | Set watch level (PASSIVE→SENTINEL) |
+| `GET` | `/api/malakh/status` | MALAKH bus status |
+| `POST` | `/api/malakh/publish` | Publish message to a topic |
+| `GET` | `/api/malakh/circuit-breakers` | Circuit breaker states |
+
+### Test Modules
+
+```bash
+npm run test:modules              # Control system tests (35+ tests)
+npm run test:all                  # TypeScript tests + module tests
+```
+
 ## Key Design Decisions
 
 - **Fail-closed security.** Unknown state = compromise state. The Wheel kills any spoke that attempts an illegal state transition. Default is DENY.
@@ -342,14 +438,15 @@ Immersive web UI served at `GET /`.
 | Type | Count |
 |------|-------|
 | TypeScript | 48 |
+| JavaScript (Control System) | 13 |
 | Python | 7 |
-| Markdown/Spec | 12 |
+| Markdown/Spec | 15 |
 | Shell | 5 |
 | Rust | 3 |
 | SQL | 1 |
-| HTML/CSS | 1 |
+| HTML/CSS/JS (UI) | 3 |
 | JSON Config | 4 |
-| **Total** | **81+** |
+| **Total** | **99+** |
 
 ## Security Notes
 
@@ -362,3 +459,6 @@ Immersive web UI served at `GET /`.
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE)
+
+Copyright 2025 Murray Bembrick — Founder & Lead Developer.
+See [OWNERSHIP.md](OWNERSHIP.md) for attribution and IP details.

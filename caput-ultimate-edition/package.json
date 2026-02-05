@@ -1,8 +1,8 @@
 {
-  "name": "genesis-ultimate-edition",
+  "name": "genesis-sovereign-security",
   "version": "2.0.0",
   "description": "GENESIS 2.0 — Forbidden Ninja City Sovereign Security Platform",
-  "author": "GENESIS Project",
+  "author": "Murray Bembrick <Founder & Lead Developer>",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,8 @@
     "genesis-db": "./src/cli/db.js",
     "genesis-ui": "./src/ui/dashboard-server.js",
     "genesis-mabul": "./src/cli/mabul.js",
-    "mabul": "./src/cli/mabul.js"
+    "mabul": "./src/cli/mabul.js",
+    "genesis-boot": "./src/lib/genesis-init.js"
   },
   "scripts": {
     "genesis": "node src/cli/genesis.js",
@@ -55,7 +56,11 @@
     "mabul:health": "node src/cli/mabul.js health",
     "mabul:list": "node src/cli/mabul.js list",
     "mabul:search": "node src/cli/mabul.js search",
-    "mabul:checkpoint": "node src/cli/mabul.js checkpoint"
+    "mabul:checkpoint": "node src/cli/mabul.js checkpoint",
+    "boot": "node src/lib/genesis-init.js",
+    "boot:sentinel": "node src/lib/genesis-init.js --watch-level active",
+    "test:modules": "node --test test/genesis-modules.test.js",
+    "test:all": "node --import tsx --test test/*.test.ts && node --test test/*.test.js"
   },
   "dependencies": {
     "tsx": "^4.7.0"
@@ -70,6 +75,6 @@
     "@types/pg": "^8.10.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }
