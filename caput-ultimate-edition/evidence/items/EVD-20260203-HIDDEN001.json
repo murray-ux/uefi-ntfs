@@ -1,0 +1,73 @@
+{
+  "id": "EVD-20260203-HIDDEN001",
+  "case": "122458751",
+  "timestamp": "2026-02-03T00:00:00Z",
+  "type": "suspicious-file",
+  "description": "Small dark image file (approximately 50x30 pixels) resembling a game controller silhouette found in iPhone hidden photos folder",
+  "location": "iPhone > Photos > Hidden Album",
+  "device": "iPhone (model TBD - please update)",
+  "concern": "Unknown origin - user did not create or save this file. Found in 'hidden' picture files. Possible indicators: (1) Bluetooth controller pairing cache, (2) Gaming app asset, (3) Monitoring software indicator, (4) Cached web asset",
+  "actionTaken": "Documented via GENESIS, screenshot preserved, seeking forensic analysis",
+  "file": {
+    "originalPath": "iPhone Hidden Photos Album",
+    "sha256": "PENDING - Extract file from device to calculate",
+    "metadata": {
+      "approximateSize": "Very small (under 5KB estimated)",
+      "dimensions": "Approximately 50x30 pixels",
+      "description": "Dark/black image with controller-like silhouette shape",
+      "fileType": "Image (PNG/JPG - to be confirmed)"
+    }
+  },
+  "possibleSources": [
+    {
+      "source": "Bluetooth Controller Cache",
+      "likelihood": "Medium",
+      "explanation": "When pairing Bluetooth game controllers (PS5, Xbox, etc.), iOS caches device icons"
+    },
+    {
+      "source": "Gaming App Asset",
+      "likelihood": "Medium",
+      "explanation": "Apps like Xbox, PlayStation Remote, Steam Link store controller icons locally"
+    },
+    {
+      "source": "Web Browser Cache",
+      "likelihood": "Low",
+      "explanation": "Safari/Chrome may cache images from gaming websites"
+    },
+    {
+      "source": "Monitoring Software",
+      "likelihood": "Low-Medium",
+      "explanation": "Some monitoring apps use innocuous icons to hide their presence. The hidden folder location is concerning."
+    }
+  ],
+  "investigationSteps": [
+    "1. Check device Bluetooth history for paired game controllers",
+    "2. Review installed apps for gaming-related software",
+    "3. Check Settings > Privacy > App Privacy Report for unusual activity",
+    "4. Check Settings > General > VPN & Device Management for profiles",
+    "5. Extract file from device with full metadata (creation date, app source)",
+    "6. Run image through reverse image search",
+    "7. Consider professional forensic examination"
+  ],
+  "chainOfCustody": [
+    {
+      "timestamp": "2026-02-03T00:00:00Z",
+      "action": "Discovered",
+      "by": "admin@caput.system",
+      "notes": "User discovered image in iPhone hidden photos folder"
+    },
+    {
+      "timestamp": "2026-02-03T00:00:00Z",
+      "action": "Documented",
+      "by": "GENESIS Evidence Module",
+      "notes": "Initial documentation created, image shared with Claude for analysis"
+    }
+  ],
+  "legalRelevance": {
+    "case": "WA Magistrates Court 122458751",
+    "relevance": "Potential evidence of device monitoring/surveillance. May be relevant to family law proceedings if unauthorized access to device occurred.",
+    "preservationRequired": true
+  },
+  "status": "under-investigation",
+  "priority": "high"
+}

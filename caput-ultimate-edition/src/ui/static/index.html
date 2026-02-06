@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GENESIS 2.0 — Sovereign Security Platform</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">🔐</div>
+          <span class="sidebar-logo-text text-gradient">GENESIS 2.0</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a class="nav-item active" data-page="dashboard">
+            <span class="nav-item-icon">📊</span>
+            Dashboard
+          </a>
+          <a class="nav-item" data-page="pentagon">
+            <span class="nav-item-icon">🏛️</span>
+            Pentagon
+          </a>
+          <a class="nav-item" data-page="metrics">
+            <span class="nav-item-icon">📈</span>
+            Metrics
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Evidence</div>
+          <a class="nav-item" data-page="evidence">
+            <span class="nav-item-icon">📁</span>
+            Evidence Manager
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Security</div>
+          <a class="nav-item" data-page="security">
+            <span class="nav-item-icon">🛡️</span>
+            Security Scanner
+            <span class="nav-item-badge">NEW</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Automation</div>
+          <a class="nav-item" data-page="workflows">
+            <span class="nav-item-icon">⚡</span>
+            Workflows
+          </a>
+          <a class="nav-item" data-page="maestro">
+            <span class="nav-item-icon">🎭</span>
+            MAESTRO
+            <span class="nav-item-badge">AI</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Memory</div>
+          <a class="nav-item" data-page="mabul">
+            <span class="nav-item-icon">🕊️</span>
+            MABUL Layer
+            <span class="nav-item-badge">NEW</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Tools</div>
+          <a class="nav-item" data-page="terminal">
+            <span class="nav-item-icon">💻</span>
+            Terminal
+          </a>
+          <a class="nav-item" data-page="settings">
+            <span class="nav-item-icon">⚙️</span>
+            Settings
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer" style="padding: 1rem; border-top: 1px solid var(--color-border-subtle);">
+        <div class="text-xs text-muted">
+          GENESIS 2.0 — Forbidden Ninja City<br>
+          Sovereign Security Platform
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <h1 class="header-title" id="header-title">Dashboard</h1>
+        </div>
+        <div class="header-right">
+          <div class="flex items-center gap-sm">
+            <span id="connection-status" class="status-dot online" title="Connected"></span>
+            <span class="text-sm text-muted">Live</span>
+          </div>
+          <span id="auth-status" class="auth-status unauthenticated" title="Not authenticated" onclick="showLoginModal()">🔓</span>
+          <button class="btn btn-ghost btn-icon" onclick="location.reload()">🔄</button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page">
+          <div class="grid grid-cols-4 gap-lg mb-lg">
+            <div class="card stat-card">
+              <div class="stat-card-icon primary">⏱️</div>
+              <div class="stat-card-value" id="stat-uptime">0h 0m</div>
+              <div class="stat-card-label">System Uptime</div>
+              <span class="stat-card-change positive">↑ Active</span>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-card-icon secondary">💾</div>
+              <div class="stat-card-value" id="stat-memory">0 MB</div>
+              <div class="stat-card-label">Memory Usage</div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-card-icon success">🏛️</div>
+              <div class="stat-card-value">40</div>
+              <div class="stat-card-label">Pentagon Rooms</div>
+              <span class="stat-card-change positive">All Active</span>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-card-icon primary">🔗</div>
+              <div class="stat-card-value" id="stat-connections">1</div>
+              <div class="stat-card-label">Connections</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-lg">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">📋 Recent Activity</h4>
+                <button class="btn btn-ghost btn-sm">View All</button>
+              </div>
+              <div class="card-body">
+                <ul class="list" id="activity-list">
+                  <li class="list-item">
+                    <div class="list-item-icon" style="background: rgba(34, 197, 94, 0.15);">✓</div>
+                    <div class="list-item-content">
+                      <div class="list-item-title">System initialized</div>
+                      <div class="list-item-subtitle">All services started successfully</div>
+                    </div>
+                    <div class="list-item-meta">
+                      <span class="list-item-time">Just now</span>
+                    </div>
+                  </li>
+                  <li class="list-item">
+                    <div class="list-item-icon" style="background: rgba(0, 212, 255, 0.15);">🔐</div>
+                    <div class="list-item-content">
+                      <div class="list-item-title">Charter verification</div>
+                      <div class="list-item-subtitle">Sovereign charter validated</div>
+                    </div>
+                    <div class="list-item-meta">
+                      <span class="list-item-time">2s ago</span>
+                    </div>
+                  </li>
+                  <li class="list-item">
+                    <div class="list-item-icon" style="background: rgba(124, 58, 237, 0.15);">📊</div>
+                    <div class="list-item-content">
+                      <div class="list-item-title">Dashboard connected</div>
+                      <div class="list-item-subtitle">SSE stream established</div>
+                    </div>
+                    <div class="list-item-meta">
+                      <span class="list-item-time">5s ago</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">💚 System Health</h4>
+                <span class="badge badge-success">Healthy</span>
+              </div>
+              <div class="card-body">
+                <div class="mb-md">
+                  <div class="flex justify-between items-center mb-sm">
+                    <span class="text-sm">CPU Usage</span>
+                    <span class="text-sm text-muted" id="cpu-percent">12%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar success" id="cpu-bar" style="width: 12%"></div>
+                  </div>
+                </div>
+                <div class="mb-md">
+                  <div class="flex justify-between items-center mb-sm">
+                    <span class="text-sm">Memory</span>
+                    <span class="text-sm text-muted" id="memory-percent">24%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar" id="memory-bar" style="width: 24%"></div>
+                  </div>
+                </div>
+                <div class="mb-md">
+                  <div class="flex justify-between items-center mb-sm">
+                    <span class="text-sm">Pentagon</span>
+                    <span class="text-sm text-muted">40/40 Active</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar success" style="width: 100%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between items-center mb-sm">
+                    <span class="text-sm">Network</span>
+                    <span class="text-sm text-muted">Connected</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar success" style="width: 100%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">🏛️ Pentagon Overview</h4>
+              <button class="btn btn-secondary btn-sm" onclick="router.navigate('pentagon')">View Details</button>
+            </div>
+            <div class="card-body">
+              <div class="grid grid-cols-5 gap-md">
+                <div class="text-center p-md rounded" style="background: rgba(239, 68, 68, 0.1);">
+                  <div class="text-lg mb-sm">✡️</div>
+                  <div class="text-sm font-medium">BERESHIT</div>
+                  <div class="text-xs text-muted">Creation</div>
+                </div>
+                <div class="text-center p-md rounded" style="background: rgba(245, 158, 11, 0.1);">
+                  <div class="text-lg mb-sm">🌳</div>
+                  <div class="text-sm font-medium">EDEN</div>
+                  <div class="text-xs text-muted">Garden</div>
+                </div>
+                <div class="text-center p-md rounded" style="background: rgba(34, 197, 94, 0.1);">
+                  <div class="text-lg mb-sm">🕊️</div>
+                  <div class="text-sm font-medium">MABUL</div>
+                  <div class="text-xs text-muted">Flood</div>
+                </div>
+                <div class="text-center p-md rounded" style="background: rgba(0, 212, 255, 0.1);">
+                  <div class="text-lg mb-sm">📜</div>
+                  <div class="text-sm font-medium">BRIT</div>
+                  <div class="text-xs text-muted">Covenant</div>
+                </div>
+                <div class="text-center p-md rounded" style="background: rgba(124, 58, 237, 0.1);">
+                  <div class="text-lg mb-sm">🔥</div>
+                  <div class="text-sm font-medium">YETZIAH</div>
+                  <div class="text-xs text-muted">Exodus</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pentagon Page -->
+        <div id="page-pentagon" class="page hidden">
+          <div class="pentagon-container" id="pentagon-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Evidence Page -->
+        <div id="page-evidence" class="page hidden">
+          <div class="flex justify-between items-center mb-lg">
+            <div>
+              <h2>Evidence Management</h2>
+              <p class="text-muted">Secure evidence tracking and verification</p>
+            </div>
+            <button class="btn btn-primary" onclick="evidencePage.addEvidence()">+ Add Evidence</button>
+          </div>
+
+          <div class="card mb-lg">
+            <div class="card-body">
+              <div class="flex gap-md">
+                <div class="search-input-wrapper" style="flex: 1;">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" class="form-input search-input" id="evidence-search" placeholder="Search evidence...">
+                </div>
+                <select class="form-select" style="width: 200px;" onchange="evidencePage.setFilter(this.value)">
+                  <option value="all">All Categories</option>
+                  <option value="document">Documents</option>
+                  <option value="communication">Communications</option>
+                  <option value="financial">Financial</option>
+                  <option value="technical">Technical</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body" id="evidence-list">
+              <div class="text-center text-muted p-lg">Loading evidence...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Page -->
+        <div id="page-security" class="page hidden">
+          <div class="flex justify-between items-center mb-lg">
+            <div>
+              <h2>Security Scanner</h2>
+              <p class="text-muted">Comprehensive security analysis and threat detection</p>
+            </div>
+            <button class="btn btn-primary" id="scan-btn" onclick="securityPage.runScan()">🛡️ Run Security Scan</button>
+          </div>
+
+          <div id="security-results">
+            <div class="card">
+              <div class="card-body text-center p-lg">
+                <div class="text-muted mb-md">No recent scan results</div>
+                <p class="text-sm text-muted">Click "Run Security Scan" to analyze your system</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workflows Page -->
+        <div id="page-workflows" class="page hidden">
+          <div class="flex justify-between items-center mb-lg">
+            <div>
+              <h2>Automation Workflows</h2>
+              <p class="text-muted">Configure and manage automated processes</p>
+            </div>
+            <button class="btn btn-primary" onclick="workflowsPage.createWorkflow()">+ Create Workflow</button>
+          </div>
+
+          <div id="workflows-list">
+            <div class="card">
+              <div class="card-body text-center p-lg">
+                <div class="text-muted">Loading workflows...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Page -->
+        <div id="page-metrics" class="page hidden">
+          <div class="mb-lg">
+            <h2>System Metrics</h2>
+            <p class="text-muted">Real-time performance monitoring</p>
+          </div>
+
+          <div class="grid grid-cols-4 gap-lg mb-lg">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">CPU</h4>
+              </div>
+              <div class="card-body">
+                <div class="text-2xl font-bold mb-sm" id="cpu-value">0%</div>
+                <div class="sparkline" id="cpu-chart"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">Memory</h4>
+              </div>
+              <div class="card-body">
+                <div class="text-2xl font-bold mb-sm" id="memory-value">0%</div>
+                <div class="sparkline" id="memory-chart"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">Network</h4>
+              </div>
+              <div class="card-body">
+                <div class="text-2xl font-bold mb-sm" id="network-value">0 MB/s</div>
+                <div class="sparkline" id="network-chart"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">Disk I/O</h4>
+              </div>
+              <div class="card-body">
+                <div class="text-2xl font-bold mb-sm" id="disk-value">0%</div>
+                <div class="sparkline" id="disk-chart"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">System Information</h4>
+            </div>
+            <div class="card-body">
+              <div class="grid grid-cols-4 gap-lg">
+                <div class="text-center">
+                  <div class="text-lg font-bold text-gradient" id="info-platform">-</div>
+                  <div class="text-sm text-muted">Platform</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-bold text-gradient" id="info-node">-</div>
+                  <div class="text-sm text-muted">Node Version</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-bold text-gradient" id="info-pid">-</div>
+                  <div class="text-sm text-muted">Process ID</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-bold text-gradient" id="info-uptime">-</div>
+                  <div class="text-sm text-muted">Uptime</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminal Page -->
+        <div id="page-terminal" class="page hidden">
+          <div class="mb-lg">
+            <h2>Terminal</h2>
+            <p class="text-muted">GENESIS CLI Interface</p>
+          </div>
+
+          <div class="terminal">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <div class="terminal-title">genesis@sovereign — bash</div>
+            </div>
+            <div class="terminal-body" id="terminal-output">
+              <!-- Terminal output will be rendered here -->
+            </div>
+            <div class="terminal-input-line" style="padding: 8px 16px; border-top: 1px solid var(--color-border-subtle);">
+              <span class="terminal-prompt">genesis@sovereign:~$</span>
+              <input type="text" class="terminal-input" id="terminal-input" placeholder="Type a command...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="page-settings" class="page hidden">
+          <div class="mb-lg">
+            <h2>Settings</h2>
+            <p class="text-muted">Configure GENESIS 2.0</p>
+          </div>
+
+          <div id="settings-form">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- MABUL Memory Page -->
+        <div id="page-mabul" class="page hidden">
+          <div class="mb-lg">
+            <h2>MABUL Persistence Layer</h2>
+            <p class="text-muted">Memory, vectors, checkpoints, and semantic retrieval — The Flood Layer</p>
+          </div>
+
+          <div id="mabul-container">
+            <!-- Rendered by JS -->
+            <div class="text-muted text-center p-lg">Loading MABUL layer...</div>
+          </div>
+        </div>
+
+        <!-- MAESTRO Orchestration Page -->
+        <div id="page-maestro" class="page hidden">
+          <div class="mb-lg">
+            <h2>MAESTRO Agent Orchestration</h2>
+            <p class="text-muted">Coordinate multiple AI agents across parallel tasks</p>
+          </div>
+
+          <div id="maestro-container">
+            <!-- Rendered by JS -->
+            <div class="text-muted text-center p-lg">Loading MAESTRO orchestration...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <div class="modal" id="modal"></div>
+
+  <!-- SVG Gradients for Charts -->
+  <svg width="0" height="0">
+    <defs>
+      <linearGradient id="gradient-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#00d4ff"/>
+        <stop offset="100%" style="stop-color:#7c3aed"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <script src="js/dashboard.js"></script>
+  <script src="js/viz-engine.js"></script>
+  <script src="js/shadow-panel.js"></script>
+  <script src="js/kisseh-throne.js"></script>
+</body>
+</html>

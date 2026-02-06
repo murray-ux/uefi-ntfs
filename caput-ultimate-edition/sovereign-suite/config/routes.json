@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "description": "Rule-based routing — takes precedence over keyword matching",
+  "vaultRoot": "iCloud Drive/Shortcuts/Vault",
+  "rules": [
+    {
+      "id": "family-court-case",
+      "description": "Family court case documents — routed to dedicated legal sub-folder",
+      "match": {
+        "type": "contains_any",
+        "patterns": ["${CASE_NUMBER}", "family court"]
+      },
+      "destination": "Legal/Family-Case",
+      "preserveOriginalFilename": true,
+      "priority": 1
+    },
+    {
+      "id": "primary-business",
+      "description": "Primary business entity documents",
+      "match": {
+        "type": "contains_any",
+        "patterns": ["${BUSINESS_NAME}"]
+      },
+      "destination": "Business/Primary",
+      "priority": 2
+    },
+    {
+      "id": "trust-documents",
+      "description": "Trust administration documents",
+      "match": {
+        "type": "contains_any",
+        "patterns": ["${TRUST_NAME}", "trust deed", "distribution resolution"]
+      },
+      "destination": "Trust",
+      "priority": 3
+    }
+  ],
+  "folderStructure": {
+    "Finance": ["Bank-Statements", "Invoices", "Superannuation", "Tax-Returns"],
+    "ATO": ["Notices", "BAS", "IAS"],
+    "Legal": ["Family-Case", "General", "Correspondence"],
+    "Health": ["Referrals", "Results", "Claims"],
+    "Trust": ["Deeds", "Distributions", "Minutes"],
+    "Business": ["Primary", "Contracts", "ASIC"],
+    "Intake": ["From-iPhone", "From-Desktop", "Unsorted"],
+    "Logs": []
+  },
+  "legalCaseSubfolders": [
+    "Affidavits",
+    "Court-Orders",
+    "Financial-Statements",
+    "Correspondence",
+    "Subpoenas",
+    "Evidence"
+  ],
+  "environment": {
+    "CASE_NUMBER": "Set via GENESIS_CASE_NUMBER env var",
+    "BUSINESS_NAME": "Set via GENESIS_BUSINESS_NAME env var",
+    "TRUST_NAME": "Set via GENESIS_TRUST_NAME env var"
+  }
+}

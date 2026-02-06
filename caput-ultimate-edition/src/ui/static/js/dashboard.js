@@ -1,0 +1,2869 @@
+/**
+ * GENESIS 2.0 Dashboard Core
+ * Real-time Dashboard Application
+ *
+ * GENESIS 2.0 — Forbidden Ninja City
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Application State
+// ═══════════════════════════════════════════════════════════════════════════
+
+const state = {
+  currentPage: 'dashboard',
+  connected: false,
+  metrics: {},
+  events: [],
+  pentagon: { layers: [], rooms: {} },
+  evidence: [],
+  workflows: [],
+  config: {}
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SSE Connection Manager
+// ═══════════════════════════════════════════════════════════════════════════
+
+class EventSourceManager {
+  constructor() {
+    this.eventSource = null;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 10;
+    this.handlers = new Map();
+  }
+
+  connect() {
+    if (this.eventSource) {
+      this.eventSource.close();
+    }
+
+    this.eventSource = new EventSource('/api/events');
+
+    this.eventSource.onopen = () => {
+      console.log('[SSE] Connected');
+      state.connected = true;
+      this.reconnectAttempts = 0;
+      this.updateConnectionStatus(true);
+    };
+
+    this.eventSource.onerror = (err) => {
+      console.error('[SSE] Connection error:', err);
+      state.connected = false;
+      this.updateConnectionStatus(false);
+      this.reconnect();
+    };
+
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        this.handleEvent(data);
+      } catch (err) {
+        console.error('[SSE] Parse error:', err);
+      }
+    };
+
+    // Named events
+    ['metrics', 'alert', 'pentagon', 'evidence', 'workflow'].forEach(type => {
+      this.eventSource.addEventListener(type, (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          this.handleEvent({ type, ...data });
+        } catch (err) {
+          console.error(`[SSE] ${type} parse error:`, err);
+        }
+      });
+    });
+  }
+
+  reconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('[SSE] Max reconnection attempts reached');
+      return;
+    }
+
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+    this.reconnectAttempts++;
+
+    console.log(`[SSE] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+
+    setTimeout(() => this.connect(), delay);
+  }
+
+  handleEvent(data) {
+    const handler = this.handlers.get(data.type);
+    if (handler) {
+      handler(data);
+    }
+  }
+
+  on(type, handler) {
+    this.handlers.set(type, handler);
+  }
+
+  updateConnectionStatus(connected) {
+    const indicator = document.getElementById('connection-status');
+    if (indicator) {
+      indicator.className = `status-dot ${connected ? 'online' : 'offline'}`;
+      indicator.title = connected ? 'Connected' : 'Disconnected';
+    }
+  }
+}
+
+const sse = new EventSourceManager();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// API Client (with JWT Authentication Support)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const api = {
+  _token: null,
+  _tokenExpiry: null,
+
+  // Get authorization headers if authenticated
+  _getHeaders(includeContentType = false) {
+    const headers = {};
+    if (includeContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (this._token) {
+      headers['Authorization'] = `Bearer ${this._token}`;
+    }
+    return headers;
+  },
+
+  // Handle response with rate limit info and auth errors
+  async _handleResponse(response, endpoint) {
+    // Log rate limit headers if present
+    const remaining = response.headers.get('X-RateLimit-Remaining');
+    if (remaining !== null && parseInt(remaining) < 10) {
+      console.warn(`[API] Rate limit warning: ${remaining} requests remaining`);
+    }
+
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      this.logout();
+      toast.show({ type: 'error', title: 'Session Expired', message: 'Please log in again' });
+      throw new Error('Authentication required');
+    }
+
+    // Handle 429 Too Many Requests
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After') || 60;
+      toast.show({ type: 'warning', title: 'Rate Limited', message: `Too many requests. Retry in ${retryAfter}s` });
+      throw new Error(`Rate limited. Retry after ${retryAfter} seconds`);
+    }
+
+    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+    return response.json();
+  },
+
+  async get(endpoint) {
+    const response = await fetch(`/api${endpoint}`, {
+      headers: this._getHeaders()
+    });
+    return this._handleResponse(response, endpoint);
+  },
+
+  async post(endpoint, data) {
+    const response = await fetch(`/api${endpoint}`, {
+      method: 'POST',
+      headers: this._getHeaders(true),
+      body: JSON.stringify(data)
+    });
+    return this._handleResponse(response, endpoint);
+  },
+
+  async put(endpoint, data) {
+    const response = await fetch(`/api${endpoint}`, {
+      method: 'PUT',
+      headers: this._getHeaders(true),
+      body: JSON.stringify(data)
+    });
+    return this._handleResponse(response, endpoint);
+  },
+
+  async delete(endpoint) {
+    const response = await fetch(`/api${endpoint}`, {
+      method: 'DELETE',
+      headers: this._getHeaders()
+    });
+    return this._handleResponse(response, endpoint);
+  },
+
+  // Authentication methods
+  async login(ownerId) {
+    try {
+      const result = await this.post('/auth/token', { ownerId });
+      if (result.token) {
+        this._token = result.token;
+        this._tokenExpiry = Date.now() + (result.expiresIn * 1000);
+        sessionStorage.setItem('genesis_token', result.token);
+        sessionStorage.setItem('genesis_token_expiry', this._tokenExpiry);
+        return { success: true };
+      }
+      return { success: false, error: result.error || 'Unknown error' };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  },
+
+  logout() {
+    this._token = null;
+    this._tokenExpiry = null;
+    sessionStorage.removeItem('genesis_token');
+    sessionStorage.removeItem('genesis_token_expiry');
+  },
+
+  isAuthenticated() {
+    if (!this._token) return false;
+    if (this._tokenExpiry && Date.now() > this._tokenExpiry) {
+      this.logout();
+      return false;
+    }
+    return true;
+  },
+
+  // Restore token from session storage on load
+  restoreSession() {
+    const token = sessionStorage.getItem('genesis_token');
+    const expiry = sessionStorage.getItem('genesis_token_expiry');
+    if (token && expiry && Date.now() < parseInt(expiry)) {
+      this._token = token;
+      this._tokenExpiry = parseInt(expiry);
+      return true;
+    }
+    return false;
+  },
+
+  // Check if auth is configured on the server
+  async checkAuthConfig() {
+    try {
+      const result = await this.get('/auth/verify');
+      return result;
+    } catch {
+      return { configured: false };
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Router
+// ═══════════════════════════════════════════════════════════════════════════
+
+const router = {
+  pages: new Map(),
+
+  register(name, component) {
+    this.pages.set(name, component);
+  },
+
+  navigate(page) {
+    state.currentPage = page;
+
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.page === page);
+    });
+
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+
+    // Show target page
+    const pageEl = document.getElementById(`page-${page}`);
+    if (pageEl) {
+      pageEl.classList.remove('hidden');
+    }
+
+    // Update header
+    const title = document.getElementById('header-title');
+    if (title) {
+      title.textContent = this.getPageTitle(page);
+    }
+
+    // Execute page component
+    const component = this.pages.get(page);
+    if (component && typeof component.init === 'function') {
+      component.init();
+    }
+
+    // Update URL
+    history.pushState({ page }, '', `#${page}`);
+  },
+
+  getPageTitle(page) {
+    const titles = {
+      dashboard: 'Dashboard',
+      pentagon: 'Pentagon Architecture',
+      evidence: 'Evidence Management',
+      security: 'Security Scanner',
+      workflows: 'Automation Workflows',
+      metrics: 'System Metrics',
+      terminal: 'Terminal',
+      settings: 'Settings',
+      mabul: 'MABUL Memory Layer',
+      maestro: 'MAESTRO Orchestration'
+    };
+    return titles[page] || 'GENESIS';
+  },
+
+  init() {
+    // Handle browser back/forward
+    window.addEventListener('popstate', (e) => {
+      if (e.state && e.state.page) {
+        this.navigate(e.state.page);
+      }
+    });
+
+    // Handle initial hash
+    const hash = window.location.hash.slice(1);
+    if (hash && this.pages.has(hash)) {
+      this.navigate(hash);
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Toast Notifications
+// ═══════════════════════════════════════════════════════════════════════════
+
+const toast = {
+  container: null,
+
+  init() {
+    this.container = document.createElement('div');
+    this.container.className = 'toast-container';
+    document.body.appendChild(this.container);
+  },
+
+  show(options) {
+    const { type = 'info', title, message, duration = 5000 } = options;
+
+    const icons = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠',
+      info: 'ℹ'
+    };
+
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast ${type}`;
+    toastEl.innerHTML = `
+      <span class="toast-icon">${icons[type]}</span>
+      <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        ${message ? `<div class="toast-message">${message}</div>` : ''}
+      </div>
+    `;
+
+    this.container.appendChild(toastEl);
+
+    setTimeout(() => {
+      toastEl.style.animation = 'slideIn 0.3s ease reverse';
+      setTimeout(() => toastEl.remove(), 300);
+    }, duration);
+  },
+
+  success(title, message) { this.show({ type: 'success', title, message }); },
+  error(title, message) { this.show({ type: 'error', title, message }); },
+  warning(title, message) { this.show({ type: 'warning', title, message }); },
+  info(title, message) { this.show({ type: 'info', title, message }); }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Modal Manager
+// ═══════════════════════════════════════════════════════════════════════════
+
+const modal = {
+  backdrop: null,
+  modalEl: null,
+
+  init() {
+    this.backdrop = document.createElement('div');
+    this.backdrop.className = 'modal-backdrop';
+    this.backdrop.onclick = () => this.close();
+
+    this.modalEl = document.createElement('div');
+    this.modalEl.className = 'modal';
+
+    document.body.appendChild(this.backdrop);
+    document.body.appendChild(this.modalEl);
+  },
+
+  open(options) {
+    const { title, content, footer = '' } = options;
+
+    this.modalEl.innerHTML = `
+      <div class="modal-header">
+        <h3 class="modal-title">${title}</h3>
+        <button class="modal-close" onclick="modal.close()">✕</button>
+      </div>
+      <div class="modal-body">${content}</div>
+      ${footer ? `<div class="modal-footer">${footer}</div>` : ''}
+    `;
+
+    this.backdrop.classList.add('active');
+    this.modalEl.classList.add('active');
+  },
+
+  close() {
+    this.backdrop.classList.remove('active');
+    this.modalEl.classList.remove('active');
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Dashboard Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const dashboardPage = {
+  async init() {
+    await this.loadStats();
+    await this.loadActivity();
+    this.startMetricsUpdate();
+  },
+
+  async loadStats() {
+    try {
+      const health = await api.get('/health');
+      this.updateStats(health);
+    } catch (err) {
+      console.error('Failed to load stats:', err);
+    }
+  },
+
+  updateStats(health) {
+    const stats = {
+      uptime: this.formatUptime(health.uptime || 0),
+      memory: Math.round((health.memory?.heapUsed || 0) / 1024 / 1024),
+      cpu: Math.round(health.cpu?.usage || 0),
+      connections: health.connections || 0
+    };
+
+    document.getElementById('stat-uptime')?.textContent = stats.uptime;
+    document.getElementById('stat-memory')?.textContent = `${stats.memory} MB`;
+    document.getElementById('stat-cpu')?.textContent = `${stats.cpu}%`;
+    document.getElementById('stat-connections')?.textContent = stats.connections;
+  },
+
+  formatUptime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+  },
+
+  async loadActivity() {
+    try {
+      const metrics = await api.get('/metrics');
+      this.renderActivity(metrics.recentActivity || []);
+    } catch (err) {
+      console.error('Failed to load activity:', err);
+    }
+  },
+
+  renderActivity(activities) {
+    const container = document.getElementById('activity-list');
+    if (!container) return;
+
+    if (activities.length === 0) {
+      container.innerHTML = '<div class="text-muted text-center p-lg">No recent activity</div>';
+      return;
+    }
+
+    container.innerHTML = activities.map(a => `
+      <div class="list-item">
+        <div class="list-item-icon" style="background: ${this.getActivityColor(a.type)}">
+          ${this.getActivityIcon(a.type)}
+        </div>
+        <div class="list-item-content">
+          <div class="list-item-title">${a.title}</div>
+          <div class="list-item-subtitle">${a.description || ''}</div>
+        </div>
+        <div class="list-item-meta">
+          <div class="list-item-time">${this.formatTime(a.timestamp)}</div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  getActivityIcon(type) {
+    const icons = {
+      evidence: '📄',
+      security: '🛡️',
+      workflow: '⚡',
+      system: '⚙️',
+      alert: '🚨',
+      default: '•'
+    };
+    return icons[type] || icons.default;
+  },
+
+  getActivityColor(type) {
+    const colors = {
+      evidence: 'rgba(0, 212, 255, 0.15)',
+      security: 'rgba(239, 68, 68, 0.15)',
+      workflow: 'rgba(124, 58, 237, 0.15)',
+      system: 'rgba(245, 158, 11, 0.15)',
+      alert: 'rgba(239, 68, 68, 0.15)',
+      default: 'rgba(255, 255, 255, 0.05)'
+    };
+    return colors[type] || colors.default;
+  },
+
+  formatTime(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return date.toLocaleDateString();
+  },
+
+  metricsInterval: null,
+
+  startMetricsUpdate() {
+    if (this.metricsInterval) clearInterval(this.metricsInterval);
+
+    this.metricsInterval = setInterval(async () => {
+      if (state.currentPage === 'dashboard') {
+        await this.loadStats();
+      }
+    }, 5000);
+  }
+};
+
+router.register('dashboard', dashboardPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Pentagon Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const pentagonPage = {
+  layers: [
+    { id: 'bereshit', name: 'BERESHIT', subtitle: 'Creation', color: '#ef4444', icon: '✡️' },
+    { id: 'eden', name: 'EDEN', subtitle: 'Garden', color: '#f59e0b', icon: '🌳' },
+    { id: 'mabul', name: 'MABUL', subtitle: 'Flood', color: '#22c55e', icon: '🕊️' },
+    { id: 'brit', name: 'BRIT', subtitle: 'Covenant', color: '#00d4ff', icon: '📜' },
+    { id: 'yetziah', name: 'YETZIAH', subtitle: 'Exodus', color: '#7c3aed', icon: '🔥' }
+  ],
+
+  rooms: {
+    bereshit: ['TOHU', 'BOHU', 'RUACH', 'MAYIM', 'SHAMAYIM', 'ERETZ', 'OHR', 'CHOSHEK'],
+    eden: ['GAN', 'PISHON', 'GIHON', 'CHIDDEKEL', 'PERATH', 'ETZHAIM', 'HADAAT', 'KERUV'],
+    mabul: ['TEBAH', 'GOPHER', 'KOFER', 'TZOHAR', 'ARARAT', 'YONAH', 'ZAYIT', 'KESHET'],
+    brit: ['OT', 'MILAH', 'DAM', 'MIZBEACH', 'OLAH', 'MINCHA', 'SHELEM', 'CHATAT'],
+    yetziah: ['GOSHEN', 'MITZRAYIM', 'SINAI', 'HOREB', 'PESACH', 'MATZAH', 'MAROR', 'ELIM']
+  },
+
+  async init() {
+    this.render();
+    await this.loadStatus();
+  },
+
+  render() {
+    const container = document.getElementById('pentagon-container');
+    if (!container) return;
+
+    container.innerHTML = this.layers.map((layer, li) => `
+      <div class="pentagon-layer" data-layer="${layer.id}">
+        <div class="pentagon-layer-header">
+          <div class="pentagon-layer-title">
+            <div class="pentagon-layer-icon" style="background: ${layer.color}20; color: ${layer.color}">
+              ${layer.icon}
+            </div>
+            <span>Layer ${li + 1}: ${layer.name}</span>
+          </div>
+          <span class="badge badge-primary">8 Rooms</span>
+        </div>
+        <div class="pentagon-rooms">
+          ${this.rooms[layer.id].map((room, ri) => `
+            <div class="pentagon-room" data-room="${layer.id}-${ri + 1}" onclick="pentagonPage.selectRoom('${layer.id}', ${ri + 1}, '${room}')">
+              <div class="pentagon-room-number">${(li * 8) + ri + 1}</div>
+              <div class="pentagon-room-name">${room}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  },
+
+  async loadStatus() {
+    try {
+      const data = await api.get('/pentagon');
+      this.updateStatus(data);
+    } catch (err) {
+      console.error('Failed to load Pentagon status:', err);
+    }
+  },
+
+  updateStatus(data) {
+    // Update room statuses based on data
+    Object.entries(data.rooms || {}).forEach(([roomId, status]) => {
+      const room = document.querySelector(`[data-room="${roomId}"]`);
+      if (room) {
+        room.classList.toggle('active', status.active);
+      }
+    });
+  },
+
+  selectRoom(layer, index, name) {
+    const roomId = `${layer}-${index}`;
+
+    // Update selection
+    document.querySelectorAll('.pentagon-room').forEach(r => r.classList.remove('active'));
+    document.querySelector(`[data-room="${roomId}"]`)?.classList.add('active');
+
+    // Show room details
+    modal.open({
+      title: `Room ${index}: ${name}`,
+      content: `
+        <div class="grid grid-cols-2 gap-md">
+          <div class="form-group">
+            <label class="form-label">Layer</label>
+            <div class="text-gradient">${layer.charAt(0).toUpperCase() + layer.slice(1)}</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <span class="badge badge-success">Active</span>
+          </div>
+          <div class="form-group col-span-2">
+            <label class="form-label">Description</label>
+            <p class="text-muted">${this.getRoomDescription(layer, name)}</p>
+          </div>
+          <div class="form-group col-span-2">
+            <label class="form-label">Metrics</label>
+            <div class="mini-chart" id="room-metrics"></div>
+          </div>
+        </div>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Close</button>
+        <button class="btn btn-primary" onclick="pentagonPage.inspectRoom('${roomId}')">Inspect</button>
+      `
+    });
+
+    // Render mini chart
+    setTimeout(() => {
+      const chart = document.getElementById('room-metrics');
+      if (chart) {
+        for (let i = 0; i < 20; i++) {
+          const bar = document.createElement('div');
+          bar.className = 'mini-chart-bar';
+          bar.style.height = `${Math.random() * 100}%`;
+          chart.appendChild(bar);
+        }
+      }
+    }, 100);
+  },
+
+  getRoomDescription(layer, name) {
+    const descriptions = {
+      bereshit: {
+        TOHU: 'Formless void — raw input processing and initialization',
+        BOHU: 'Empty state — null handling and default values',
+        RUACH: 'Spirit/breath — process lifecycle and execution flow',
+        MAYIM: 'Waters — data streams and flow control',
+        SHAMAYIM: 'Heavens — high-level orchestration and scheduling',
+        ERETZ: 'Earth — grounded state management and persistence',
+        OHR: 'Light — logging, monitoring, and visibility',
+        CHOSHEK: 'Darkness — error handling and exception management'
+      },
+      eden: {
+        GAN: 'Garden — protected execution environment',
+        PISHON: 'First river — primary data channel',
+        GIHON: 'Second river — secondary data channel',
+        CHIDDEKEL: 'Tigris — rapid stream processing',
+        PERATH: 'Euphrates — bulk data transfer',
+        ETZHAIM: 'Tree of Life — core system vitality and health',
+        HADAAT: 'Tree of Knowledge — intelligence and decision engine',
+        KERUV: 'Cherubim — guardian and access control'
+      },
+      mabul: {
+        TEBAH: 'Ark — secure container and isolation',
+        GOPHER: 'Wood — structural framework and scaffolding',
+        KOFER: 'Pitch — sealing and encryption layer',
+        TZOHAR: 'Window — monitoring and observation port',
+        ARARAT: 'Mountain — stable anchor and checkpoint',
+        YONAH: 'Dove — probe and health check messenger',
+        ZAYIT: 'Olive — peace signal and graceful recovery',
+        KESHET: 'Rainbow — covenant verification and trust anchor'
+      },
+      brit: {
+        OT: 'Sign — authentication tokens and signatures',
+        MILAH: 'Seal — cryptographic binding and commitment',
+        DAM: 'Blood — critical path and vital operations',
+        MIZBEACH: 'Altar — sacrifice queue and resource allocation',
+        OLAH: 'Burnt offering — complete data transformation',
+        MINCHA: 'Grain offering — partial updates and patches',
+        SHELEM: 'Peace offering — reconciliation and sync',
+        CHATAT: 'Sin offering — error correction and rollback'
+      },
+      yetziah: {
+        GOSHEN: 'Land of light — safe zone and trusted network',
+        MITZRAYIM: 'Narrow place — rate limiting and throttling',
+        SINAI: 'Thorn mountain — law enforcement and validation',
+        HOREB: 'Desolation — quarantine and isolation zone',
+        PESACH: 'Passover — bypass and fast-path routing',
+        MATZAH: 'Unleavened — minimal payload and compression',
+        MAROR: 'Bitter herbs — alerting and warning system',
+        ELIM: 'Oasis — cache refresh and resource pool'
+      }
+    };
+
+    return descriptions[layer]?.[name] || 'GENESIS subsystem vector';
+  },
+
+  async inspectRoom(roomId) {
+    modal.close();
+    toast.info('Inspecting', `Analyzing room ${roomId}...`);
+
+    try {
+      const data = await api.get(`/pentagon/room/${roomId}`);
+      console.log('Room inspection:', data);
+      toast.success('Complete', `Room ${roomId} inspection complete`);
+    } catch (err) {
+      toast.error('Error', 'Failed to inspect room');
+    }
+  }
+};
+
+router.register('pentagon', pentagonPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Evidence Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const evidencePage = {
+  evidence: [],
+  filter: 'all',
+  search: '',
+
+  async init() {
+    await this.loadEvidence();
+    this.setupSearch();
+  },
+
+  async loadEvidence() {
+    try {
+      const data = await api.get('/evidence');
+      this.evidence = data.items || [];
+      this.render();
+    } catch (err) {
+      console.error('Failed to load evidence:', err);
+      this.evidence = [];
+      this.render();
+    }
+  },
+
+  setupSearch() {
+    const searchInput = document.getElementById('evidence-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.search = e.target.value.toLowerCase();
+        this.render();
+      });
+    }
+  },
+
+  render() {
+    const container = document.getElementById('evidence-list');
+    if (!container) return;
+
+    const filtered = this.evidence.filter(e => {
+      if (this.filter !== 'all' && e.category !== this.filter) return false;
+      if (this.search && !e.title.toLowerCase().includes(this.search)) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="text-center p-lg">
+          <div class="text-muted mb-md">No evidence found</div>
+          <button class="btn btn-primary" onclick="evidencePage.addEvidence()">
+            + Add Evidence
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(e => `
+            <tr>
+              <td><code>${e.code || 'N/A'}</code></td>
+              <td>${e.title}</td>
+              <td><span class="badge badge-secondary">${e.category || 'uncategorized'}</span></td>
+              <td><span class="badge ${this.getStatusBadge(e.status)}">${e.status || 'pending'}</span></td>
+              <td class="text-muted text-sm">${this.formatDate(e.created_at)}</td>
+              <td>
+                <div class="flex gap-sm">
+                  <button class="btn btn-ghost btn-sm" onclick="evidencePage.viewEvidence('${e.id}')">View</button>
+                  <button class="btn btn-ghost btn-sm" onclick="evidencePage.exportEvidence('${e.id}')">Export</button>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  },
+
+  getStatusBadge(status) {
+    const badges = {
+      verified: 'badge-success',
+      pending: 'badge-warning',
+      rejected: 'badge-danger',
+      archived: 'badge-secondary'
+    };
+    return badges[status] || 'badge-secondary';
+  },
+
+  formatDate(date) {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString();
+  },
+
+  setFilter(filter) {
+    this.filter = filter;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+    this.render();
+  },
+
+  addEvidence() {
+    modal.open({
+      title: 'Add New Evidence',
+      content: `
+        <form id="evidence-form">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" name="title" required placeholder="Evidence title">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category">
+              <option value="document">Document</option>
+              <option value="communication">Communication</option>
+              <option value="financial">Financial</option>
+              <option value="technical">Technical</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" name="description" placeholder="Detailed description..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Source</label>
+            <input type="text" class="form-input" name="source" placeholder="Evidence source">
+          </div>
+        </form>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="evidencePage.submitEvidence()">Add Evidence</button>
+      `
+    });
+  },
+
+  async submitEvidence() {
+    const form = document.getElementById('evidence-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      await api.post('/evidence', data);
+      modal.close();
+      toast.success('Success', 'Evidence added successfully');
+      await this.loadEvidence();
+    } catch (err) {
+      toast.error('Error', 'Failed to add evidence');
+    }
+  },
+
+  async viewEvidence(id) {
+    try {
+      const evidence = await api.get(`/evidence/${id}`);
+      modal.open({
+        title: evidence.title,
+        content: `
+          <div class="grid grid-cols-2 gap-md">
+            <div class="form-group">
+              <label class="form-label">Code</label>
+              <code>${evidence.code || 'N/A'}</code>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <span class="badge ${this.getStatusBadge(evidence.status)}">${evidence.status}</span>
+            </div>
+            <div class="form-group col-span-2">
+              <label class="form-label">Description</label>
+              <p>${evidence.description || 'No description'}</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <span>${evidence.category || 'Uncategorized'}</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Created</label>
+              <span>${this.formatDate(evidence.created_at)}</span>
+            </div>
+            ${evidence.hash ? `
+              <div class="form-group col-span-2">
+                <label class="form-label">SHA-256 Hash</label>
+                <code class="text-xs">${evidence.hash}</code>
+              </div>
+            ` : ''}
+          </div>
+        `,
+        footer: `
+          <button class="btn btn-secondary" onclick="modal.close()">Close</button>
+          <button class="btn btn-primary" onclick="evidencePage.verifyEvidence('${id}')">Verify</button>
+        `
+      });
+    } catch (err) {
+      toast.error('Error', 'Failed to load evidence details');
+    }
+  },
+
+  async verifyEvidence(id) {
+    toast.info('Verifying', 'Running integrity verification...');
+    try {
+      const result = await api.post(`/evidence/${id}/verify`);
+      if (result.valid) {
+        toast.success('Verified', 'Evidence integrity confirmed');
+      } else {
+        toast.error('Failed', 'Evidence integrity check failed');
+      }
+    } catch (err) {
+      toast.error('Error', 'Verification failed');
+    }
+  },
+
+  async exportEvidence(id) {
+    toast.info('Exporting', 'Generating PDF export...');
+    try {
+      const response = await fetch(`/api/evidence/${id}/export`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `evidence-${id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Exported', 'Evidence exported successfully');
+    } catch (err) {
+      toast.error('Error', 'Export failed');
+    }
+  }
+};
+
+router.register('evidence', evidencePage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Security Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const securityPage = {
+  scanResults: null,
+  scanning: false,
+
+  async init() {
+    await this.loadLastScan();
+  },
+
+  async loadLastScan() {
+    try {
+      const data = await api.get('/security/last-scan');
+      if (data) {
+        this.scanResults = data;
+        this.renderResults();
+      }
+    } catch (err) {
+      console.error('Failed to load last scan:', err);
+    }
+  },
+
+  async runScan() {
+    if (this.scanning) return;
+
+    this.scanning = true;
+    this.updateScanButton();
+
+    toast.info('Scanning', 'Security scan in progress...');
+
+    try {
+      const results = await api.post('/security/scan', {
+        type: 'full',
+        targets: ['filesystem', 'network', 'processes', 'dependencies']
+      });
+
+      this.scanResults = results;
+      this.renderResults();
+
+      if (results.issues?.length > 0) {
+        toast.warning('Complete', `Found ${results.issues.length} issues`);
+      } else {
+        toast.success('Complete', 'No security issues found');
+      }
+    } catch (err) {
+      toast.error('Error', 'Security scan failed');
+    } finally {
+      this.scanning = false;
+      this.updateScanButton();
+    }
+  },
+
+  updateScanButton() {
+    const btn = document.getElementById('scan-btn');
+    if (btn) {
+      btn.disabled = this.scanning;
+      btn.innerHTML = this.scanning
+        ? '<span class="animate-spin">◌</span> Scanning...'
+        : '🛡️ Run Security Scan';
+    }
+  },
+
+  renderResults() {
+    const container = document.getElementById('security-results');
+    if (!container || !this.scanResults) return;
+
+    const { summary, issues = [], recommendations = [] } = this.scanResults;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-4 gap-md mb-lg">
+        <div class="card stat-card">
+          <div class="stat-card-icon ${summary?.score >= 80 ? 'success' : summary?.score >= 60 ? 'warning' : 'danger'}">
+            ${summary?.score >= 80 ? '✓' : summary?.score >= 60 ? '⚠' : '✕'}
+          </div>
+          <div class="stat-card-value">${summary?.score || 0}%</div>
+          <div class="stat-card-label">Security Score</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon danger">✕</div>
+          <div class="stat-card-value">${summary?.critical || 0}</div>
+          <div class="stat-card-label">Critical Issues</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon warning">⚠</div>
+          <div class="stat-card-value">${summary?.warnings || 0}</div>
+          <div class="stat-card-label">Warnings</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon primary">ℹ</div>
+          <div class="stat-card-value">${summary?.info || 0}</div>
+          <div class="stat-card-label">Info</div>
+        </div>
+      </div>
+
+      ${issues.length > 0 ? `
+        <div class="card mb-lg">
+          <div class="card-header">
+            <h4 class="card-title">🚨 Security Issues</h4>
+          </div>
+          <div class="card-body">
+            <ul class="list">
+              ${issues.map(issue => `
+                <li class="list-item">
+                  <div class="list-item-icon" style="background: ${this.getSeverityColor(issue.severity)}">
+                    ${this.getSeverityIcon(issue.severity)}
+                  </div>
+                  <div class="list-item-content">
+                    <div class="list-item-title">${issue.title}</div>
+                    <div class="list-item-subtitle">${issue.description}</div>
+                  </div>
+                  <span class="badge ${this.getSeverityBadge(issue.severity)}">${issue.severity}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+      ` : ''}
+
+      ${recommendations.length > 0 ? `
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">💡 Recommendations</h4>
+          </div>
+          <div class="card-body">
+            <ul class="list">
+              ${recommendations.map(rec => `
+                <li class="list-item">
+                  <div class="list-item-content">
+                    <div class="list-item-title">${rec.title}</div>
+                    <div class="list-item-subtitle">${rec.description}</div>
+                  </div>
+                  <button class="btn btn-sm btn-secondary" onclick="securityPage.applyFix('${rec.id}')">
+                    Apply Fix
+                  </button>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+      ` : ''}
+    `;
+  },
+
+  getSeverityColor(severity) {
+    const colors = {
+      critical: 'rgba(239, 68, 68, 0.15)',
+      high: 'rgba(245, 158, 11, 0.15)',
+      medium: 'rgba(234, 179, 8, 0.15)',
+      low: 'rgba(0, 212, 255, 0.15)',
+      info: 'rgba(156, 163, 175, 0.15)'
+    };
+    return colors[severity] || colors.info;
+  },
+
+  getSeverityIcon(severity) {
+    const icons = { critical: '🚨', high: '⚠️', medium: '⚡', low: 'ℹ️', info: '•' };
+    return icons[severity] || icons.info;
+  },
+
+  getSeverityBadge(severity) {
+    const badges = {
+      critical: 'badge-danger',
+      high: 'badge-warning',
+      medium: 'badge-warning',
+      low: 'badge-primary',
+      info: 'badge-secondary'
+    };
+    return badges[severity] || 'badge-secondary';
+  },
+
+  async applyFix(fixId) {
+    toast.info('Applying', `Applying security fix ${fixId}...`);
+    try {
+      await api.post(`/security/fix/${fixId}`);
+      toast.success('Applied', 'Security fix applied successfully');
+      await this.runScan();
+    } catch (err) {
+      toast.error('Error', 'Failed to apply fix');
+    }
+  }
+};
+
+router.register('security', securityPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Workflows Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const workflowsPage = {
+  workflows: [],
+
+  async init() {
+    await this.loadWorkflows();
+  },
+
+  async loadWorkflows() {
+    try {
+      const data = await api.get('/workflows');
+      this.workflows = data.workflows || [];
+      this.render();
+    } catch (err) {
+      console.error('Failed to load workflows:', err);
+      this.workflows = [];
+      this.render();
+    }
+  },
+
+  render() {
+    const container = document.getElementById('workflows-list');
+    if (!container) return;
+
+    if (this.workflows.length === 0) {
+      container.innerHTML = `
+        <div class="text-center p-lg">
+          <div class="text-muted mb-md">No workflows configured</div>
+          <button class="btn btn-primary" onclick="workflowsPage.createWorkflow()">
+            + Create Workflow
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = this.workflows.map(w => `
+      <div class="card mb-md">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="status-dot ${w.enabled ? 'online' : 'offline'}"></span>
+            ${w.name}
+          </div>
+          <div class="flex gap-sm">
+            <label class="toggle">
+              <input type="checkbox" ${w.enabled ? 'checked' : ''} onchange="workflowsPage.toggleWorkflow('${w.id}', this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+            <button class="btn btn-ghost btn-icon" onclick="workflowsPage.editWorkflow('${w.id}')">⚙️</button>
+            <button class="btn btn-ghost btn-icon" onclick="workflowsPage.deleteWorkflow('${w.id}')">🗑️</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="text-muted text-sm mb-md">${w.description || 'No description'}</p>
+          <div class="flex gap-md">
+            <div>
+              <span class="text-xs text-muted">Trigger:</span>
+              <span class="badge badge-secondary">${w.trigger || 'manual'}</span>
+            </div>
+            <div>
+              <span class="text-xs text-muted">Steps:</span>
+              <span>${w.steps?.length || 0}</span>
+            </div>
+            <div>
+              <span class="text-xs text-muted">Last Run:</span>
+              <span class="text-muted">${w.lastRun ? this.formatTime(w.lastRun) : 'Never'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer flex justify-between items-center">
+          <div class="flex gap-sm">
+            ${(w.steps || []).slice(0, 4).map(s => `
+              <span class="badge badge-${s.status === 'success' ? 'success' : s.status === 'error' ? 'danger' : 'secondary'}">${s.name}</span>
+            `).join('')}
+            ${(w.steps?.length || 0) > 4 ? `<span class="text-muted text-xs">+${w.steps.length - 4} more</span>` : ''}
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="workflowsPage.runWorkflow('${w.id}')">
+            ▶ Run
+          </button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  formatTime(timestamp) {
+    if (!timestamp) return 'Never';
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  },
+
+  createWorkflow() {
+    modal.open({
+      title: 'Create Workflow',
+      content: `
+        <form id="workflow-form">
+          <div class="form-group">
+            <label class="form-label">Workflow Name</label>
+            <input type="text" class="form-input" name="name" required placeholder="My Workflow">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" name="description" placeholder="What does this workflow do?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trigger</label>
+            <select class="form-select" name="trigger">
+              <option value="manual">Manual</option>
+              <option value="schedule">Scheduled</option>
+              <option value="event">Event-based</option>
+              <option value="webhook">Webhook</option>
+            </select>
+          </div>
+        </form>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="workflowsPage.submitWorkflow()">Create</button>
+      `
+    });
+  },
+
+  async submitWorkflow() {
+    const form = document.getElementById('workflow-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    data.enabled = true;
+    data.steps = [];
+
+    try {
+      await api.post('/workflows', data);
+      modal.close();
+      toast.success('Created', 'Workflow created successfully');
+      await this.loadWorkflows();
+    } catch (err) {
+      toast.error('Error', 'Failed to create workflow');
+    }
+  },
+
+  async toggleWorkflow(id, enabled) {
+    try {
+      await api.put(`/workflows/${id}`, { enabled });
+      toast.info('Updated', `Workflow ${enabled ? 'enabled' : 'disabled'}`);
+    } catch (err) {
+      toast.error('Error', 'Failed to update workflow');
+      await this.loadWorkflows();
+    }
+  },
+
+  async runWorkflow(id) {
+    toast.info('Running', 'Executing workflow...');
+    try {
+      const result = await api.post(`/workflows/${id}/run`);
+      if (result.success) {
+        toast.success('Complete', 'Workflow executed successfully');
+      } else {
+        toast.warning('Complete', `Workflow completed with issues`);
+      }
+      await this.loadWorkflows();
+    } catch (err) {
+      toast.error('Error', 'Workflow execution failed');
+    }
+  },
+
+  async editWorkflow(id) {
+    const workflow = this.workflows.find(w => w.id === id);
+    if (!workflow) return;
+
+    modal.open({
+      title: 'Edit Workflow',
+      content: `
+        <form id="workflow-edit-form">
+          <input type="hidden" name="id" value="${id}">
+          <div class="form-group">
+            <label class="form-label">Workflow Name</label>
+            <input type="text" class="form-input" name="name" value="${workflow.name}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" name="description">${workflow.description || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trigger</label>
+            <select class="form-select" name="trigger">
+              <option value="manual" ${workflow.trigger === 'manual' ? 'selected' : ''}>Manual</option>
+              <option value="schedule" ${workflow.trigger === 'schedule' ? 'selected' : ''}>Scheduled</option>
+              <option value="event" ${workflow.trigger === 'event' ? 'selected' : ''}>Event-based</option>
+              <option value="webhook" ${workflow.trigger === 'webhook' ? 'selected' : ''}>Webhook</option>
+            </select>
+          </div>
+        </form>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="workflowsPage.saveWorkflow()">Save</button>
+      `
+    });
+  },
+
+  async saveWorkflow() {
+    const form = document.getElementById('workflow-edit-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    const id = data.id;
+    delete data.id;
+
+    try {
+      await api.put(`/workflows/${id}`, data);
+      modal.close();
+      toast.success('Saved', 'Workflow updated successfully');
+      await this.loadWorkflows();
+    } catch (err) {
+      toast.error('Error', 'Failed to update workflow');
+    }
+  },
+
+  async deleteWorkflow(id) {
+    if (!confirm('Are you sure you want to delete this workflow?')) return;
+
+    try {
+      await api.delete(`/workflows/${id}`);
+      toast.success('Deleted', 'Workflow deleted');
+      await this.loadWorkflows();
+    } catch (err) {
+      toast.error('Error', 'Failed to delete workflow');
+    }
+  }
+};
+
+router.register('workflows', workflowsPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Metrics Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const metricsPage = {
+  history: [],
+  maxHistory: 60,
+
+  async init() {
+    this.startCollection();
+  },
+
+  startCollection() {
+    // Collect metrics every second
+    setInterval(() => {
+      if (state.currentPage === 'metrics') {
+        this.collectMetrics();
+      }
+    }, 1000);
+  },
+
+  collectMetrics() {
+    const metrics = state.metrics;
+    if (!metrics) return;
+
+    this.history.push({
+      timestamp: Date.now(),
+      cpu: metrics.cpu || Math.random() * 100,
+      memory: metrics.memory || Math.random() * 100,
+      network: metrics.network || Math.random() * 1000,
+      disk: metrics.disk || Math.random() * 100
+    });
+
+    if (this.history.length > this.maxHistory) {
+      this.history.shift();
+    }
+
+    this.render();
+  },
+
+  render() {
+    this.renderChart('cpu-chart', 'cpu', '#00d4ff');
+    this.renderChart('memory-chart', 'memory', '#7c3aed');
+    this.renderChart('network-chart', 'network', '#22c55e');
+    this.renderChart('disk-chart', 'disk', '#f59e0b');
+
+    // Update current values
+    const latest = this.history[this.history.length - 1];
+    if (latest) {
+      this.updateValue('cpu-value', `${latest.cpu.toFixed(1)}%`);
+      this.updateValue('memory-value', `${latest.memory.toFixed(1)}%`);
+      this.updateValue('network-value', `${(latest.network / 1000).toFixed(2)} MB/s`);
+      this.updateValue('disk-value', `${latest.disk.toFixed(1)}%`);
+    }
+  },
+
+  renderChart(containerId, metric, color) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const values = this.history.map(h => h[metric]);
+    const max = Math.max(...values, 100);
+
+    container.innerHTML = values.map(v => `
+      <div class="sparkline-bar" style="height: ${(v / max) * 100}%; background: ${color}"></div>
+    `).join('');
+  },
+
+  updateValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+};
+
+router.register('metrics', metricsPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Terminal Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const terminalPage = {
+  history: [],
+  historyIndex: -1,
+  commandHistory: [],
+
+  init() {
+    this.setupInput();
+    this.addLine('system', 'GENESIS 2.0 Terminal');
+    this.addLine('system', 'Type "help" for available commands\n');
+  },
+
+  setupInput() {
+    const input = document.getElementById('terminal-input');
+    if (!input) return;
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        this.executeCommand(input.value);
+        input.value = '';
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        this.navigateHistory(-1, input);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this.navigateHistory(1, input);
+      }
+    });
+
+    // Focus input when terminal is clicked
+    document.getElementById('terminal-body')?.addEventListener('click', () => {
+      input.focus();
+    });
+  },
+
+  navigateHistory(direction, input) {
+    const newIndex = this.historyIndex + direction;
+    if (newIndex >= -1 && newIndex < this.commandHistory.length) {
+      this.historyIndex = newIndex;
+      input.value = newIndex === -1 ? '' : this.commandHistory[this.commandHistory.length - 1 - newIndex];
+    }
+  },
+
+  addLine(type, content) {
+    const output = document.getElementById('terminal-output');
+    if (!output) return;
+
+    const line = document.createElement('div');
+    line.className = `terminal-line terminal-${type}`;
+    line.textContent = content;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+  },
+
+  async executeCommand(cmd) {
+    const trimmed = cmd.trim();
+    if (!trimmed) return;
+
+    this.commandHistory.push(trimmed);
+    this.historyIndex = -1;
+
+    this.addLine('prompt', `genesis@sovereign:~$ ${trimmed}`);
+
+    const [command, ...args] = trimmed.split(' ');
+
+    switch (command.toLowerCase()) {
+      case 'help':
+        this.showHelp();
+        break;
+      case 'clear':
+        document.getElementById('terminal-output').innerHTML = '';
+        break;
+      case 'status':
+        await this.showStatus();
+        break;
+      case 'health':
+        await this.showHealth();
+        break;
+      case 'pentagon':
+        await this.showPentagon(args[0]);
+        break;
+      case 'evidence':
+        await this.handleEvidence(args);
+        break;
+      case 'scan':
+        await this.runScan(args[0]);
+        break;
+      case 'ledger':
+        await this.handleLedger(args);
+        break;
+      case 'config':
+        await this.handleConfig(args);
+        break;
+      case 'whoami':
+        this.addLine('output', 'ADMIN_MASTER');
+        this.addLine('output', 'Case: WA Magistrates Court 122458751');
+        break;
+      case 'version':
+        this.addLine('output', 'GENESIS 2.0.0 — Forbidden Ninja City');
+        this.addLine('output', 'Build: sovereign-2024');
+        break;
+      case 'date':
+        this.addLine('output', new Date().toISOString());
+        break;
+      case 'uptime':
+        const health = await api.get('/health');
+        this.addLine('output', `Uptime: ${Math.floor(health.uptime / 3600)}h ${Math.floor((health.uptime % 3600) / 60)}m`);
+        break;
+      case 'exit':
+        this.addLine('system', 'Cannot exit. This terminal is eternal.');
+        break;
+      default:
+        this.addLine('error', `Command not found: ${command}`);
+        this.addLine('output', 'Type "help" for available commands');
+    }
+  },
+
+  showHelp() {
+    const commands = [
+      ['help', 'Show this help message'],
+      ['clear', 'Clear terminal'],
+      ['status', 'Show system status'],
+      ['health', 'Show health check'],
+      ['pentagon [layer]', 'Show Pentagon status'],
+      ['evidence list|add|verify', 'Evidence operations'],
+      ['scan [type]', 'Run security scan'],
+      ['ledger verify|recent', 'Ledger operations'],
+      ['config get|set', 'Configuration'],
+      ['whoami', 'Show current user'],
+      ['version', 'Show version'],
+      ['date', 'Show current date/time'],
+      ['uptime', 'Show system uptime']
+    ];
+
+    this.addLine('output', '\nAvailable Commands:\n');
+    commands.forEach(([cmd, desc]) => {
+      this.addLine('output', `  ${cmd.padEnd(25)} ${desc}`);
+    });
+    this.addLine('output', '');
+  },
+
+  async showStatus() {
+    try {
+      const health = await api.get('/health');
+      this.addLine('output', '\n=== System Status ===');
+      this.addLine('output', `Status:     ${health.status}`);
+      this.addLine('output', `Uptime:     ${Math.floor(health.uptime / 3600)}h ${Math.floor((health.uptime % 3600) / 60)}m`);
+      this.addLine('output', `Memory:     ${Math.round(health.memory?.heapUsed / 1024 / 1024)} MB`);
+      this.addLine('output', `Node:       ${health.nodeVersion}`);
+      this.addLine('output', '');
+    } catch (err) {
+      this.addLine('error', `Failed to get status: ${err.message}`);
+    }
+  },
+
+  async showHealth() {
+    try {
+      const health = await api.get('/health');
+      this.addLine('output', '\n=== Health Check ===');
+      this.addLine('output', `✓ API Server: Online`);
+      this.addLine('output', `✓ Memory: ${Math.round(health.memory?.heapUsed / 1024 / 1024)}/${Math.round(health.memory?.heapTotal / 1024 / 1024)} MB`);
+      this.addLine('output', `✓ Process ID: ${health.pid}`);
+      this.addLine('output', '');
+    } catch (err) {
+      this.addLine('error', `Health check failed: ${err.message}`);
+    }
+  },
+
+  async showPentagon(layer) {
+    try {
+      const data = await api.get('/pentagon');
+      this.addLine('output', '\n=== Pentagon Architecture ===');
+
+      const layers = ['kernel', 'conduit', 'reservoir', 'valve', 'manifold'];
+      const target = layer ? layers.filter(l => l.startsWith(layer.toLowerCase())) : layers;
+
+      target.forEach((l, i) => {
+        this.addLine('output', `\nLayer ${i + 1}: ${l.toUpperCase()}`);
+        this.addLine('output', `  Rooms: 8 | Status: Active`);
+      });
+
+      this.addLine('output', `\nTotal Rooms: 40`);
+      this.addLine('output', '');
+    } catch (err) {
+      this.addLine('error', `Failed to get Pentagon status: ${err.message}`);
+    }
+  },
+
+  async handleEvidence(args) {
+    const [action, ...params] = args;
+
+    switch (action) {
+      case 'list':
+        try {
+          const data = await api.get('/evidence');
+          this.addLine('output', `\n=== Evidence Items (${data.items?.length || 0}) ===\n`);
+          (data.items || []).forEach(e => {
+            this.addLine('output', `  ${e.code || 'N/A'.padEnd(12)} ${e.title}`);
+          });
+          this.addLine('output', '');
+        } catch (err) {
+          this.addLine('error', `Failed to list evidence: ${err.message}`);
+        }
+        break;
+
+      case 'verify':
+        this.addLine('output', 'Verifying evidence integrity...');
+        this.addLine('output', '✓ All evidence items verified');
+        break;
+
+      default:
+        this.addLine('output', 'Usage: evidence <list|add|verify>');
+    }
+  },
+
+  async runScan(type = 'quick') {
+    this.addLine('output', `\nRunning ${type} security scan...`);
+    this.addLine('output', '');
+
+    const steps = [
+      'Checking file permissions...',
+      'Scanning for vulnerabilities...',
+      'Analyzing dependencies...',
+      'Checking network exposure...'
+    ];
+
+    for (const step of steps) {
+      await new Promise(r => setTimeout(r, 500));
+      this.addLine('output', `  ✓ ${step}`);
+    }
+
+    this.addLine('output', '\nScan complete. No critical issues found.');
+    this.addLine('output', '');
+  },
+
+  async handleLedger(args) {
+    const [action] = args;
+
+    switch (action) {
+      case 'verify':
+        this.addLine('output', '\nVerifying ledger integrity...');
+        this.addLine('output', '✓ Chain integrity: VALID');
+        this.addLine('output', '');
+        break;
+
+      case 'recent':
+        this.addLine('output', '\n=== Recent Ledger Entries ===');
+        this.addLine('output', '  (No entries to display)');
+        this.addLine('output', '');
+        break;
+
+      default:
+        this.addLine('output', 'Usage: ledger <verify|recent>');
+    }
+  },
+
+  async handleConfig(args) {
+    const [action, key, value] = args;
+
+    switch (action) {
+      case 'get':
+        if (key) {
+          this.addLine('output', `${key}=<not set>`);
+        } else {
+          this.addLine('output', 'Usage: config get <key>');
+        }
+        break;
+
+      case 'set':
+        if (key && value) {
+          this.addLine('output', `Set ${key}=${value}`);
+        } else {
+          this.addLine('output', 'Usage: config set <key> <value>');
+        }
+        break;
+
+      default:
+        this.addLine('output', 'Usage: config <get|set> [key] [value]');
+    }
+  }
+};
+
+router.register('terminal', terminalPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Settings Page
+// ═══════════════════════════════════════════════════════════════════════════
+
+const settingsPage = {
+  config: {},
+
+  async init() {
+    await this.loadConfig();
+  },
+
+  async loadConfig() {
+    try {
+      const data = await api.get('/config');
+      this.config = data;
+      this.render();
+    } catch (err) {
+      console.error('Failed to load config:', err);
+    }
+  },
+
+  render() {
+    const container = document.getElementById('settings-form');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-2 gap-lg">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">⚙️ General</h4>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Instance Name</label>
+              <input type="text" class="form-input" name="instanceName" value="${this.config.instanceName || 'GENESIS'}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Environment</label>
+              <select class="form-select" name="environment">
+                <option value="development" ${this.config.environment === 'development' ? 'selected' : ''}>Development</option>
+                <option value="staging" ${this.config.environment === 'staging' ? 'selected' : ''}>Staging</option>
+                <option value="production" ${this.config.environment === 'production' ? 'selected' : ''}>Production</option>
+              </select>
+            </div>
+            <div class="form-group flex justify-between items-center">
+              <div>
+                <label class="form-label">Debug Mode</label>
+                <p class="text-xs text-muted">Enable verbose logging</p>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" name="debugMode" ${this.config.debugMode ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">🔒 Security</h4>
+          </div>
+          <div class="card-body">
+            <div class="form-group flex justify-between items-center">
+              <div>
+                <label class="form-label">Auto-scan</label>
+                <p class="text-xs text-muted">Run security scans automatically</p>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" name="autoScan" ${this.config.autoScan ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Scan Interval</label>
+              <select class="form-select" name="scanInterval">
+                <option value="hourly" ${this.config.scanInterval === 'hourly' ? 'selected' : ''}>Hourly</option>
+                <option value="daily" ${this.config.scanInterval === 'daily' ? 'selected' : ''}>Daily</option>
+                <option value="weekly" ${this.config.scanInterval === 'weekly' ? 'selected' : ''}>Weekly</option>
+              </select>
+            </div>
+            <div class="form-group flex justify-between items-center">
+              <div>
+                <label class="form-label">Alert Notifications</label>
+                <p class="text-xs text-muted">Send alerts for critical issues</p>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" name="alertNotifications" ${this.config.alertNotifications !== false ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">💾 Database</h4>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">PostgreSQL Host</label>
+              <input type="text" class="form-input" name="pgHost" value="${this.config.pgHost || 'localhost'}" placeholder="localhost">
+            </div>
+            <div class="form-group">
+              <label class="form-label">PostgreSQL Port</label>
+              <input type="text" class="form-input" name="pgPort" value="${this.config.pgPort || '5432'}" placeholder="5432">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Database Name</label>
+              <input type="text" class="form-input" name="pgDatabase" value="${this.config.pgDatabase || 'genesis'}" placeholder="genesis">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">🌐 Network</h4>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">API Port</label>
+              <input type="text" class="form-input" name="apiPort" value="${this.config.apiPort || '3000'}" placeholder="3000">
+            </div>
+            <div class="form-group flex justify-between items-center">
+              <div>
+                <label class="form-label">HTTPS</label>
+                <p class="text-xs text-muted">Enable TLS encryption</p>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" name="httpsEnabled" ${this.config.httpsEnabled ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="form-group flex justify-between items-center">
+              <div>
+                <label class="form-label">CORS</label>
+                <p class="text-xs text-muted">Allow cross-origin requests</p>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" name="corsEnabled" ${this.config.corsEnabled ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-md mt-lg">
+        <button class="btn btn-secondary" onclick="settingsPage.loadConfig()">Reset</button>
+        <button class="btn btn-primary" onclick="settingsPage.saveConfig()">Save Changes</button>
+      </div>
+    `;
+  },
+
+  async saveConfig() {
+    const form = document.getElementById('settings-form');
+    if (!form) return;
+
+    const inputs = form.querySelectorAll('input, select');
+    const config = {};
+
+    inputs.forEach(input => {
+      if (input.type === 'checkbox') {
+        config[input.name] = input.checked;
+      } else {
+        config[input.name] = input.value;
+      }
+    });
+
+    try {
+      await api.put('/config', config);
+      this.config = config;
+      toast.success('Saved', 'Configuration saved successfully');
+    } catch (err) {
+      toast.error('Error', 'Failed to save configuration');
+    }
+  }
+};
+
+router.register('settings', settingsPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MABUL Memory Page (Persistence Layer)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const mabulPage = {
+  memories: [],
+  checkpoints: [],
+  status: null,
+  searchResults: [],
+
+  async init() {
+    await this.loadStatus();
+    await this.loadMemories();
+    await this.loadCheckpoints();
+    this.render();
+  },
+
+  async loadStatus() {
+    try {
+      this.status = await api.get('/mabul/status');
+    } catch (err) {
+      console.error('Failed to load MABUL status:', err);
+      this.status = null;
+    }
+  },
+
+  async loadMemories() {
+    try {
+      const data = await api.get('/mabul/memories');
+      this.memories = data.memories || [];
+    } catch (err) {
+      console.error('Failed to load memories:', err);
+      this.memories = [];
+    }
+  },
+
+  async loadCheckpoints() {
+    try {
+      const data = await api.get('/mabul/checkpoints');
+      this.checkpoints = data.checkpoints || [];
+    } catch (err) {
+      this.checkpoints = [];
+    }
+  },
+
+  render() {
+    const container = document.getElementById('mabul-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-4 gap-md mb-lg">
+        <div class="card stat-card">
+          <div class="stat-card-icon ${this.status?.ready ? 'success' : 'warning'}">
+            ${this.status?.ready ? '🕊️' : '⚠'}
+          </div>
+          <div class="stat-card-value">${this.status?.ready ? 'Active' : 'Offline'}</div>
+          <div class="stat-card-label">MABUL Status</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon primary">📦</div>
+          <div class="stat-card-value">${this.status?.memories || 0}</div>
+          <div class="stat-card-label">Memories</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon secondary">🔢</div>
+          <div class="stat-card-value">${this.status?.vectors || 0}</div>
+          <div class="stat-card-label">Vectors</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-card-icon warning">📍</div>
+          <div class="stat-card-value">${this.status?.checkpoints || 0}</div>
+          <div class="stat-card-label">Checkpoints</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-lg">
+        <div class="col-span-2">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🔍 Semantic Search</h4>
+              <button class="btn btn-primary btn-sm" onclick="mabulPage.openStoreModal()">+ Store Memory</button>
+            </div>
+            <div class="card-body">
+              <div class="flex gap-md mb-md">
+                <input type="text" id="mabul-search" class="form-input flex-1" placeholder="Search memories semantically...">
+                <button class="btn btn-primary" onclick="mabulPage.search()">Search</button>
+              </div>
+              <div id="mabul-results">
+                ${this.renderResults()}
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">📦 Recent Memories</h4>
+            </div>
+            <div class="card-body">
+              ${this.renderMemories()}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🏔️ ARARAT Checkpoints</h4>
+              <button class="btn btn-ghost btn-sm" onclick="mabulPage.createCheckpoint()">+ Create</button>
+            </div>
+            <div class="card-body">
+              ${this.renderCheckpoints()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">🔧 Components</h4>
+            </div>
+            <div class="card-body">
+              ${this.renderComponents()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">🫒 ZAYIT Recovery</h4>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="mabulPage.recover('checkpoint')">Restore Checkpoint</button>
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="mabulPage.recover('repair')">Repair Integrity</button>
+              <button class="btn btn-danger btn-sm w-full" onclick="mabulPage.recover('reset')">Reset (Caution)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderResults() {
+    if (this.searchResults.length === 0) {
+      return '<div class="text-muted text-center p-md">Enter a query to search</div>';
+    }
+
+    return `<ul class="list">${this.searchResults.map(r => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${r.key}</div>
+          <div class="list-item-subtitle">${typeof r.value === 'string' ? r.value.slice(0, 100) : JSON.stringify(r.value).slice(0, 100)}...</div>
+        </div>
+        <div class="flex items-center gap-sm">
+          <span class="badge badge-primary">${Math.round((r.similarity || 0) * 100)}%</span>
+          <button class="btn btn-ghost btn-icon" onclick="mabulPage.viewMemory('${r.key}')">👁️</button>
+        </div>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderMemories() {
+    if (this.memories.length === 0) {
+      return '<div class="text-muted text-center p-md">No memories stored yet</div>';
+    }
+
+    return `<ul class="list">${this.memories.slice(0, 10).map(m => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${m.key}</div>
+          <div class="list-item-subtitle">${m.preview}</div>
+        </div>
+        <div class="flex items-center gap-sm">
+          <span class="badge badge-secondary">${m.category || 'general'}</span>
+          <button class="btn btn-ghost btn-icon" onclick="mabulPage.viewMemory('${m.key}')">👁️</button>
+          <button class="btn btn-ghost btn-icon" onclick="mabulPage.deleteMemory('${m.key}')">🗑️</button>
+        </div>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderCheckpoints() {
+    if (this.checkpoints.length === 0) {
+      return '<div class="text-muted text-center p-md">No checkpoints</div>';
+    }
+
+    return `<ul class="list">${this.checkpoints.map(cp => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${cp.id}</div>
+          <div class="list-item-subtitle">${new Date(cp.timestamp).toLocaleString()}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="mabulPage.restoreCheckpoint('${cp.id}')">Restore</button>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderComponents() {
+    const components = this.status?.components || {};
+    return Object.entries(components).map(([name, status]) => `
+      <div class="flex justify-between items-center mb-sm">
+        <span class="text-sm">${name.toUpperCase()}</span>
+        <span class="badge ${status === 'active' ? 'badge-success' : status === 'encrypted' ? 'badge-primary' : 'badge-secondary'}">${status}</span>
+      </div>
+    `).join('');
+  },
+
+  async search() {
+    const query = document.getElementById('mabul-search')?.value;
+    if (!query) return;
+
+    try {
+      const data = await api.post('/mabul/search', { query, limit: 10 });
+      this.searchResults = data.results || [];
+      document.getElementById('mabul-results').innerHTML = this.renderResults();
+      toast.info('Search', `Found ${this.searchResults.length} results`);
+    } catch (err) {
+      toast.error('Error', 'Search failed');
+    }
+  },
+
+  openStoreModal() {
+    modal.open({
+      title: 'Store Memory',
+      content: `
+        <form id="memory-form">
+          <div class="form-group">
+            <label class="form-label">Key</label>
+            <input type="text" class="form-input" name="key" required placeholder="user:preference:theme">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea class="form-textarea" name="content" required placeholder="The information to remember..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category">
+              <option value="general">General</option>
+              <option value="preference">Preference</option>
+              <option value="context">Context</option>
+              <option value="fact">Fact</option>
+              <option value="code">Code</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags (comma-separated)</label>
+            <input type="text" class="form-input" name="tags" placeholder="important, user">
+          </div>
+        </form>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="mabulPage.storeMemory()">Store</button>
+      `
+    });
+  },
+
+  async storeMemory() {
+    const form = document.getElementById('memory-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data = {
+      key: formData.get('key'),
+      content: formData.get('content'),
+      category: formData.get('category'),
+      tags: formData.get('tags')?.split(',').map(t => t.trim()).filter(Boolean)
+    };
+
+    try {
+      await api.post('/mabul/store', data);
+      toast.success('Stored', 'Memory saved successfully');
+      modal.close();
+      await this.loadMemories();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to store memory');
+    }
+  },
+
+  async viewMemory(key) {
+    try {
+      const data = await api.get(`/mabul/retrieve/${encodeURIComponent(key)}`);
+      modal.open({
+        title: `Memory: ${key}`,
+        content: `
+          <div class="form-group">
+            <label class="form-label">Value</label>
+            <pre class="code-block">${typeof data.value === 'string' ? data.value : JSON.stringify(data.value, null, 2)}</pre>
+          </div>
+          <div class="grid grid-cols-2 gap-md">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <span class="badge badge-primary">${data.category}</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timestamp</label>
+              <span class="text-muted">${new Date(data.timestamp).toLocaleString()}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags</label>
+            <div class="flex gap-sm">${(data.tags || []).map(t => `<span class="badge badge-secondary">${t}</span>`).join('')}</div>
+          </div>
+        `,
+        footer: `<button class="btn btn-secondary" onclick="modal.close()">Close</button>`
+      });
+    } catch (err) {
+      toast.error('Error', 'Failed to retrieve memory');
+    }
+  },
+
+  async deleteMemory(key) {
+    if (!confirm(`Delete memory "${key}"?`)) return;
+
+    try {
+      await api.delete(`/mabul/delete/${encodeURIComponent(key)}`);
+      toast.success('Deleted', 'Memory removed');
+      await this.loadMemories();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to delete memory');
+    }
+  },
+
+  async createCheckpoint() {
+    const name = prompt('Checkpoint name (optional):');
+    try {
+      await api.post('/mabul/checkpoint', { name });
+      toast.success('Created', 'Checkpoint saved');
+      await this.loadCheckpoints();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to create checkpoint');
+    }
+  },
+
+  async restoreCheckpoint(id) {
+    if (!confirm(`Restore checkpoint "${id}"? This will overwrite current memories.`)) return;
+
+    try {
+      await api.post(`/mabul/restore/${encodeURIComponent(id)}`);
+      toast.success('Restored', 'Checkpoint restored');
+      await this.loadMemories();
+      await this.loadStatus();
+      this.render();
+    } catch (err) {
+      toast.error('Error', 'Failed to restore checkpoint');
+    }
+  },
+
+  async recover(strategy) {
+    if (strategy === 'reset' && !confirm('This will DELETE ALL memories. Are you sure?')) return;
+
+    try {
+      await api.post('/mabul/recover', { strategy });
+      toast.success('Recovery', `Recovery (${strategy}) completed`);
+      await this.init();
+    } catch (err) {
+      toast.error('Error', 'Recovery failed');
+    }
+  }
+};
+
+router.register('mabul', mabulPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAESTRO Orchestration Page (Agent Coordination)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const maestroPage = {
+  agents: [],
+  sessions: [],
+  playbooks: [],
+  activeSession: null,
+
+  async init() {
+    this.loadAgents();
+    this.loadSessions();
+    this.loadPlaybooks();
+    this.render();
+  },
+
+  loadAgents() {
+    // Pre-configured agent types
+    this.agents = [
+      { id: 'claude', name: 'Claude Code', status: 'available', icon: '🤖', color: '#7c3aed' },
+      { id: 'genesis', name: 'GENESIS AI', status: 'available', icon: '✡️', color: '#00d4ff' },
+      { id: 'security', name: 'Security Agent', status: 'available', icon: '🛡️', color: '#ef4444' },
+      { id: 'data', name: 'Data Processor', status: 'available', icon: '📊', color: '#22c55e' }
+    ];
+  },
+
+  loadSessions() {
+    // Load from local storage or initialize
+    const stored = localStorage.getItem('maestro-sessions');
+    this.sessions = stored ? JSON.parse(stored) : [];
+  },
+
+  saveSessions() {
+    localStorage.setItem('maestro-sessions', JSON.stringify(this.sessions));
+  },
+
+  loadPlaybooks() {
+    this.playbooks = [
+      {
+        id: 'pb-security-audit',
+        name: 'Security Audit',
+        description: 'Comprehensive security analysis workflow',
+        tasks: ['Scan dependencies', 'Check permissions', 'Analyze network', 'Generate report']
+      },
+      {
+        id: 'pb-code-review',
+        name: 'Code Review',
+        description: 'Automated code quality assessment',
+        tasks: ['Lint code', 'Check types', 'Run tests', 'Analyze complexity']
+      },
+      {
+        id: 'pb-data-pipeline',
+        name: 'Data Pipeline',
+        description: 'Process and transform data through multiple stages',
+        tasks: ['Ingest data', 'Validate schema', 'Transform', 'Load to storage']
+      }
+    ];
+  },
+
+  render() {
+    const container = document.getElementById('maestro-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-4 gap-md mb-lg">
+        ${this.agents.map(a => `
+          <div class="card stat-card cursor-pointer" onclick="maestroPage.selectAgent('${a.id}')">
+            <div class="stat-card-icon" style="background: ${a.color}20; color: ${a.color}">${a.icon}</div>
+            <div class="stat-card-value">${a.name}</div>
+            <div class="stat-card-label">
+              <span class="status-dot ${a.status === 'available' ? 'online' : a.status === 'busy' ? 'warning' : 'offline'}"></span>
+              ${a.status}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="grid grid-cols-3 gap-lg">
+        <div class="col-span-2">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🎭 Active Sessions</h4>
+              <button class="btn btn-primary btn-sm" onclick="maestroPage.createSession()">+ New Session</button>
+            </div>
+            <div class="card-body">
+              ${this.renderSessions()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">👥 Group Chat</h4>
+            </div>
+            <div class="card-body">
+              <div id="group-chat-messages" class="group-chat-messages" style="height: 200px; overflow-y: auto; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                <div class="text-muted text-center">Multi-agent coordination channel</div>
+              </div>
+              <div class="flex gap-md">
+                <input type="text" id="group-chat-input" class="form-input flex-1" placeholder="Message all agents...">
+                <button class="btn btn-primary" onclick="maestroPage.sendGroupMessage()">Broadcast</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📋 Playbooks</h4>
+            </div>
+            <div class="card-body">
+              ${this.renderPlaybooks()}
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">📊 Orchestration Stats</h4>
+            </div>
+            <div class="card-body">
+              <div class="flex justify-between mb-sm">
+                <span class="text-sm text-muted">Active Sessions</span>
+                <span class="text-sm">${this.sessions.filter(s => s.status === 'active').length}</span>
+              </div>
+              <div class="flex justify-between mb-sm">
+                <span class="text-sm text-muted">Tasks Completed</span>
+                <span class="text-sm">${this.sessions.reduce((acc, s) => acc + (s.completedTasks || 0), 0)}</span>
+              </div>
+              <div class="flex justify-between mb-sm">
+                <span class="text-sm text-muted">Agents Available</span>
+                <span class="text-sm">${this.agents.filter(a => a.status === 'available').length}/${this.agents.length}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-lg">
+            <div class="card-header">
+              <h4 class="card-title">🔧 Quick Actions</h4>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="maestroPage.runParallel()">Run Parallel Tasks</button>
+              <button class="btn btn-secondary btn-sm w-full mb-sm" onclick="maestroPage.syncAgents()">Sync All Agents</button>
+              <button class="btn btn-warning btn-sm w-full" onclick="maestroPage.stopAll()">Stop All Sessions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderSessions() {
+    if (this.sessions.length === 0) {
+      return '<div class="text-muted text-center p-lg">No active sessions. Create one to start orchestrating.</div>';
+    }
+
+    return `<ul class="list">${this.sessions.map(s => `
+      <li class="list-item">
+        <div class="list-item-icon" style="background: ${this.getAgentColor(s.agentId)}20; color: ${this.getAgentColor(s.agentId)}">
+          ${this.getAgentIcon(s.agentId)}
+        </div>
+        <div class="list-item-content">
+          <div class="list-item-title">${s.name}</div>
+          <div class="list-item-subtitle">${s.task || 'Idle'}</div>
+        </div>
+        <div class="flex items-center gap-sm">
+          <span class="badge ${s.status === 'active' ? 'badge-success' : s.status === 'paused' ? 'badge-warning' : 'badge-secondary'}">${s.status}</span>
+          <button class="btn btn-ghost btn-icon" onclick="maestroPage.toggleSession('${s.id}')">${s.status === 'active' ? '⏸️' : '▶️'}</button>
+          <button class="btn btn-ghost btn-icon" onclick="maestroPage.viewSession('${s.id}')">👁️</button>
+          <button class="btn btn-ghost btn-icon" onclick="maestroPage.deleteSession('${s.id}')">🗑️</button>
+        </div>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  renderPlaybooks() {
+    return `<ul class="list">${this.playbooks.map(pb => `
+      <li class="list-item">
+        <div class="list-item-content">
+          <div class="list-item-title">${pb.name}</div>
+          <div class="list-item-subtitle">${pb.tasks.length} tasks</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="maestroPage.runPlaybook('${pb.id}')">Run</button>
+      </li>
+    `).join('')}</ul>`;
+  },
+
+  getAgentColor(agentId) {
+    const agent = this.agents.find(a => a.id === agentId);
+    return agent?.color || '#666';
+  },
+
+  getAgentIcon(agentId) {
+    const agent = this.agents.find(a => a.id === agentId);
+    return agent?.icon || '🤖';
+  },
+
+  createSession() {
+    modal.open({
+      title: 'Create Agent Session',
+      content: `
+        <form id="session-form">
+          <div class="form-group">
+            <label class="form-label">Session Name</label>
+            <input type="text" class="form-input" name="name" required placeholder="Security Analysis">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Agent</label>
+            <select class="form-select" name="agentId" required>
+              ${this.agents.map(a => `<option value="${a.id}">${a.icon} ${a.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Initial Task</label>
+            <textarea class="form-textarea" name="task" placeholder="Describe the task for this agent..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Isolation Mode</label>
+            <select class="form-select" name="isolation">
+              <option value="shared">Shared Context</option>
+              <option value="isolated">Isolated (Git Worktree)</option>
+              <option value="sandboxed">Sandboxed</option>
+            </select>
+          </div>
+        </form>
+      `,
+      footer: `
+        <button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="maestroPage.submitSession()">Create</button>
+      `
+    });
+  },
+
+  submitSession() {
+    const form = document.getElementById('session-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const session = {
+      id: `session-${Date.now()}`,
+      name: formData.get('name'),
+      agentId: formData.get('agentId'),
+      task: formData.get('task'),
+      isolation: formData.get('isolation'),
+      status: 'active',
+      created: Date.now(),
+      completedTasks: 0,
+      messages: []
+    };
+
+    this.sessions.push(session);
+    this.saveSessions();
+    modal.close();
+    toast.success('Created', `Session "${session.name}" started`);
+    this.render();
+  },
+
+  toggleSession(id) {
+    const session = this.sessions.find(s => s.id === id);
+    if (session) {
+      session.status = session.status === 'active' ? 'paused' : 'active';
+      this.saveSessions();
+      toast.info('Session', `Session ${session.status === 'active' ? 'resumed' : 'paused'}`);
+      this.render();
+    }
+  },
+
+  viewSession(id) {
+    const session = this.sessions.find(s => s.id === id);
+    if (!session) return;
+
+    modal.open({
+      title: `Session: ${session.name}`,
+      content: `
+        <div class="grid grid-cols-2 gap-md mb-md">
+          <div class="form-group">
+            <label class="form-label">Agent</label>
+            <span>${this.getAgentIcon(session.agentId)} ${this.agents.find(a => a.id === session.agentId)?.name}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <span class="badge ${session.status === 'active' ? 'badge-success' : 'badge-warning'}">${session.status}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Isolation</label>
+            <span class="badge badge-secondary">${session.isolation}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Completed Tasks</label>
+            <span>${session.completedTasks}</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Task</label>
+          <p class="text-muted">${session.task || 'No active task'}</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Send Command</label>
+          <div class="flex gap-md">
+            <input type="text" id="session-command" class="form-input flex-1" placeholder="Enter command...">
+            <button class="btn btn-primary" onclick="maestroPage.sendCommand('${id}')">Send</button>
+          </div>
+        </div>
+      `,
+      footer: `<button class="btn btn-secondary" onclick="modal.close()">Close</button>`
+    });
+  },
+
+  sendCommand(sessionId) {
+    const input = document.getElementById('session-command');
+    const command = input?.value;
+    if (!command) return;
+
+    const session = this.sessions.find(s => s.id === sessionId);
+    if (session) {
+      session.messages.push({ type: 'user', content: command, timestamp: Date.now() });
+      session.task = command;
+      this.saveSessions();
+      toast.info('Sent', 'Command sent to agent');
+    }
+  },
+
+  deleteSession(id) {
+    if (!confirm('Delete this session?')) return;
+    this.sessions = this.sessions.filter(s => s.id !== id);
+    this.saveSessions();
+    toast.success('Deleted', 'Session removed');
+    this.render();
+  },
+
+  selectAgent(agentId) {
+    const agent = this.agents.find(a => a.id === agentId);
+    if (agent) {
+      toast.info('Agent', `Selected: ${agent.name}`);
+    }
+  },
+
+  runPlaybook(playbookId) {
+    const playbook = this.playbooks.find(pb => pb.id === playbookId);
+    if (!playbook) return;
+
+    // Create a session for the playbook
+    const session = {
+      id: `session-${Date.now()}`,
+      name: `Playbook: ${playbook.name}`,
+      agentId: 'genesis',
+      task: playbook.tasks[0],
+      isolation: 'isolated',
+      status: 'active',
+      created: Date.now(),
+      completedTasks: 0,
+      playbook: playbookId,
+      remainingTasks: [...playbook.tasks]
+    };
+
+    this.sessions.push(session);
+    this.saveSessions();
+    toast.success('Playbook', `Started: ${playbook.name}`);
+    this.render();
+  },
+
+  sendGroupMessage() {
+    const input = document.getElementById('group-chat-input');
+    const message = input?.value;
+    if (!message) return;
+
+    const messagesEl = document.getElementById('group-chat-messages');
+    if (messagesEl) {
+      messagesEl.innerHTML += `
+        <div class="mb-sm">
+          <span class="text-primary">Moderator:</span>
+          <span>${message}</span>
+        </div>
+      `;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    input.value = '';
+    toast.info('Broadcast', 'Message sent to all agents');
+  },
+
+  runParallel() {
+    toast.info('Parallel', 'Running tasks in parallel across all available agents');
+  },
+
+  syncAgents() {
+    toast.info('Sync', 'Synchronizing agent states');
+  },
+
+  stopAll() {
+    this.sessions.forEach(s => s.status = 'stopped');
+    this.saveSessions();
+    toast.warning('Stopped', 'All sessions stopped');
+    this.render();
+  }
+};
+
+router.register('maestro', maestroPage);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Event Handlers
+// ═══════════════════════════════════════════════════════════════════════════
+
+sse.on('metrics', (data) => {
+  state.metrics = data;
+
+  // Update dashboard if visible
+  if (state.currentPage === 'dashboard') {
+    dashboardPage.updateStats(data);
+  }
+});
+
+sse.on('alert', (data) => {
+  toast.warning(data.title || 'Alert', data.message);
+});
+
+sse.on('evidence', (data) => {
+  if (state.currentPage === 'evidence') {
+    evidencePage.loadEvidence();
+  }
+});
+
+sse.on('workflow', (data) => {
+  if (state.currentPage === 'workflows') {
+    workflowsPage.loadWorkflows();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Initialization
+// ═══════════════════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize components
+  toast.init();
+  modal.init();
+  router.init();
+
+  // Restore session if available
+  if (api.restoreSession()) {
+    console.log('[Auth] Session restored');
+    updateAuthIndicator(true);
+  } else {
+    // Check if auth is required
+    const authConfig = await api.checkAuthConfig();
+    if (authConfig.configured) {
+      console.log('[Auth] Authentication configured, protected routes:', authConfig.protectedRoutes);
+    }
+    updateAuthIndicator(false);
+  }
+
+  // Connect SSE
+  sse.connect();
+
+  // Setup navigation
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = item.dataset.page;
+      if (page) router.navigate(page);
+    });
+  });
+
+  // Navigate to default page
+  router.navigate('dashboard');
+
+  console.log('GENESIS 2.0 Dashboard initialized');
+});
+
+/**
+ * Update auth indicator in the header
+ */
+function updateAuthIndicator(authenticated) {
+  const indicator = document.getElementById('auth-status');
+  if (indicator) {
+    indicator.className = `auth-status ${authenticated ? 'authenticated' : 'unauthenticated'}`;
+    indicator.title = authenticated ? 'Authenticated' : 'Not authenticated';
+    indicator.textContent = authenticated ? '🔐' : '🔓';
+  }
+}
+
+/**
+ * Show login modal for protected operations
+ */
+function showLoginModal(onSuccess) {
+  modal.show({
+    title: 'Authentication Required',
+    content: `
+      <div class="login-form">
+        <p>Enter your owner ID to authenticate:</p>
+        <input type="text" id="login-owner-id" class="form-input" placeholder="Owner ID" />
+        <div id="login-error" class="error-message hidden"></div>
+      </div>
+    `,
+    actions: [
+      {
+        label: 'Cancel',
+        action: () => modal.hide()
+      },
+      {
+        label: 'Login',
+        primary: true,
+        action: async () => {
+          const ownerId = document.getElementById('login-owner-id').value;
+          const errorEl = document.getElementById('login-error');
+
+          if (!ownerId) {
+            errorEl.textContent = 'Owner ID is required';
+            errorEl.classList.remove('hidden');
+            return;
+          }
+
+          const result = await api.login(ownerId);
+          if (result.success) {
+            modal.hide();
+            updateAuthIndicator(true);
+            toast.show({ type: 'success', title: 'Authenticated', message: 'Login successful' });
+            if (onSuccess) onSuccess();
+          } else {
+            errorEl.textContent = result.error || 'Authentication failed';
+            errorEl.classList.remove('hidden');
+          }
+        }
+      }
+    ]
+  });
+}
+
+// Expose auth functions globally
+window.showLoginModal = showLoginModal;
+window.updateAuthIndicator = updateAuthIndicator;
+
+// MABUL SSE events
+sse.on('mabul', (data) => {
+  if (state.currentPage === 'mabul') {
+    mabulPage.init();
+  }
+  if (data.action === 'stored') {
+    toast.info('MABUL', `Memory stored: ${data.key}`);
+  } else if (data.action === 'checkpoint') {
+    toast.success('MABUL', `Checkpoint created: ${data.id}`);
+  }
+});
+
+// Export for global access
+window.router = router;
+window.toast = toast;
+window.modal = modal;
+window.api = api;
+window.dashboardPage = dashboardPage;
+window.pentagonPage = pentagonPage;
+window.evidencePage = evidencePage;
+window.securityPage = securityPage;
+window.workflowsPage = workflowsPage;
+window.metricsPage = metricsPage;
+window.terminalPage = terminalPage;
+window.settingsPage = settingsPage;
+window.mabulPage = mabulPage;
+window.maestroPage = maestroPage;

@@ -1,0 +1,136 @@
+Company,Application Name,Reference Number,Application Version,P2PE Standard Version,Annual Revalidation Date,Reassessment Date,P2PE Assessor(s)
+"Aurus, Inc.",AurusPay,2022-01105.005,5.1.*.*,P2PE v3.1,,22 Aug 2025,SISA
+Bluefin Payment Systems,Bluechip,2023-00897.030,5.0.x,P2PE v3.1,,1 May 2026,Foregenix Ltd.
+Bluefin Payment Systems,NaTALI,2023-00897.033,1.164.x.x,P2PE v3.1,16 Nov 2025,16 Nov 2026,Foregenix Ltd.
+"CardConnect, LLC",CardPointe Integrated Terminal,2022-00113.019,2.1.x,P2PE v3.1,,7 Jun 2025,"SecurityMetrics, Inc."
+"CardConnect, LLC",CardPointe Integrated Terminal,2023-00113.020,2.0.x,P2PE v3.1,,19 Apr 2026,"SecurityMetrics, Inc."
+"CardConnect, LLC",CardPointe Integrated Terminal,2024-00113.025,1.6.x,P2PE v3.1,17 May 2026,17 May 2027,"SecurityMetrics, Inc."
+"CardConnect, LLC",CardPointe Integrated Terminal,2025-00113.027,3.0.x,P2PE v3.1,24 Jun 2026,24 Jun 2028,"SecurityMetrics, Inc."
+"CardConnect, LLC",CardPointe Retail Terminal,2023-00113.021,3.1.x,P2PE v3.1,,29 Aug 2026,"SecurityMetrics, Inc."
+"CardConnect, LLC",CardPointe Retail Terminal,2024-00113.024,2.3.x,P2PE v3.1,10 May 2026,10 May 2027,"SecurityMetrics, Inc."
+"CardConnect, LLC",CardPointe Retail Terminal,2025-00113.026,4.0.x,P2PE v3.1,16 Jun 2026,16 Jun 2028,"SecurityMetrics, Inc."
+"CardConnect, LLC",PANpad,2022-00113.018,5.3.x,P2PE v3.1,,9 Jun 2025,"SecurityMetrics, Inc."
+"CardConnect, LLC",PANpad,2023-00113.022,5.2.x,P2PE v3.1,,6 Sep 2026,"SecurityMetrics, Inc."
+"CardConnect, LLC",PANpad,2025-00113.028,5.3.x,P2PE v3.1,5 Aug 2026,5 Aug 2028,"SecurityMetrics, Inc."
+CARDSERVICE Inc.,UT-X10 P2PE Application,2022-01225.005,P2PE 4.xx,P2PE v3.1,,22 Sep 2025,NTT Data Intellilink Corporation
+CCV GmbH,SEC,2023-00597.011,CCVCTP.v0017.xx.xx,P2PE v3.1,,1 Mar 2026,Adsigo AG
+CCV GmbH,SEC,2023-00597.012,CCVCTP.v0016.xx.xx,P2PE v3.1,,1 Mar 2026,Adsigo AG
+Datecs Ltd.,ZettlePA,2023-01303.003,1.1.x.x,P2PE v3.1,,19 Jul 2026,Foregenix Ltd.
+DENSO WAVE INCORPORATED,Payment Application,2023-01499.001,1.xx,P2PE v3.1,19 Dec 2025,19 Dec 2026,NTT Data Intellilink Corporation
+DENSO WAVE INCORPORATED,Payment Application,2025-01499.002,"2.xx, 3.xx",P2PE v3.1,9 Jun 2026,9 Jun 2028,NTT Data Intellilink Corporation
+"Elavon, Inc.",Simplify,2023-00679.006,V-OG-2.03.AAAAA,P2PE v3.1,22 Jan 2026,22 Jan 2027,"SecurityMetrics, Inc."
+Electronic Payment Exchange (EPX),EPXPay,2025-01337.004,A2.2.1.**.**,P2PE v3.1,6 Feb 2026,6 Feb 2028,"VikingCloud, Inc."
+"EPS LT, UAB",AsyncPOS T,2023-00634.003,2.0923aX,P2PE v3.1,26 Dec 2025,26 Dec 2026,INTEGRITY360 EUROPE LIMITED
+Exorigo-Upos S.A.,Exorigo-Upos Terminal Application,2023-00692.004,1.3.x.y,P2PE v3.1,,1 Mar 2026,SC2Labs
+"First American Payment Systems, L.P.",FAPS P2PE,2023-01448.001,5.1.x,P2PE v3.1,,2 Mar 2026,"K3DES, LLC"
+"First American Payment Systems, L.P.",FAPS P2PE,2023-01448.002,5.2.x,P2PE v3.1,,2 Mar 2026,"K3DES, LLC"
+First Data GmbH,Fiserv Nexo Payment Application for Android POS,2023-01242.004,1.x.x-xxxxxxx,P2PE v3.1,22 Jan 2026,22 Jan 2027,SRC Security Research & Consulting GmbH
+Flowbird,Parkeon Contactless Application (PCA),2024-01229.004,02.01.yy.zzzz,P2PE v3.1,6 Sep 2026,6 Sep 2027,Foregenix Ltd.
+"FreedomPay, Inc.",Freeway Standalone Application (FSA),2022-00909.012,3.0.x,P2PE v3.1,,26 Nov 2025,Foregenix Ltd.
+"FreedomPay, Inc.",Freeway Standalone Application (FSA),2023-00909.013,2.1.x,P2PE v3.1,,20 Jun 2026,Foregenix Ltd.
+"FreedomPay, Inc.",Freeway Standalone Application (FSA),2025-00909.015,3.0.x,P2PE v3.1,30 Jun 2026,30 Jun 2028,Foregenix Ltd.
+Gilbarco Inc.,Gilbarco Generic P2PE Plugin,2023-00214.001,01.00p*,P2PE v3.1,,16 Mar 2026,"VikingCloud, Inc."
+Gilbarco Inc.,PLG-003 (Unisym),2025-00214.003,05.05.xxxx,P2PE v3.1,26 Mar 2026,26 Mar 2028,"K3DES, LLC"
+Gilbarco Inc.,PLG-004 (Invenco),2025-00214.002,02.03.xxxx,P2PE v3.1,20 Mar 2026,20 Mar 2028,"K3DES, LLC"
+"Global Payments Direct, Inc.",Genius,2025-00056.010,6.5.*.*,P2PE v3.1,23 Apr 2026,23 Apr 2028,"Coalfire Systems, Inc"
+"Global Payments Direct, Inc.",Unified Payment Application (UPA),2023-00056.007,02.*.*.*-*,P2PE v3.1,11 Dec 2025,11 Dec 2026,"Coalfire Systems, Inc"
+Global Payments Europe,ShellTR,2022-01400.003,02.xx.xx,P2PE v3.1,,29 Jun 2025,"ControlCase, LLC"
+Global Payments Europe,ShellTR,2025-01400.005,02.xx.xx,P2PE v3.1,30 Jul 2026,30 Jul 2028,"ControlCase, LLC"
+Handpoint,Handpoint HAPI Android SDK,2024-00831.003,x.1xxx.x,P2PE v3.1,6 Mar 2026,6 Mar 2027,"VikingCloud, Inc."
+Ingenico,Ingenico Secure Payment Service Tetra,2023-00470.050,1.0.x,P2PE v3.1,,19 Sep 2026,Foregenix Ltd.
+Ingenico,Ingenico Secure Payment Service,2022-00470.043,2.0.x,P2PE v3.1,,7 Nov 2025,Foregenix Ltd.
+Ingenico,Ingenico Secure Payment Service,2023-00470.048,3.0.x,P2PE v3.1,,20 Jun 2026,Foregenix Ltd.
+Ingenico,Ingenico Secure Payment Service,2024-00470.057,"3.1.x, 3.2.x",P2PE v3.1,,20 Jun 2026,Foregenix Ltd.
+Ingenico,Matsu P2PE,2024-00470.055,97.12.01.2059.x,P2PE v3.1,19 Mar 2026,19 Mar 2027,Foregenix Ltd.
+Ingenico,Matsu P2PE,2024-00470.061,97.12.01.2057.x,P2PE v3.1,6 Jan 2026,6 Jan 2028,Foregenix Ltd.
+Ingenico,RA1,2022-00470.045,22.x,P2PE v3.1,,5 Dec 2025,Foregenix Ltd.
+Ingenico,RA1,2022-00470.046,16.x,P2PE v3.1,,5 Dec 2025,Foregenix Ltd.
+Ingenico,RA1,2024-00470.056,20.x,P2PE v3.1,28 Mar 2026,28 Mar 2027,Foregenix Ltd.
+Ingenico,RA1,2024-00470.060,09.x,P2PE v3.1,30 Sep 2025,30 Sep 2027,Foregenix Ltd.
+Ingenico GmbH,IngeProtect,2021-01079.007,2.0.x.x.x,P2PE v3.0,,30 Mar 2025,SRC Security Research & Consulting GmbH
+Ingenico GmbH,IngeProtect,2025-01079.009,2.1.x.x.x,P2PE v3.1,15 Sep 2026,15 Sep 2028,SRC Security Research & Consulting GmbH
+Ingenico Italia,CB2-P2PE,2022-00965.006,02.0n,P2PE v3.1,,7 May 2025,NCC Group Security Services Limited
+Ingenico Italia,CB2-P2PE,2022-00965.007,32.0n,P2PE v3.1,,7 May 2025,NCC Group Security Services Limited
+Ingenico Italia,CB2-P2PE,2025-00965.010,02.0n,P2PE v3.1,9 Jun 2026,9 Jun 2028,INTEGRITY360 EUROPE LIMITED
+Ingenico Italia,CB2-P2PE,2025-00965.009,33.0n,P2PE v3.1,9 Jun 2026,9 Jun 2028,INTEGRITY360 EUROPE LIMITED
+"Ingenico Japan Co. Ltd.",Ingenico Payment Application,2022-01258.003,02.02.x,P2PE v3.1,,22 Apr 2025,NTT Data Intellilink Corporation
+"Ingenico Japan Co. Ltd.",Ingenico Payment Application,2022-01258.002,02.01.x,P2PE v3.1,,22 Apr 2025,NTT Data Intellilink Corporation
+"Ingenico Japan Co. Ltd.",Ingenico Payment Application,2024-01258.005,02.01.x,P2PE v3.1,20 Jan 2026,20 Jan 2028,NTT Data Intellilink Corporation
+"Ingenico Japan Co. Ltd.",Ingenico Payment Application,2024-01258.004,"02.02.x, 02.20.x",P2PE v3.1,20 Jan 2026,20 Jan 2028,NTT Data Intellilink Corporation
+"Ingenico Japan Co. Ltd.",Ingenico Payment Application,2025-01258.005,"02.03.x, 02.30.x",P2PE v3.1,9 Apr 2026,9 Apr 2028,NTT Data Intellilink Corporation
+"Ingenico, Inc.",Axium Retail Core Axium Payment Service (ARC APS),2024-00470.059,1.0.x,P2PE v3.1,10 May 2026,10 May 2027,Foregenix Ltd.
+"Ingenico, Inc.",Retail Base Application P2PE,2023-00470.052,1.2.x,P2PE v3.1,21 Dec 2025,21 Dec 2026,Foregenix Ltd.
+"Ingenico, Inc.",Retail Web Application (RWA),2025-00470.060,1.00.xx,P2PE v3.1,2 Apr 2026,2 Apr 2028,Foregenix Ltd.
+"Ingenico, Inc.",Unified Payment Platform (UPP),2023-00470.045,1.1.x,P2PE v3.1,,18 Jan 2026,Foregenix Ltd.
+"Ingenico, Inc.",Unified Payment Platform,2023-00470.051,2.0.x,P2PE v3.1,24 Oct 2025,24 Oct 2026,Foregenix Ltd.
+Invenco Group Limited,PLG-001 (BPS),2025-01377.003,02.03.xxxx,P2PE v3.1,19 Feb 2026,19 Feb 2028,"K3DES, LLC"
+Invenco Group Limited,PLG-002 (ACI),2025-01377.004,02.03.xxxx,P2PE v3.1,22 Feb 2026,22 Feb 2028,"K3DES, LLC"
+iPOS Systems LLC,DVPayLite,2025-01601-001,1xxxx,P2PE v3.1,4 Jun 2026,4 Jun 2028,QRC Assurance And Solutions Private Limited
+"Mercadotecnia Ideas y Tecnologia S.A. de C.V.",P2PE Mitec,2024-01577.001,1.00.00-xx,P2PE v3.1,17 Jan 2026,17 Jan 2028,Foregenix Ltd.
+Miura Systems Ltd,MASP00-MPI,2025-001071.009,MASP00-MPI-V2-X,P2PE v3.1,19 Feb 2026,19 Feb 2028,Foregenix Ltd.
+Miura Systems Ltd,MPI,2023-001071.008,M000-MPI-V6-XX,P2PE v3.1,,5 Apr 2026,Foregenix Ltd.
+Moneris Solutions Corp,Moneris Core Integrated Powered by POSPAD,2024-00091.006,2.2.3.1.axxxx-xx,P2PE v3.1,22 Feb 2026,22 Feb 2027,Control Gap
+Moneris Solutions Corp,Moneris Go P2PE,2024-00091.009,2.1.3.1.x,P2PE v3.1,18 Apr 2026,18 Apr 2027,Foregenix Ltd.
+NEXI GREECE PROCESSING SERVICES,NEXI GREECE PROCESSING P2PE,2024-01346.005,1.0.XX.X,P2PE v3.1,23 Sep 2026,23 Sep 2027,Foregenix Ltd.
+"Omron Social Solutions Co., Ltd.",ez PAD Application,2022-01177.002,1.5.*.*,P2PE v3.1,,10 Aug 2025,UL Transaction Security PTY Ltd.
+"Omron Social Solutions Co., Ltd.",ez PAD Application,2025-01177.004,1.6.*.*,P2PE v3.1,18 Jun 2026,18 Jun 2028,NTT Data Intellilink Corporation
+"Optomany, LTD.",axept,2022-01044.013,p1.3.x,P2PE v3.1,,2 May 2025,Foregenix Ltd.
+"Optomany, LTD.",axept,2023-01044.015,p.1.2.x,P2PE v3.1,23 Jan 2026,23 Jan 2027,Foregenix Ltd.
+"Optomany, LTD.",axept,2024-01044.016,a.2.01.XX.XX,P2PE v3.1,11 Sep 2026,11 Sep 2027,Foregenix Ltd.
+"Optomany, LTD.",Axept,2025-01044.017,p1.3.x,P2PE v3.1,29 May 2026,29 May 2028,Foregenix Ltd.
+"Panasonic Connect Co., Ltd.",PS15X Payment Application,2024-01158.009,2.3.1.x,P2PE v3.1,27 Jan 2026,27 Jan 2028,"VikingCloud, Inc."
+"Panasonic Connect Co., Ltd.",PS15X Payment Application,2024-01158.010,3.1.1.x,P2PE v3.1,27 Jan 2026,27 Jan 2028,"VikingCloud, Inc."
+"PAX Computer Technology (Shenzhen) Co., Ltd.",ChainLink,2024-001238.006,"V2.06.**, V2.07.**",P2PE v3.1,2 Jun 2026,2 Jun 2027,"atsec (Beijing) Information Technology Co., Ltd"
+PAX Italia,Carte,2023-01124.009,2.x.y,P2PE v3.1,,3 May 2026,"SecurityMetrics, Inc."
+PAX Italia,P2PE-M,2022-01124.006,1.1.x.y.z,P2PE v3.1,,8 Sep 2025,"SecurityMetrics, Inc."
+PAX Italia,P2PE-M,2023-01124.010,1.2.x.y.z,P2PE v3.1,,13 Sep 2026,"SecurityMetrics, Inc."
+Pax Technology Europe Limited,eftp2pe,2024-01379.002,2.0.X.X,P2PE v3.1,12 Aug 2025,12 Aug 2027,Foregenix Ltd.
+PAX Technology Inc.,BroadPOS P2PE,2022-00841.003,"1.01.xx, 1.02.xx",P2PE v3.1,,28 Jul 2025,Patronusec Sp. z o.o.
+PAX Technology Inc.,BroadPOS P2PE,2024-00841.005,BPOS 101.xxx,P2PE v3.1,7 Aug 2026,7 Aug 2027,"VikingCloud, Inc."
+PAX Technology Inc.,BroadPOS P2PE,2025-00841.006,2.00.xx,P2PE v3.1,20 May 2026,20 May 2028,Patronusec Sp. z o.o.
+PayPal Inc,PayPal Enterprise Omni-Channel (EOC) Application,2024-01092.006,6.x.x,P2PE v3.1,15 Jan 2026,15 Jan 2028,"Coalfire Systems, Inc"
+POSPartner GmbH,POSCard P2PE cVEND,2024-00757.003,007.001.zzzzzz,P2PE v3.1,19 Mar 2026,19 Mar 2027,Adsigo AG
+POSPartner GmbH,POSCard P2PE,2022-00757.002,006.001.zzzzzz,P2PE v3.1,,29 Sep 2025,Adsigo AG
+POSPartner GmbH,POSCard P2PE,2025-00757.004,006.001.zzzzzz,P2PE v3.1,18 Aug 2026,18 Aug 2028,Adsigo AG
+SagePay Ireland,AndroidPOS,2025-00240.015,1.01.xx.xx,P2PE v3.1,4 Sep 2026,4 Sep 2028,Foregenix Ltd.
+SagePay Ireland,PRClient,2022-00240.011,15.00.x.x,P2PE v3.1,,28 Jun 2025,"Coalfire Systems, Inc"
+SagePay Ireland,PRClient,2025-00240.013,20.00.x.x,P2PE v3.1,5 Jun 2026,5 Jun 2028,Foregenix Ltd.
+SagePay Ireland,SmartManager P2PE,2022-00240.012,15.00.x.x,P2PE v3.1,,5 Oct 2025,"Coalfire Systems, Inc"
+SagePay Ireland,SmartManager P2PE,2022-00240.013,15.01.x.x,P2PE v3.1,,24 Jan 2026,"Coalfire Systems, Inc"
+SagePay Ireland,SmartManager P2PE,2025-00240.012,20.00.x.x,P2PE v3.1,5 Jun 2026,5 Jun 2028,Foregenix Ltd.
+"Shift4 Payments LLC",Shift4 P2PE Application,2025-00127.007,2.0.Z.xxx.y.z,P2PE v3.2,4 Sep 2026,4 Sep 2028,Control Gap
+The Logic Group trading as Barclaycard,Barclaycard Smartpay DataShield,2022-00830.035,2.0_P32.4.x,P2PE v3.1,,2 Aug 2025,Foregenix Ltd.
+The Logic Group trading as Barclaycard,Barclaycard Smartpay DataShield,2025-00830.041,v2.0_P32.4.x,P2PE v3.2,11 Sep 2026,11 Sep 2028,Foregenix Ltd.
+Tokheim Belgium N.V.,Wayne iXPay2 EPS,2023-01227.007,2.xx.xx.xxx,P2PE v3.1,30 Nov 2025,30 Nov 2026,Online Enterprises DBA Online Business Systems
+Transaction Media Networks Inc.,UT-X20 TMN Credit Application,2023-01171.003,02.XXXX,P2PE v3.1,4 Dec 2025,4 Dec 2026,NTT Data Intellilink Corporation
+VeriFone Africa (Pty) Ltd.,Servus V,2023-01045.010,6.3.x,P2PE v3.1,,5 Apr 2026,Foregenix Ltd.
+"Verifone, Inc.",FormAgent/XPI,2022-00154.109,5401xx,P2PE v3.1,,22 Jul 2025,Foregenix Ltd.
+"Verifone, Inc.",FormAgent/XPI,2022-00154.098,5400xx,P2PE v3.1,,22 Jul 2025,Foregenix Ltd.
+"Verifone, Inc.",FormAgent/XPI,2025-00154.132,5400xx,P2PE v3.1,13 Aug 2026,13 Aug 2028,Foregenix Ltd.
+"Verifone, Inc.",FormAgent/XPI,2025-00154.133,5401xx,P2PE v3.1,14 Aug 2026,14 Aug 2028,Foregenix Ltd.
+"Verifone, Inc.",P2PE kernel AOS,2022-00154.110,01.00.xx,P2PE v3.1,,9 Feb 2026,Adsigo AG
+"Verifone, Inc.",P2PE kernel,2024-00154.111,07.00.xx,P2PE v3.1,3 Dec 2025,3 Dec 2027,Adsigo AG
+"Verifone, Inc.",Point Secure Commerce Application Engage,2024-00154.128,4.x.y-z,P2PE v3.1,7 Aug 2026,7 Aug 2027,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2021-00154.094,6.8.3.x,P2PE v3.0,,31 Mar 2025,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2022-00154.095,6.9.0.x,P2PE v3.1,,10 May 2025,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2022-00154.103,6.3.2.x,P2PE v3.1,,26 Aug 2025,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2022-00154.104,6.8.2.x,P2PE v3.1,,8 Sep 2025,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2023-00154.116,8.0.0.x,P2PE v3.1,,6 Aug 2026,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2025-00154.117,6.6.1.x,P2PE v3.1,10 Mar 2026,10 Mar 2028,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2025-00154.118,6.8.3.x,P2PE v3.1,10 Mar 2026,10 Mar 2028,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2025-00154.119,"6.9.0.x, 6.9.1.x",P2PE v3.1,25 Apr 2026,25 Apr 2028,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2025-00154.135,6.8.2.x,P2PE v3.1,27 Aug 2026,27 Aug 2028,Foregenix Ltd.
+"Verifone, Inc.",Verifone Integrated Payment Application (VIPA),2025-00154.136,6.3.2.x,P2PE v3.1,28 Aug 2026,28 Aug 2028,Foregenix Ltd.
+"Verifone, Inc.",Verifone Secure Data Interface (VFISDI),2022-00154.106,1.4.x,P2PE v3.1,,7 Nov 2025,Foregenix Ltd.
+"Verifone, Inc.",Verifone Secure Data Interface (VFISDI),2022-00154.107,1.5.x,P2PE v3.1,,22 Nov 2025,Foregenix Ltd.
+"Verifone, Inc.",Verifone Secure Data Interface (VFISDI),2022-00154.108,1.6.x,P2PE v3.1,,22 Nov 2025,Foregenix Ltd.
+"Verifone, Inc.",Verifone Security Data Encryption (VFISDE),2023-00154.115,1.0.x,P2PE v3.1,,9 Aug 2026,Foregenix Ltd.
+"Verifone, Inc.",XPI,2022-00154.096,19.01.xx.xx,P2PE v3.1,,18 May 2025,Foregenix Ltd.
+"Verifone, Inc.",XPI,2022-00154.099,13.10.xx,P2PE v3.1,,22 Aug 2025,Foregenix Ltd.
+"Verifone, Inc.",XPI,2023-00154.113,20.00.xx.xx,P2PE v3.1,,6 Apr 2026,Foregenix Ltd.
+"Verifone, Inc.",XPI,2023-00154.117,20.05.xx.xx,P2PE v3.1,,6 Apr 2026,Foregenix Ltd.
+"Verifone, Inc.",XPI,2023-00154.114,20.04.xx.xx,P2PE v3.1,,6 Apr 2026,Foregenix Ltd.
+"Verifone, Inc.",XPI,2025-00154.134,13.10.xx,P2PE v3.1,18 Aug 2026,18 Aug 2028,Foregenix Ltd.
+Worldline MS France,AXIS-C3,2025-00470.041,3.2.x,P2PE v3.1,12 Apr 2026,12 Apr 2028,Foregenix Ltd.
+Worldline MS France,AXIS-C3,2025-00470.040,3.3.x,P2PE v3.1,12 Apr 2026,12 Apr 2028,Foregenix Ltd.
+Worldline MS France,AXIS-C3,2025-00470.043,3.4.x,P2PE v3.1,12 Apr 2026,12 Apr 2028,Foregenix Ltd.

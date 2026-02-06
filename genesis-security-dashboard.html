@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GENESIS Security Command Centre</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #030712;
+      --bg-card: rgba(15, 23, 42, 0.8);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f1f5f9;
+      --text-muted: #64748b;
+      --cyan: #00f5ff;
+      --green: #10b981;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --purple: #a855f7;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, #0f172a 50%, #1a0a2e 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle { color: var(--text-muted); font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+
+    .alert {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .alert h2 { color: var(--red); font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+    .alert p { color: #fca5a5; font-size: 14px; }
+
+    nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 48px;
+    }
+
+    nav a {
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    nav a:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+    .section { margin-bottom: 48px; scroll-margin-top: 24px; }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-title { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+    .section-title .icon { font-size: 28px; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--cyan); }
+
+    .checklist { list-style: none; }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .checklist-item:last-child { border-bottom: none; }
+
+    .checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      font-size: 14px;
+      color: transparent;
+    }
+
+    .checkbox:hover { border-color: var(--cyan); }
+    .checkbox.checked { background: var(--green); border-color: var(--green); color: white; }
+
+    .item-content { flex: 1; }
+    .item-title { font-weight: 600; margin-bottom: 4px; }
+    .item-desc { font-size: 13px; color: var(--text-muted); }
+    .item-link { color: var(--cyan); font-size: 12px; font-family: monospace; word-break: break-all; }
+
+    .priority { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+    .priority-critical { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+    .priority-high { background: rgba(245, 158, 11, 0.2); color: var(--orange); }
+    .priority-medium { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+    .progress-container { margin-bottom: 32px; }
+    .progress-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+    .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--green)); border-radius: 4px; transition: width 0.5s; }
+
+    .url-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .url-item {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .url-item .label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .url-item a { color: var(--cyan); font-size: 13px; font-family: monospace; word-break: break-all; text-decoration: none; }
+    .url-item a:hover { text-decoration: underline; }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .status-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .status-card .value { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+    .status-card .label { font-size: 12px; color: var(--text-muted); }
+
+    footer {
+      text-align: center;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid;
+      font-family: inherit;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: rgba(0, 245, 255, 0.15); border-color: rgba(0, 245, 255, 0.5); color: var(--cyan); }
+    .btn-primary:hover { background: rgba(0, 245, 255, 0.25); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-muted); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+    @media print {
+      body { background: white; color: black; }
+      .card { border: 1px solid #ddd; }
+      .btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>GENESIS</h1>
+      <p class="subtitle">Security Command Centre</p>
+      <p style="color: var(--text-muted); margin-top: 12px; font-size: 14px;">MuzzL3d Dictionary | <span id="timestamp"></span></p>
+    </header>
+
+    <div class="alert">
+      <h2>&#x26A0;&#xFE0F; Immediate Actions Required</h2>
+      <p>Complete the Critical Priority items below before proceeding. These items protect against the most common attack vectors.</p>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-label">
+        <span>Security Hardening Progress</span>
+        <span id="progress-text">0 / 0 complete</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#critical">&#x1F534; Critical</a>
+      <a href="#iphone">&#x1F4F1; iPhone</a>
+      <a href="#google">&#x1F510; Google</a>
+      <a href="#network">&#x1F310; Network</a>
+      <a href="#accounts">&#x1F464; Accounts</a>
+      <a href="#urls">&#x1F517; Quick Links</a>
+    </nav>
+
+    <!-- CRITICAL SECTION -->
+    <section id="critical" class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="icon">&#x1F534;</span> Critical Priority</h2>
+        <span class="priority priority-critical">Do First</span>
+      </div>
+
+      <div class="card">
+        <h3>Immediate Security Checks</h3>
+        <ul class="checklist" id="critical-list">
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Check iPhone Configuration Profiles</div>
+              <div class="item-desc">Settings &rarr; General &rarr; VPN &amp; Device Management. Remove ANY profiles you did not install.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review Google Third-Party Access</div>
+              <div class="item-desc">Remove all applications you do not recognise or no longer use.</div>
+              <div class="item-link">myaccount.google.com/permissions</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Check Gmail Forwarding Rules</div>
+              <div class="item-desc">Gmail Settings &rarr; Forwarding and POP/IMAP. Disable any forwarding to addresses you don't control.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review Gmail Filters</div>
+              <div class="item-desc">Gmail Settings &rarr; Filters. Delete any filters you did not create, especially those that auto-delete or forward.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Check Apple Account Trusted Devices</div>
+              <div class="item-desc">Settings &rarr; [Your Name] &rarr; scroll down to see devices. Remove any you don't recognise.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review Location Sharing</div>
+              <div class="item-desc">Settings &rarr; Privacy &amp; Security &rarr; Location Services &rarr; Share My Location. Remove anyone suspicious.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- iPHONE SECTION -->
+    <section id="iphone" class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="icon">&#x1F4F1;</span> iPhone Security</h2>
+        <span class="priority priority-high">High Priority</span>
+      </div>
+
+      <div class="card">
+        <h3>Device Hardening</h3>
+        <ul class="checklist" id="iphone-list">
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Enable Stolen Device Protection</div>
+              <div class="item-desc">Settings &rarr; Face ID &amp; Passcode &rarr; Stolen Device Protection &rarr; Always</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Enable Advanced Data Protection</div>
+              <div class="item-desc">Settings &rarr; [Your Name] &rarr; iCloud &rarr; Advanced Data Protection. Enables end-to-end encryption.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review iMessage Text Forwarding</div>
+              <div class="item-desc">Settings &rarr; Messages &rarr; Text Message Forwarding. Remove any devices you don't own.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Audit Third-Party Keyboards</div>
+              <div class="item-desc">Settings &rarr; General &rarr; Keyboard &rarr; Keyboards. Remove any keyboards you did not install.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review App Location Permissions</div>
+              <div class="item-desc">Settings &rarr; Privacy &amp; Security &rarr; Location Services. Set most apps to "While Using" or "Never".</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Check for Unknown AirTags</div>
+              <div class="item-desc">Open Find My app &rarr; Items tab. Look for any items you do not own.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Enable Mail Privacy Protection</div>
+              <div class="item-desc">Settings &rarr; Mail &rarr; Privacy Protection &rarr; Protect Mail Activity ON</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- GOOGLE SECTION -->
+    <section id="google" class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="icon">&#x1F510;</span> Google Workspace Security</h2>
+        <span class="priority priority-high">High Priority</span>
+      </div>
+
+      <div class="card">
+        <h3>Account Protection</h3>
+        <ul class="checklist" id="google-list">
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Complete Google Security Checkup</div>
+              <div class="item-desc">Follow all recommendations in the security checkup wizard.</div>
+              <div class="item-link">myaccount.google.com/security-checkup</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review Connected Devices</div>
+              <div class="item-desc">Sign out of any devices you don't recognise.</div>
+              <div class="item-link">myaccount.google.com/device-activity</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Configure Hardware Security Key</div>
+              <div class="item-desc">Add a YubiKey or Titan key for strongest 2FA protection.</div>
+              <div class="item-link">myaccount.google.com/signinoptions/two-step-verification</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Generate Backup Codes</div>
+              <div class="item-desc">Print and store securely offline. Do not store digitally.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Enable Enhanced Safe Browsing</div>
+              <div class="item-desc">Provides real-time protection against malicious sites.</div>
+              <div class="item-link">myaccount.google.com/security</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review Recent Security Activity</div>
+              <div class="item-desc">Check for any suspicious login attempts or changes.</div>
+              <div class="item-link">myaccount.google.com/notifications</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Update Password (20+ Characters)</div>
+              <div class="item-desc">Use a password manager to generate and store a strong unique password.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- NETWORK SECTION -->
+    <section id="network" class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="icon">&#x1F310;</span> Network Security</h2>
+        <span class="priority priority-medium">Medium Priority</span>
+      </div>
+
+      <div class="card">
+        <h3>Network Hardening</h3>
+        <ul class="checklist" id="network-list">
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Configure Secure DNS</div>
+              <div class="item-desc">Use Cloudflare (1.1.1.1) or Quad9 (9.9.9.9) instead of ISP DNS.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Enable Private Wi-Fi Address</div>
+              <div class="item-desc">Settings &rarr; Wi-Fi &rarr; [Network] &rarr; Private Wi-Fi Address ON</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review Router Admin Password</div>
+              <div class="item-desc">Change from default. Use strong unique password.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Update Router Firmware</div>
+              <div class="item-desc">Check manufacturer website for latest firmware.</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Enable macOS Firewall</div>
+              <div class="item-desc">System Preferences &rarr; Security &amp; Privacy &rarr; Firewall &rarr; Turn On</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ACCOUNTS SECTION -->
+    <section id="accounts" class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="icon">&#x1F464;</span> Other Accounts</h2>
+        <span class="priority priority-medium">Medium Priority</span>
+      </div>
+
+      <div class="card">
+        <h3>Connected Services</h3>
+        <ul class="checklist" id="accounts-list">
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Secure GitHub Account</div>
+              <div class="item-desc">Enable 2FA, review sessions and authorized apps.</div>
+              <div class="item-link">github.com/settings/security</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Secure Dropbox Account</div>
+              <div class="item-desc">Enable 2FA, review linked devices and apps.</div>
+              <div class="item-link">dropbox.com/account/security</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Secure PayPal Account</div>
+              <div class="item-desc">Enable 2FA, review login activity.</div>
+              <div class="item-link">paypal.com/myaccount/settings/</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Review Opera Account Sessions</div>
+              <div class="item-desc">Terminate unknown sessions.</div>
+              <div class="item-link">auth.opera.com/account/edit-profile#session-section</div>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <div class="checkbox" onclick="toggleCheck(this)">&#x2713;</div>
+            <div class="item-content">
+              <div class="item-title">Install Password Manager</div>
+              <div class="item-desc">Use 1Password or Bitwarden. Generate unique passwords for every account.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- QUICK LINKS SECTION -->
+    <section id="urls" class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="icon">&#x1F517;</span> Quick Links</h2>
+      </div>
+
+      <div class="card">
+        <h3>Google Security URLs</h3>
+        <div class="url-card">
+          <div class="url-item">
+            <div class="label">Security Dashboard</div>
+            <a href="https://myaccount.google.com/security" target="_blank">myaccount.google.com/security</a>
+          </div>
+          <div class="url-item">
+            <div class="label">Device Activity</div>
+            <a href="https://myaccount.google.com/device-activity" target="_blank">myaccount.google.com/device-activity</a>
+          </div>
+          <div class="url-item">
+            <div class="label">Third-Party Apps</div>
+            <a href="https://myaccount.google.com/permissions" target="_blank">myaccount.google.com/permissions</a>
+          </div>
+          <div class="url-item">
+            <div class="label">2-Step Verification</div>
+            <a href="https://myaccount.google.com/signinoptions/two-step-verification" target="_blank">myaccount.google.com/signinoptions/two-step-verification</a>
+          </div>
+          <div class="url-item">
+            <div class="label">Security Alerts</div>
+            <a href="https://myaccount.google.com/notifications" target="_blank">myaccount.google.com/notifications</a>
+          </div>
+          <div class="url-item">
+            <div class="label">Advanced Protection</div>
+            <a href="https://landing.google.com/advancedprotection/" target="_blank">landing.google.com/advancedprotection</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Apple Security URLs</h3>
+        <div class="url-card">
+          <div class="url-item">
+            <div class="label">Apple Account</div>
+            <a href="https://account.apple.com" target="_blank">account.apple.com</a>
+          </div>
+          <div class="url-item">
+            <div class="label">Apple ID Devices</div>
+            <a href="https://appleid.apple.com/account/manage" target="_blank">appleid.apple.com/account/manage</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Emergency Contacts</h3>
+        <div class="url-card">
+          <div class="url-item">
+            <div class="label">WA Police (Non-Emergency)</div>
+            <a href="tel:131444">131 444</a>
+          </div>
+          <div class="url-item">
+            <div class="label">Australian Cyber Security Centre</div>
+            <a href="tel:1300292371">1300 292 371</a>
+          </div>
+          <div class="url-item">
+            <div class="label">Report Cybercrime</div>
+            <a href="https://www.cyber.gov.au/report" target="_blank">cyber.gov.au/report</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div style="display: flex; gap: 16px; justify-content: center; margin-bottom: 48px;">
+      <button class="btn btn-primary" onclick="window.print()">&#x1F5A8;&#xFE0F; Print Checklist</button>
+      <button class="btn btn-ghost" onclick="resetAll()">&#x21BA; Reset All</button>
+    </div>
+
+    <footer>
+      <p>GENESIS Security Command Centre v1.0</p>
+      <p style="margin-top: 4px;">MuzzL3d Dictionary | Confidential</p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('timestamp').textContent = new Date().toLocaleString('en-AU');
+
+    function loadState() {
+      var saved = localStorage.getItem('genesis-security-checklist');
+      if (saved) {
+        var checked = JSON.parse(saved);
+        document.querySelectorAll('.checkbox').forEach(function(cb, i) {
+          if (checked[i]) cb.classList.add('checked');
+        });
+      }
+      updateProgress();
+    }
+
+    function saveState() {
+      var checked = Array.from(document.querySelectorAll('.checkbox')).map(function(cb) {
+        return cb.classList.contains('checked');
+      });
+      localStorage.setItem('genesis-security-checklist', JSON.stringify(checked));
+    }
+
+    function toggleCheck(el) {
+      el.classList.toggle('checked');
+      saveState();
+      updateProgress();
+    }
+
+    function updateProgress() {
+      var total = document.querySelectorAll('.checkbox').length;
+      var checked = document.querySelectorAll('.checkbox.checked').length;
+      var pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-text').textContent = checked + ' / ' + total + ' complete (' + pct + '%)';
+    }
+
+    function resetAll() {
+      if (confirm('Reset all checkboxes? This cannot be undone.')) {
+        document.querySelectorAll('.checkbox').forEach(function(cb) { cb.classList.remove('checked'); });
+        saveState();
+        updateProgress();
+      }
+    }
+
+    loadState();
+  </script>
+</body>
+</html>

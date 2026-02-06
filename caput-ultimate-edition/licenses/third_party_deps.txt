@@ -1,0 +1,16 @@
+# Third-Party Dependencies
+# Tracked for Apache 2.0 compliance
+
+Component       | Version | License       | SPDX-ID       | Source
+----------------|---------|---------------|---------------|---------------------------
+NumPy           | 1.26+   | BSD 3-Clause  | BSD-3-Clause  | https://numpy.org
+SciPy           | 1.11+   | BSD 3-Clause  | BSD-3-Clause  | https://scipy.org
+Trimesh         | 3.20+   | MIT           | MIT           | https://trimsh.org
+Panda3D         | 1.10+   | BSD 3-Clause  | BSD-3-Clause  | https://www.panda3d.org
+PyYAML          | 6.0+    | MIT           | MIT           | https://pyyaml.org
+sha2 (Rust)     | 0.10    | MIT/Apache-2  | MIT           | https://crates.io/crates/sha2
+hex (Rust)      | 0.4     | MIT/Apache-2  | MIT           | https://crates.io/crates/hex
+ed25519-dalek   | 2.x     | BSD 3-Clause  | BSD-3-Clause  | https://crates.io/crates/ed25519-dalek
+serde (Rust)    | 1.x     | MIT/Apache-2  | MIT           | https://crates.io/crates/serde
+serde_json      | 1.x     | MIT/Apache-2  | MIT           | https://crates.io/crates/serde_json
+TypeScript      | 5.3+    | Apache-2.0    | Apache-2.0    | https://typescriptlang.org
