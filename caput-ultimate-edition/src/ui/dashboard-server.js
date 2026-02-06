@@ -138,7 +138,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // Configuration
 // ═══════════════════════════════════════════════════════════════════════════
 
-const DEFAULT_PORT = parseInt(process.env.GENESIS_UI_PORT) || 3000;
+const DEFAULT_PORT = parseInt(process.env.PORT || process.env.GENESIS_UI_PORT) || 3000;
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
