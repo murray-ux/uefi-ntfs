@@ -112,40 +112,137 @@ class EventSourceManager {
 const sse = new EventSourceManager();
 
 // ═══════════════════════════════════════════════════════════════════════════
-// API Client
+// API Client (with JWT Authentication Support)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const api = {
-  async get(endpoint) {
-    const response = await fetch(`/api${endpoint}`);
+  _token: null,
+  _tokenExpiry: null,
+
+  // Get authorization headers if authenticated
+  _getHeaders(includeContentType = false) {
+    const headers = {};
+    if (includeContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (this._token) {
+      headers['Authorization'] = `Bearer ${this._token}`;
+    }
+    return headers;
+  },
+
+  // Handle response with rate limit info and auth errors
+  async _handleResponse(response, endpoint) {
+    // Log rate limit headers if present
+    const remaining = response.headers.get('X-RateLimit-Remaining');
+    if (remaining !== null && parseInt(remaining) < 10) {
+      console.warn(`[API] Rate limit warning: ${remaining} requests remaining`);
+    }
+
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      this.logout();
+      toast.show({ type: 'error', title: 'Session Expired', message: 'Please log in again' });
+      throw new Error('Authentication required');
+    }
+
+    // Handle 429 Too Many Requests
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After') || 60;
+      toast.show({ type: 'warning', title: 'Rate Limited', message: `Too many requests. Retry in ${retryAfter}s` });
+      throw new Error(`Rate limited. Retry after ${retryAfter} seconds`);
+    }
+
     if (!response.ok) throw new Error(`API Error: ${response.status}`);
     return response.json();
+  },
+
+  async get(endpoint) {
+    const response = await fetch(`/api${endpoint}`, {
+      headers: this._getHeaders()
+    });
+    return this._handleResponse(response, endpoint);
   },
 
   async post(endpoint, data) {
     const response = await fetch(`/api${endpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this._getHeaders(true),
       body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error(`API Error: ${response.status}`);
-    return response.json();
+    return this._handleResponse(response, endpoint);
   },
 
   async put(endpoint, data) {
     const response = await fetch(`/api${endpoint}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this._getHeaders(true),
       body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error(`API Error: ${response.status}`);
-    return response.json();
+    return this._handleResponse(response, endpoint);
   },
 
   async delete(endpoint) {
-    const response = await fetch(`/api${endpoint}`, { method: 'DELETE' });
-    if (!response.ok) throw new Error(`API Error: ${response.status}`);
-    return response.json();
+    const response = await fetch(`/api${endpoint}`, {
+      method: 'DELETE',
+      headers: this._getHeaders()
+    });
+    return this._handleResponse(response, endpoint);
+  },
+
+  // Authentication methods
+  async login(ownerId) {
+    try {
+      const result = await this.post('/auth/token', { ownerId });
+      if (result.token) {
+        this._token = result.token;
+        this._tokenExpiry = Date.now() + (result.expiresIn * 1000);
+        sessionStorage.setItem('genesis_token', result.token);
+        sessionStorage.setItem('genesis_token_expiry', this._tokenExpiry);
+        return { success: true };
+      }
+      return { success: false, error: result.error || 'Unknown error' };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  },
+
+  logout() {
+    this._token = null;
+    this._tokenExpiry = null;
+    sessionStorage.removeItem('genesis_token');
+    sessionStorage.removeItem('genesis_token_expiry');
+  },
+
+  isAuthenticated() {
+    if (!this._token) return false;
+    if (this._tokenExpiry && Date.now() > this._tokenExpiry) {
+      this.logout();
+      return false;
+    }
+    return true;
+  },
+
+  // Restore token from session storage on load
+  restoreSession() {
+    const token = sessionStorage.getItem('genesis_token');
+    const expiry = sessionStorage.getItem('genesis_token_expiry');
+    if (token && expiry && Date.now() < parseInt(expiry)) {
+      this._token = token;
+      this._tokenExpiry = parseInt(expiry);
+      return true;
+    }
+    return false;
+  },
+
+  // Check if auth is configured on the server
+  async checkAuthConfig() {
+    try {
+      const result = await this.get('/auth/verify');
+      return result;
+    } catch {
+      return { configured: false };
+    }
   }
 };
 
@@ -2643,11 +2740,24 @@ sse.on('workflow', (data) => {
 // Initialization
 // ═══════════════════════════════════════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Initialize components
   toast.init();
   modal.init();
   router.init();
+
+  // Restore session if available
+  if (api.restoreSession()) {
+    console.log('[Auth] Session restored');
+    updateAuthIndicator(true);
+  } else {
+    // Check if auth is required
+    const authConfig = await api.checkAuthConfig();
+    if (authConfig.configured) {
+      console.log('[Auth] Authentication configured, protected routes:', authConfig.protectedRoutes);
+    }
+    updateAuthIndicator(false);
+  }
 
   // Connect SSE
   sse.connect();
@@ -2666,6 +2776,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('GENESIS 2.0 Dashboard initialized');
 });
+
+/**
+ * Update auth indicator in the header
+ */
+function updateAuthIndicator(authenticated) {
+  const indicator = document.getElementById('auth-status');
+  if (indicator) {
+    indicator.className = `auth-status ${authenticated ? 'authenticated' : 'unauthenticated'}`;
+    indicator.title = authenticated ? 'Authenticated' : 'Not authenticated';
+    indicator.textContent = authenticated ? '🔐' : '🔓';
+  }
+}
+
+/**
+ * Show login modal for protected operations
+ */
+function showLoginModal(onSuccess) {
+  modal.show({
+    title: 'Authentication Required',
+    content: `
+      <div class="login-form">
+        <p>Enter your owner ID to authenticate:</p>
+        <input type="text" id="login-owner-id" class="form-input" placeholder="Owner ID" />
+        <div id="login-error" class="error-message hidden"></div>
+      </div>
+    `,
+    actions: [
+      {
+        label: 'Cancel',
+        action: () => modal.hide()
+      },
+      {
+        label: 'Login',
+        primary: true,
+        action: async () => {
+          const ownerId = document.getElementById('login-owner-id').value;
+          const errorEl = document.getElementById('login-error');
+
+          if (!ownerId) {
+            errorEl.textContent = 'Owner ID is required';
+            errorEl.classList.remove('hidden');
+            return;
+          }
+
+          const result = await api.login(ownerId);
+          if (result.success) {
+            modal.hide();
+            updateAuthIndicator(true);
+            toast.show({ type: 'success', title: 'Authenticated', message: 'Login successful' });
+            if (onSuccess) onSuccess();
+          } else {
+            errorEl.textContent = result.error || 'Authentication failed';
+            errorEl.classList.remove('hidden');
+          }
+        }
+      }
+    ]
+  });
+}
+
+// Expose auth functions globally
+window.showLoginModal = showLoginModal;
+window.updateAuthIndicator = updateAuthIndicator;
 
 // MABUL SSE events
 sse.on('mabul', (data) => {
