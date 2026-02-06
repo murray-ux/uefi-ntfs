@@ -428,6 +428,33 @@ export class GenesisBootstrap extends EventEmitter {
         }, { checkInterval: 15000 });
       }
 
+      // Dashboard metrics guardian — monitors request rates and errors
+      if (this.dashboard) {
+        this.tzofeh.deployGuardian('dashboard-health', {
+          healthCheck: async () => {
+            try {
+              const res = await fetch(`http://localhost:${this.config.port}/api/metrics`);
+              if (!res.ok) return { healthy: false, error: 'Metrics endpoint unavailable' };
+              const metrics = await res.json();
+              const errorRate = metrics.requests.total > 0
+                ? (metrics.requests.byStatus['4xx'] + metrics.requests.byStatus['5xx']) / metrics.requests.total
+                : 0;
+              return {
+                healthy: errorRate < 0.1 && metrics.latency.average < 1000,
+                metrics: {
+                  requests: metrics.requests.total,
+                  errorRate: Math.round(errorRate * 100),
+                  avgLatency: metrics.latency.average,
+                  rateClients: metrics.rateLimit.activeClients
+                }
+              };
+            } catch {
+              return { healthy: false, error: 'Dashboard unreachable' };
+            }
+          }
+        }, { checkInterval: 30000 });
+      }
+
       // Set up metric thresholds
       this.tzofeh.setMetricThreshold('cpu.usage', {
         warning: 70,
@@ -438,6 +465,19 @@ export class GenesisBootstrap extends EventEmitter {
       this.tzofeh.setMetricThreshold('memory.heap', {
         warning: 80,
         critical: 95,
+        comparison: 'gt'
+      });
+
+      // Dashboard-specific thresholds
+      this.tzofeh.setMetricThreshold('dashboard.errorRate', {
+        warning: 5,
+        critical: 10,
+        comparison: 'gt'
+      });
+
+      this.tzofeh.setMetricThreshold('dashboard.latency', {
+        warning: 500,
+        critical: 2000,
         comparison: 'gt'
       });
 

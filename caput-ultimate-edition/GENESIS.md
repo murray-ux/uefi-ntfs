@@ -788,6 +788,64 @@ Access via keyboard shortcut in the browser dashboard:
 | GET | `/api/malakh/circuit-breakers` | Circuit breaker states |
 | GET | `/api/system/health` | Unified health aggregation |
 | GET | `/api/system/modules` | All module listing |
+| GET | `/api/metrics` | Request metrics (JSON) |
+| GET | `/api/metrics/prometheus` | Prometheus text format |
+| POST | `/api/auth/token` | Generate JWT token |
+| GET | `/api/auth/verify` | Check auth configuration |
+
+### Dashboard Security
+
+**Rate Limiting**
+
+All API endpoints (except health/metrics) are rate-limited per IP:
+- **Window:** 60 seconds
+- **Max requests:** 100 per window
+- Response headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
+- Exceeding limit returns `429 Too Many Requests` with `Retry-After`
+
+**JWT Authentication**
+
+Protected routes require a Bearer token when `GENESIS_JWT_SECRET` is set:
+
+```bash
+# Protected routes (require auth)
+POST /api/merkava/lockdown
+POST /api/merkava/sovereign/*
+POST /api/merkava/directive
+POST /api/merkava/broadcast
+POST /api/tzofeh/watch-level
+
+# Get a token
+curl -X POST http://localhost:3000/api/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"ownerId": "owner"}'
+
+# Use the token
+curl http://localhost:3000/api/merkava/lockdown \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "Maintenance"}'
+```
+
+**Metrics Export**
+
+```bash
+# JSON format
+curl http://localhost:3000/api/metrics
+
+# Prometheus format (for scrapers)
+curl http://localhost:3000/api/metrics/prometheus
+```
+
+Available metrics:
+- `genesis_uptime_seconds` — Dashboard uptime
+- `genesis_requests_total` — Total HTTP requests
+- `genesis_requests_by_method{method}` — Requests by HTTP method
+- `genesis_requests_by_status{status}` — Requests by status class (2xx/4xx/5xx)
+- `genesis_latency_avg_ms` — Average request latency
+- `genesis_ratelimit_clients` — Active rate-limited clients
+- `genesis_memory_heap_bytes` — Heap memory usage
+- `genesis_memory_rss_bytes` — RSS memory usage
 
 ### Control CLI (genesis-control)
 

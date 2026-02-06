@@ -456,6 +456,16 @@ npm run test:all                  # TypeScript tests + module tests
 - AI outputs include mandatory disclaimers and are audit-logged.
 - No credentials, API keys, or personal data in codebase or git history.
 
+### Dashboard API Security
+
+- **Rate Limiting** — 100 requests/minute per IP, auto-cleanup, `X-RateLimit-*` headers
+- **JWT Authentication** — Protected routes require Bearer token when `GENESIS_JWT_SECRET` set
+- **Request Logging** — All requests logged via KOL at debug level
+- **Metrics Export** — `/api/metrics` (JSON) and `/api/metrics/prometheus` (text)
+
+Protected routes: `/api/merkava/lockdown`, `/api/merkava/sovereign/*`, `/api/merkava/directive`,
+`/api/merkava/broadcast`, `/api/tzofeh/watch-level`
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE)
