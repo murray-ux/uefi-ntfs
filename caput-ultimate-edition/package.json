@@ -15,7 +15,8 @@
     "genesis-mabul": "./src/cli/mabul.js",
     "mabul": "./src/cli/mabul.js",
     "genesis-boot": "./src/lib/genesis-init.js",
-    "genesis-control": "./src/cli/genesis-control.js"
+    "genesis-control": "./src/cli/genesis-control.js",
+    "genesis-generate": "./orchestration/generation_master.js"
   },
   "scripts": {
     "genesis": "node src/cli/genesis.js",
@@ -65,7 +66,12 @@
     "boot": "node src/lib/genesis-init.js",
     "boot:sentinel": "node src/lib/genesis-init.js --watch-level active",
     "test:modules": "node --test test/genesis-modules.test.js",
-    "test:all": "node --import tsx --test test/*.test.ts && node --test test/*.test.js"
+    "test:orchestration": "node --test test/orchestration.test.js",
+    "test:all": "node --import tsx --test test/*.test.ts && node --test test/*.test.js",
+    "generate": "node orchestration/generation_master.js",
+    "generate:creature": "node orchestration/generation_master.js --content_type creature",
+    "generate:structure": "node orchestration/generation_master.js --content_type structure",
+    "generate:help": "node orchestration/generation_master.js --help"
   },
   "dependencies": {
     "tsx": "^4.7.0"

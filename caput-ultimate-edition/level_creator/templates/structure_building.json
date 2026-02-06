@@ -1,0 +1,329 @@
+{
+  "name": "Structure Building Template",
+  "version": "1.0.0",
+  "contentType": "structure",
+  "subType": "building",
+  "description": "Template for procedural building and architectural structure generation",
+
+  "architecture": {
+    "foundation": {
+      "type": ["slab", "raised", "basement", "stilts"],
+      "depth": { "min": 0.3, "max": 3.0 },
+      "material": ["concrete", "stone", "brick"],
+      "footprint": {
+        "shapes": ["rectangle", "L-shape", "U-shape", "T-shape", "complex"],
+        "minArea": 20,
+        "maxArea": 2000
+      }
+    },
+
+    "floors": {
+      "count": { "min": 1, "max": 50 },
+      "height": { "min": 2.5, "max": 4.5 },
+      "variation": {
+        "groundFloor": { "heightMult": 1.2, "purpose": ["retail", "lobby", "parking"] },
+        "topFloor": { "heightMult": 1.1, "purpose": ["penthouse", "mechanical", "roof_access"] }
+      },
+      "floorPlan": {
+        "method": "grid_subdivision",
+        "roomMinSize": 9,
+        "roomMaxSize": 100,
+        "corridorWidth": 1.5
+      }
+    },
+
+    "walls": {
+      "thickness": { "exterior": 0.3, "interior": 0.15, "loadBearing": 0.25 },
+      "materials": {
+        "exterior": ["brick", "concrete", "glass", "stone", "metal_panel", "wood"],
+        "interior": ["drywall", "plaster", "wood", "glass"]
+      },
+      "openings": {
+        "windows": {
+          "styles": ["casement", "fixed", "sliding", "arched", "circular"],
+          "ratio": { "min": 0.15, "max": 0.8 }
+        },
+        "doors": {
+          "styles": ["single", "double", "sliding", "revolving", "garage"],
+          "widths": { "min": 0.8, "max": 3.0 }
+        }
+      }
+    },
+
+    "roof": {
+      "types": ["flat", "gabled", "hipped", "mansard", "shed", "dome", "barrel"],
+      "pitch": { "min": 0, "max": 60 },
+      "materials": ["shingle", "tile", "metal", "membrane", "slate", "thatch"],
+      "features": ["skylights", "dormers", "chimneys", "vents", "solar_panels", "green_roof"]
+    },
+
+    "structural": {
+      "system": ["load_bearing", "frame", "post_and_beam", "steel_frame", "concrete_frame"],
+      "columns": {
+        "spacing": { "min": 3, "max": 12 },
+        "shapes": ["square", "circular", "rectangular", "steel_H"]
+      },
+      "beams": {
+        "materials": ["steel", "concrete", "wood", "glulam"],
+        "visible": false
+      }
+    }
+  },
+
+  "hierarchy": {
+    "root": {
+      "type": "fixed",
+      "children": ["foundation"]
+    },
+    "foundation": {
+      "type": "fixed",
+      "children": ["floor_0"]
+    },
+    "floor_*": {
+      "type": "fixed",
+      "children": ["walls_*", "floor_+1", "stairs_*", "elevator_*"]
+    },
+    "walls_*": {
+      "type": "fixed",
+      "children": ["windows_*", "doors_*"]
+    },
+    "roof": {
+      "type": "fixed",
+      "children": ["roof_features_*"]
+    }
+  },
+
+  "roomTypes": {
+    "residential": {
+      "living": { "minArea": 15, "windows": "large", "connections": ["kitchen", "hallway"] },
+      "bedroom": { "minArea": 9, "windows": "medium", "connections": ["hallway", "bathroom"] },
+      "kitchen": { "minArea": 6, "windows": "medium", "connections": ["living", "dining"] },
+      "bathroom": { "minArea": 3, "windows": "small", "connections": ["hallway", "bedroom"] },
+      "hallway": { "minArea": 2, "windows": "none", "connections": ["*"] }
+    },
+    "commercial": {
+      "office": { "minArea": 12, "windows": "large", "connections": ["corridor", "meeting"] },
+      "meeting": { "minArea": 15, "windows": "medium", "connections": ["corridor", "office"] },
+      "reception": { "minArea": 20, "windows": "large", "connections": ["corridor", "entrance"] },
+      "breakroom": { "minArea": 10, "windows": "medium", "connections": ["corridor"] },
+      "corridor": { "minArea": 4, "windows": "none", "connections": ["*"] }
+    },
+    "industrial": {
+      "warehouse": { "minArea": 100, "windows": "high_clerestory", "connections": ["loading"] },
+      "loading": { "minArea": 50, "windows": "none", "connections": ["warehouse", "exterior"] },
+      "office_mezzanine": { "minArea": 20, "windows": "interior", "connections": ["warehouse"] }
+    }
+  },
+
+  "stylePresets": {
+    "modern": {
+      "geometry": "orthogonal",
+      "windowRatio": 0.6,
+      "materials": ["glass", "steel", "concrete"],
+      "roofType": "flat",
+      "ornamentation": "minimal",
+      "colors": { "primary": [0, 0, 0.9], "accent": [0.1, 0.3, 0.5] }
+    },
+    "victorian": {
+      "geometry": "complex",
+      "windowRatio": 0.25,
+      "materials": ["brick", "wood", "iron"],
+      "roofType": "gabled",
+      "ornamentation": "heavy",
+      "features": ["bay_windows", "turrets", "wraparound_porch"],
+      "colors": { "primary": [30, 0.4, 0.4], "accent": [120, 0.3, 0.3] }
+    },
+    "industrial": {
+      "geometry": "simple",
+      "windowRatio": 0.15,
+      "materials": ["metal_panel", "concrete", "brick"],
+      "roofType": "shed",
+      "ornamentation": "none",
+      "features": ["loading_docks", "smoke_stacks", "large_doors"]
+    },
+    "art_deco": {
+      "geometry": "stepped",
+      "windowRatio": 0.35,
+      "materials": ["stone", "metal", "terra_cotta"],
+      "roofType": "flat",
+      "ornamentation": "geometric",
+      "features": ["setbacks", "spire", "decorative_crown"],
+      "colors": { "primary": [40, 0.3, 0.7], "accent": [45, 0.8, 0.5] }
+    },
+    "traditional": {
+      "geometry": "simple",
+      "windowRatio": 0.2,
+      "materials": ["brick", "wood", "stone"],
+      "roofType": "hipped",
+      "ornamentation": "moderate",
+      "features": ["shutters", "columns", "pediments"]
+    },
+    "brutalist": {
+      "geometry": "massive",
+      "windowRatio": 0.2,
+      "materials": ["concrete", "concrete", "concrete"],
+      "roofType": "flat",
+      "ornamentation": "none",
+      "features": ["exposed_structure", "cantilevers", "deep_reveals"]
+    }
+  },
+
+  "interiors": {
+    "furniture": {
+      "placement": "rule_based",
+      "densityLevels": ["sparse", "normal", "furnished", "cluttered"],
+      "categories": {
+        "seating": ["chair", "sofa", "stool", "bench"],
+        "tables": ["desk", "dining_table", "coffee_table", "side_table"],
+        "storage": ["cabinet", "bookshelf", "wardrobe", "drawer"],
+        "beds": ["single", "double", "bunk"],
+        "appliances": ["refrigerator", "stove", "washer", "dryer"]
+      }
+    },
+    "lighting": {
+      "natural": { "window_placement": "optimize", "skylight": false },
+      "artificial": {
+        "types": ["ceiling", "pendant", "wall_sconce", "floor_lamp", "recessed"],
+        "temperature": [2700, 6500],
+        "intensity_lux": [100, 500]
+      }
+    },
+    "surfaces": {
+      "floors": ["hardwood", "tile", "carpet", "concrete", "vinyl"],
+      "walls": ["paint", "wallpaper", "tile", "panels", "exposed_brick"],
+      "ceilings": ["flat", "coffered", "exposed", "suspended"]
+    }
+  },
+
+  "texturing": {
+    "exterior": {
+      "brick": {
+        "baseColor": { "hue": [0, 40], "saturation": [0.3, 0.7], "lightness": [0.2, 0.5] },
+        "pattern": "running_bond",
+        "mortarWidth": 0.01,
+        "weathering": [0, 0.8],
+        "normalStrength": 2.0
+      },
+      "concrete": {
+        "baseColor": { "hue": [0, 30], "saturation": [0.02, 0.1], "lightness": [0.4, 0.7] },
+        "finish": ["smooth", "exposed_aggregate", "board_formed", "polished"],
+        "weathering": [0, 0.6],
+        "normalStrength": 1.0
+      },
+      "glass": {
+        "reflectivity": [0.2, 0.9],
+        "tint": { "hue": [180, 240], "saturation": [0, 0.3] },
+        "transparency": [0.7, 0.95]
+      },
+      "metal_panel": {
+        "baseColor": { "hue": [0, 360], "saturation": [0, 0.3], "lightness": [0.3, 0.8] },
+        "finish": ["matte", "brushed", "mirror"],
+        "corrugation": [0, 1]
+      }
+    },
+    "interior": {
+      "drywall": {
+        "baseColor": { "hue": [30, 60], "saturation": [0.02, 0.15], "lightness": [0.85, 0.98] },
+        "texture": ["smooth", "orange_peel", "knockdown"],
+        "normalStrength": 0.3
+      },
+      "hardwood": {
+        "species": ["oak", "maple", "walnut", "cherry"],
+        "grainDirection": "length",
+        "finish": ["matte", "satin", "gloss"],
+        "normalStrength": 1.5
+      }
+    }
+  },
+
+  "systems": {
+    "hvac": {
+      "types": ["central", "split", "radiant", "none"],
+      "visible": ["vents", "radiators", "units"],
+      "routing": "hidden"
+    },
+    "electrical": {
+      "outlets_per_room": { "min": 2, "max": 8 },
+      "switches": "by_door",
+      "panel_location": "utility_room"
+    },
+    "plumbing": {
+      "wet_rooms": ["bathroom", "kitchen", "laundry"],
+      "stack_alignment": true,
+      "visible": false
+    },
+    "fire_safety": {
+      "sprinklers": "commercial_only",
+      "extinguishers": true,
+      "exits": "code_compliant",
+      "signage": true
+    }
+  },
+
+  "lod": {
+    "levels": [
+      { "distance": 0, "triangles": 1.0, "interiorDetail": 1.0, "furniture": true },
+      { "distance": 30, "triangles": 0.6, "interiorDetail": 0.5, "furniture": true },
+      { "distance": 80, "triangles": 0.3, "interiorDetail": 0.2, "furniture": false },
+      { "distance": 200, "triangles": 0.1, "interiorDetail": 0, "furniture": false },
+      { "distance": 500, "triangles": 0.05, "facade": "simplified" }
+    ],
+    "interiorCulling": {
+      "enabled": true,
+      "method": "occlusion_query"
+    }
+  },
+
+  "physics": {
+    "collision": {
+      "exterior": { "type": "mesh", "simplified": true },
+      "interior": { "type": "box_decomposition" },
+      "furniture": { "type": "convex_hull" }
+    },
+    "destruction": {
+      "enabled": false,
+      "method": "voronoi_fracture",
+      "debrisLifetime": 30
+    }
+  },
+
+  "audio": {
+    "ambient": {
+      "hvac_hum": { "frequency": [60, 120], "volume": 0.1 },
+      "electrical": { "frequency": [50, 60], "volume": 0.05 }
+    },
+    "interaction": {
+      "door_open": { "type": "mechanical", "duration": 0.8 },
+      "door_close": { "type": "impact", "duration": 0.3 },
+      "footsteps": { "material_dependent": true }
+    },
+    "reverb": {
+      "small_room": { "decay": 0.3, "diffusion": 0.7 },
+      "large_room": { "decay": 0.8, "diffusion": 0.5 },
+      "hallway": { "decay": 0.5, "diffusion": 0.3 }
+    }
+  },
+
+  "generation": {
+    "methods": {
+      "wave_function_collapse": {
+        "tileset": "building_modules",
+        "constraints": "adjacency_rules"
+      },
+      "shape_grammar": {
+        "rules": "architectural_style",
+        "iterations": { "min": 3, "max": 10 }
+      },
+      "subdivision": {
+        "algorithm": "BSP",
+        "minPartition": 9
+      }
+    },
+    "constraints": {
+      "structural_validity": true,
+      "accessibility": true,
+      "natural_lighting": "optimize",
+      "circulation": "minimum_2_routes"
+    }
+  }
+}
