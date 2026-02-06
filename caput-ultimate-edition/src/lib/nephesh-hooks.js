@@ -2,7 +2,7 @@
  * NEPHESH HOOKS SYSTEM
  * ══════════════════════════════════════════════════════════════════════════════
  *
- * Copyright 2025 Murray Bembrick
+ * Copyright 2025 murray-ux
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@
  * Claude Code Hooks Integration for GENESIS
  * נפש (Nephesh) = Soul/Life Force — The breath that animates all operations
  *
- * @author Murray Bembrick <Founder & Lead Developer>
+ * @author murray-ux <Founder & Lead Developer>
  * @license Apache-2.0
  *
  * Implements the 13-hook lifecycle pattern for deterministic control:

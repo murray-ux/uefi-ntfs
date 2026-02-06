@@ -3,7 +3,7 @@
 ## Copyright Notice
 
 ```
-Copyright 2025 Murray Bembrick
+Copyright 2025 murray-ux
 SPDX-License-Identifier: Apache-2.0
 ```
 
@@ -20,11 +20,11 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Founder & Lead Developer
 
-### Murray Bembrick
+### murray-ux
 
 **Role:** Founder & Lead Developer
 
-Murray Bembrick is the creator and principal architect of the CAPUT Sovereign Security Platform. All original intellectual property, design patterns, and core innovations within this repository are the work of Murray Bembrick.
+murray-ux is the creator and principal architect of the CAPUT Sovereign Security Platform. All original intellectual property, design patterns, and core innovations within this repository are the work of murray-ux.
 
 **Contributions Include:**
 - Original concept and system architecture
@@ -42,13 +42,13 @@ Murray Bembrick is the creator and principal architect of the CAPUT Sovereign Se
 
 All code, documentation, configurations, and creative works in this repository are:
 
-1. **Originally Created By:** Murray Bembrick
-2. **Copyright Holder:** Murray Bembrick
+1. **Originally Created By:** murray-ux
+2. **Copyright Holder:** murray-ux
 3. **Licensed Under:** Apache License 2.0
 
 ### Rights Retained
 
-Murray Bembrick retains:
+murray-ux retains:
 - Full copyright ownership of all original works
 - Right to relicense under different terms
 - Right to create proprietary derivatives
@@ -78,7 +78,7 @@ When using, modifying, or distributing this software:
 
 ```
 This software includes CAPUT Sovereign Security Platform
-Copyright 2025 Murray Bembrick
+Copyright 2025 murray-ux
 Licensed under Apache License 2.0
 https://github.com/murray-ux/caput-sovereign-security
 ```
@@ -98,7 +98,7 @@ All third-party components are used in compliance with their respective licenses
 
 For licensing inquiries, attribution questions, or permissions beyond the Apache 2.0 license scope:
 
-**Murray Bembrick**
+**murray-ux**
 - Project: CAPUT Sovereign Security Platform
 - License: Apache-2.0
 
@@ -112,4 +112,4 @@ For licensing inquiries, attribution questions, or permissions beyond the Apache
 
 ---
 
-*This document establishes the legal ownership and attribution requirements for the CAPUT Sovereign Security Platform. All rights not explicitly granted under the Apache 2.0 license are reserved by Murray Bembrick.*
+*This document establishes the legal ownership and attribution requirements for the CAPUT Sovereign Security Platform. All rights not explicitly granted under the Apache 2.0 license are reserved by murray-ux.*

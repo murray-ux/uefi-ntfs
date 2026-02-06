@@ -14,7 +14,7 @@
  * - Theme customizer
  *
  * GENESIS 2.0 — Forbidden Ninja City
- * Copyright 2025 Murray Bembrick — Founder & Lead Developer
+ * Copyright 2025 murray-ux — Founder & Lead Developer
  */
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -1,7 +1,7 @@
 # Third-Party Licenses
 
 CAPUT Sovereign Security Platform
-Copyright 2025 Murray Bembrick
+Copyright 2025 murray-ux
 SPDX-License-Identifier: Apache-2.0
 
 ---
@@ -196,4 +196,4 @@ When adding new third-party dependencies:
 ---
 
 *Last Updated: 2025-02-04*
-*Maintained by: Murray Bembrick*
+*Maintained by: murray-ux*

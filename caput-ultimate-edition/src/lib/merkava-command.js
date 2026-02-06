@@ -2,7 +2,7 @@
  * MERKAVA COMMAND CENTER
  * ══════════════════════════════════════════════════════════════════════════════
  *
- * Copyright 2025 Murray Bembrick
+ * Copyright 2025 murray-ux
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@
  * "The chariot moves as one — all wheels turn in harmony."
  *
  * @module MERKAVA
- * @author Murray Bembrick <Founder & Lead Developer>
+ * @author murray-ux <Founder & Lead Developer>
  * @version 2.0.0
  * @license Apache-2.0
  */

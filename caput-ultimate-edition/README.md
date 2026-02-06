@@ -4,7 +4,7 @@ A hardened automation stack for document generation, device management,
 cryptographic audit trails, AI-assisted workflows, multi-layer
 infrastructure orchestration, and sovereign security control.
 
-> **Founded by Murray Bembrick — Founder & Lead Developer**
+> **Founded by murray-ux — Founder & Lead Developer**
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
@@ -470,5 +470,5 @@ Protected routes: `/api/merkava/lockdown`, `/api/merkava/sovereign/*`, `/api/mer
 
 Apache 2.0 — see [LICENSE](LICENSE)
 
-Copyright 2025 Murray Bembrick — Founder & Lead Developer.
+Copyright 2025 murray-ux — Founder & Lead Developer.
 See [OWNERSHIP.md](OWNERSHIP.md) for attribution and IP details.

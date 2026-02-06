@@ -143,7 +143,7 @@ Every new source file must include the SPDX header:
 
 ```js
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2025 Murray Bembrick — Founder & Lead Developer
+// Copyright 2025 murray-ux — Founder & Lead Developer
 // See LICENSE and NOTICE for terms.
 ```
 

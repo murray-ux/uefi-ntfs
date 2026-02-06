@@ -2,7 +2,7 @@
  * KISSEH THRONE CONTROL PANEL
  * ══════════════════════════════════════════════════════════════════════════════
  *
- * Copyright 2025 Murray Bembrick
+ * Copyright 2025 murray-ux
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@
  * "From the throne, all power flows — the sovereign commands, the system obeys."
  *
  * @module KISSEH
- * @author Murray Bembrick <Founder & Lead Developer>
+ * @author murray-ux <Founder & Lead Developer>
  * @version 2.0.0
  * @license Apache-2.0
  */

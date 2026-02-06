@@ -129,7 +129,7 @@ ThemeCustomizer.open();
 Total Lines Added: ~7,200+
 Tests: 31 passing
 
-Copyright 2025 Murray Bembrick — Founder & Lead Developer
+Copyright 2025 murray-ux — Founder & Lead Developer
 GENESIS 2.0 — Forbidden Ninja City
 
 ═══════════════════════════════════════════════════════════════════════════════
