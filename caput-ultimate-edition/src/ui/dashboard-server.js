@@ -172,6 +172,31 @@ const C = {
 // In-Memory State Store
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Rate limiting state (per-IP)
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX = 100; // max requests per window
+
+// JWT authentication (optional — only enabled if GENESIS_JWT_SECRET is set)
+const JWT_SECRET = process.env.GENESIS_JWT_SECRET || null;
+const PROTECTED_ROUTES = [
+  '/api/merkava/lockdown',
+  '/api/merkava/sovereign',
+  '/api/merkava/directive',
+  '/api/merkava/broadcast',
+  '/api/tzofeh/watch-level'
+];
+
+// Request metrics
+const requestMetrics = {
+  total: 0,
+  byMethod: { GET: 0, POST: 0, PUT: 0, DELETE: 0, OPTIONS: 0 },
+  byStatus: { '2xx': 0, '4xx': 0, '5xx': 0 },
+  byPath: new Map(),
+  latencySum: 0,
+  startTime: Date.now()
+};
+
 const store = {
   evidence: [],
   workflows: [
@@ -1246,6 +1271,121 @@ const apiRoutes = {
         { name: 'KOL', hebrew: 'קול', role: 'Shared Logger', file: 'kol-logger.js' }
       ]
     };
+  },
+
+  // ─── Authentication ────────────────────────────────────────────────────
+
+  'POST /api/auth/token': async (params, body) => {
+    if (!JWT_SECRET) {
+      return { error: 'Authentication not configured — set GENESIS_JWT_SECRET' };
+    }
+
+    // Simple credential check (owner ID from env)
+    const ownerId = process.env.GENESIS_OWNER_ID || 'owner';
+    if (body.ownerId !== ownerId) {
+      dashLog.warn('Token request with invalid ownerId');
+      return { error: 'Invalid credentials' };
+    }
+
+    // Generate JWT
+    const now = Math.floor(Date.now() / 1000);
+    const header = base64UrlEncode(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = base64UrlEncode(JSON.stringify({
+      sub: ownerId,
+      iat: now,
+      exp: now + 3600, // 1 hour
+      scope: 'admin'
+    }));
+    const signature = createHmac('sha256', JWT_SECRET)
+      .update(`${header}.${payload}`)
+      .digest('base64url');
+
+    return {
+      token: `${header}.${payload}.${signature}`,
+      expiresIn: 3600,
+      tokenType: 'Bearer'
+    };
+  },
+
+  'GET /api/auth/verify': async (params, body, req) => {
+    if (!JWT_SECRET) {
+      return { configured: false };
+    }
+    return { configured: true, protectedRoutes: PROTECTED_ROUTES };
+  },
+
+  // ─── Metrics & Monitoring ─────────────────────────────────────────────
+
+  'GET /api/metrics': async () => {
+    const uptime = Date.now() - requestMetrics.startTime;
+    const avgLatency = requestMetrics.total > 0 ? Math.round(requestMetrics.latencySum / requestMetrics.total) : 0;
+
+    return {
+      uptime,
+      requests: {
+        total: requestMetrics.total,
+        byMethod: requestMetrics.byMethod,
+        byStatus: requestMetrics.byStatus,
+        ratePerMinute: Math.round(requestMetrics.total / (uptime / 60000))
+      },
+      latency: {
+        average: avgLatency,
+        total: requestMetrics.latencySum
+      },
+      rateLimit: {
+        activeClients: rateLimitStore.size,
+        window: RATE_LIMIT_WINDOW,
+        maxRequests: RATE_LIMIT_MAX
+      },
+      memory: {
+        heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        rss: Math.round(process.memoryUsage().rss / 1024 / 1024)
+      }
+    };
+  },
+
+  'GET /api/metrics/prometheus': async () => {
+    const uptime = Date.now() - requestMetrics.startTime;
+    const avgLatency = requestMetrics.total > 0 ? Math.round(requestMetrics.latencySum / requestMetrics.total) : 0;
+    const mem = process.memoryUsage();
+
+    // Prometheus text format
+    const lines = [
+      '# HELP genesis_uptime_seconds Dashboard uptime in seconds',
+      '# TYPE genesis_uptime_seconds gauge',
+      `genesis_uptime_seconds ${Math.round(uptime / 1000)}`,
+      '',
+      '# HELP genesis_requests_total Total HTTP requests',
+      '# TYPE genesis_requests_total counter',
+      `genesis_requests_total ${requestMetrics.total}`,
+      '',
+      '# HELP genesis_requests_by_method HTTP requests by method',
+      '# TYPE genesis_requests_by_method counter',
+      ...Object.entries(requestMetrics.byMethod).map(([m, c]) => `genesis_requests_by_method{method="${m}"} ${c}`),
+      '',
+      '# HELP genesis_requests_by_status HTTP requests by status class',
+      '# TYPE genesis_requests_by_status counter',
+      ...Object.entries(requestMetrics.byStatus).map(([s, c]) => `genesis_requests_by_status{status="${s}"} ${c}`),
+      '',
+      '# HELP genesis_latency_avg_ms Average request latency in ms',
+      '# TYPE genesis_latency_avg_ms gauge',
+      `genesis_latency_avg_ms ${avgLatency}`,
+      '',
+      '# HELP genesis_ratelimit_clients Active rate-limited clients',
+      '# TYPE genesis_ratelimit_clients gauge',
+      `genesis_ratelimit_clients ${rateLimitStore.size}`,
+      '',
+      '# HELP genesis_memory_heap_bytes Heap memory used',
+      '# TYPE genesis_memory_heap_bytes gauge',
+      `genesis_memory_heap_bytes ${mem.heapUsed}`,
+      '',
+      '# HELP genesis_memory_rss_bytes RSS memory used',
+      '# TYPE genesis_memory_rss_bytes gauge',
+      `genesis_memory_rss_bytes ${mem.rss}`
+    ];
+
+    return lines.join('\n');
   }
 };
 
@@ -1292,12 +1432,99 @@ function matchRoute(method, path) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Rate Limiting
+// ═══════════════════════════════════════════════════════════════════════════
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+
+  if (!record || now - record.windowStart > RATE_LIMIT_WINDOW) {
+    rateLimitStore.set(ip, { windowStart: now, count: 1 });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0, retryAfter: Math.ceil((record.windowStart + RATE_LIMIT_WINDOW - now) / 1000) };
+  }
+
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
+// Cleanup old rate limit entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitStore) {
+    if (now - record.windowStart > RATE_LIMIT_WINDOW * 2) {
+      rateLimitStore.delete(ip);
+    }
+  }
+}, 300000);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JWT Authentication (minimal, zero-dependency)
+// ═══════════════════════════════════════════════════════════════════════════
+
+import { createHmac } from 'node:crypto';
+
+function base64UrlEncode(str) {
+  return Buffer.from(str).toString('base64url');
+}
+
+function base64UrlDecode(str) {
+  return Buffer.from(str, 'base64url').toString('utf-8');
+}
+
+function verifyJWT(token) {
+  if (!JWT_SECRET || !token) return { valid: false, reason: 'No token or secret' };
+
+  try {
+    const parts = token.replace(/^Bearer\s+/i, '').split('.');
+    if (parts.length !== 3) return { valid: false, reason: 'Invalid format' };
+
+    const [header, payload, signature] = parts;
+    const expectedSig = createHmac('sha256', JWT_SECRET)
+      .update(`${header}.${payload}`)
+      .digest('base64url');
+
+    if (signature !== expectedSig) return { valid: false, reason: 'Invalid signature' };
+
+    const claims = JSON.parse(base64UrlDecode(payload));
+
+    // Check expiry
+    if (claims.exp && Date.now() / 1000 > claims.exp) {
+      return { valid: false, reason: 'Token expired' };
+    }
+
+    return { valid: true, claims };
+  } catch (e) {
+    return { valid: false, reason: e.message };
+  }
+}
+
+function isProtectedRoute(path) {
+  return PROTECTED_ROUTES.some(p => path.startsWith(p));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Request Handler
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function handleRequest(req, res) {
+  const startTime = Date.now();
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = url.pathname;
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+
+  // Track request metrics
+  requestMetrics.total++;
+  requestMetrics.byMethod[req.method] = (requestMetrics.byMethod[req.method] || 0) + 1;
+  const pathKey = path.split('/').slice(0, 3).join('/'); // /api/merkava -> /api/merkava
+  requestMetrics.byPath.set(pathKey, (requestMetrics.byPath.get(pathKey) || 0) + 1);
+
+  // Log request via KOL (debug level so it doesn't spam)
+  dashLog.debug(`${req.method} ${path}`, { ip: clientIp });
 
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -1336,6 +1563,38 @@ async function handleRequest(req, res) {
 
   // API routes
   if (path.startsWith('/api/')) {
+    // Rate limit check (except for health/metrics endpoints)
+    if (!path.includes('/health') && !path.includes('/metrics')) {
+      const rateLimit = checkRateLimit(clientIp);
+      res.setHeader('X-RateLimit-Limit', RATE_LIMIT_MAX);
+      res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);
+
+      if (!rateLimit.allowed) {
+        dashLog.warn('Rate limit exceeded', { ip: clientIp, path });
+        requestMetrics.byStatus['4xx']++;
+        res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': rateLimit.retryAfter });
+        res.end(JSON.stringify({ error: 'Too many requests', retryAfter: rateLimit.retryAfter }));
+        return;
+      }
+    }
+
+    // JWT authentication for protected routes (only if JWT_SECRET is configured)
+    if (JWT_SECRET && isProtectedRoute(path)) {
+      const authHeader = req.headers.authorization;
+      const auth = verifyJWT(authHeader);
+
+      if (!auth.valid) {
+        dashLog.warn('Auth failed on protected route', { ip: clientIp, path, reason: auth.reason });
+        requestMetrics.byStatus['4xx']++;
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized', reason: auth.reason }));
+        return;
+      }
+
+      // Attach claims to request for downstream use
+      req.auth = auth.claims;
+    }
+
     const route = matchRoute(req.method, path);
 
     if (route) {
@@ -1345,16 +1604,32 @@ async function handleRequest(req, res) {
           : {};
 
         const result = await route.handler(route.params, body);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result));
+        const latency = Date.now() - startTime;
+        requestMetrics.latencySum += latency;
+        requestMetrics.byStatus['2xx']++;
+
+        // Handle raw text responses (e.g., Prometheus metrics)
+        if (typeof result === 'string') {
+          const contentType = path.includes('prometheus') ? 'text/plain; charset=utf-8' : 'application/json';
+          res.writeHead(200, { 'Content-Type': contentType, 'X-Response-Time': `${latency}ms` });
+          res.end(result);
+        } else {
+          res.writeHead(200, { 'Content-Type': 'application/json', 'X-Response-Time': `${latency}ms` });
+          res.end(JSON.stringify(result));
+        }
       } catch (err) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
+        const latency = Date.now() - startTime;
+        requestMetrics.latencySum += latency;
+        requestMetrics.byStatus['5xx']++;
+        dashLog.error(`API error: ${path}`, { error: err.message, latency });
+        res.writeHead(500, { 'Content-Type': 'application/json', 'X-Response-Time': `${latency}ms` });
         res.end(JSON.stringify({ error: err.message }));
       }
       return;
     }
 
     // 404 for unknown API routes
+    requestMetrics.byStatus['4xx']++;
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'API endpoint not found' }));
     return;
