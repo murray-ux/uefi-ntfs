@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GENESIS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void: #050508;
+      --abyss: #0a0a0f;
+      --deep: #0f0f16;
+      --surface: #16161f;
+      --elevated: #1c1c28;
+      --border: rgba(255,255,255,0.06);
+      --gold: #c9a227;
+      --gold-dim: rgba(201,162,39,0.15);
+      --gold-glow: rgba(201,162,39,0.4);
+      --cyan: #22d3ee;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --text: #e4e4e7;
+      --text-dim: #71717a;
+      --text-ghost: #3f3f46;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--void);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       LOGIN
+    ═══════════════════════════════════════════════════════════════════════ */
+    .gate {
+      position: fixed;
+      inset: 0;
+      background: var(--void);
+      display: grid;
+      place-items: center;
+      z-index: 1000;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .gate.fade { opacity: 0; pointer-events: none; }
+
+    .gate::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, var(--gold-dim), transparent),
+        radial-gradient(circle at 30% 80%, rgba(34,211,238,0.03), transparent);
+    }
+
+    .gate-inner {
+      position: relative;
+      width: 360px;
+      text-align: center;
+    }
+
+    .gate-glyph {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .gate-glyph svg {
+      width: 100%;
+      height: 100%;
+      stroke: var(--gold);
+      stroke-width: 1;
+      fill: none;
+    }
+
+    .gate-glyph::after {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--gold-dim), transparent 70%);
+      animation: breathe 4s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.1); }
+    }
+
+    .gate-title {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 8px;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .gate-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+    }
+
+    .gate-field {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .gate-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .gate-input::placeholder { color: var(--text-ghost); }
+    .gate-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-dim);
+    }
+
+    .gate-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      background: linear-gradient(135deg, var(--gold), #a68520);
+      border: none;
+      border-radius: 8px;
+      color: var(--void);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .gate-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px var(--gold-glow);
+    }
+
+    .gate-error {
+      color: var(--red);
+      font-size: 12px;
+      margin-top: 16px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .gate-error.show { opacity: 1; }
+
+    .gate-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text-ghost);
+      font-size: 11px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       MAIN SHELL
+    ═══════════════════════════════════════════════════════════════════════ */
+    .shell {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .shell.on { display: block; }
+
+    /* Top Bar */
+    .topbar {
+      height: 56px;
+      padding: 0 24px;
+      background: var(--abyss);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-mark svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--gold);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .topbar-name {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: var(--gold);
+    }
+
+    .topbar-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+
+    .topbar-status::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .topbar-user {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .topbar-exit {
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid var(--red);
+      border-radius: 6px;
+      color: var(--red);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .topbar-exit:hover {
+      background: var(--red);
+      color: white;
+    }
+
+    /* Canvas */
+    .canvas {
+      padding: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Metrics Strip */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.5;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .metric-unit {
+      font-size: 11px;
+      color: var(--text-ghost);
+      margin-left: 4px;
+    }
+
+    /* Section Header */
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-tag {
+      padding: 4px 10px;
+      background: var(--gold-dim);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 2px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* Pentagon Grid */
+    .penta-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .penta-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .penta-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(201,162,39,0.08), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .penta-card:hover::before { opacity: 1; }
+    .penta-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    .penta-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      background: var(--elevated);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+    }
+
+    .penta-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--cyan);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .penta-name {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .penta-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* Layers */
+    .layers {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+
+    .layer {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .layer:last-child { border-bottom: none; }
+
+    .layer-head {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .layer-head:hover { background: var(--elevated); }
+
+    .layer-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .layer-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .layer-badge.l0 { background: rgba(139,92,246,0.15); color: #a78bfa; }
+    .layer-badge.l1 { background: rgba(34,211,238,0.15); color: #22d3ee; }
+    .layer-badge.l2 { background: rgba(16,185,129,0.15); color: #10b981; }
+    .layer-badge.l3 { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .layer-badge.l4 { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    .layer-info h3 {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .layer-info span {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .layer-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .layer-count {
+      font-size: 11px;
+      color: var(--text-ghost);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .layer-chevron {
+      color: var(--text-ghost);
+      transition: transform 0.3s;
+    }
+
+    .layer.open .layer-chevron { transform: rotate(180deg); }
+
+    .layer-body {
+      display: none;
+      padding: 16px 20px;
+      background: var(--abyss);
+    }
+
+    .layer.open .layer-body { display: block; }
+
+    .rooms {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .room {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .room:hover {
+      border-color: var(--gold);
+      background: var(--elevated);
+    }
+
+    .room-light {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .room-light.amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+    .room-light.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    .room-light.off { background: var(--text-ghost); box-shadow: none; }
+    .room-light.purple { background: #a855f7; box-shadow: 0 0 6px #a855f7; }
+
+    .room-glyph {
+      font-size: 22px;
+      margin-bottom: 6px;
+      filter: grayscale(0.2);
+    }
+
+    .room-name {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
+
+    /* Terminal */
+    .terminal {
+      background: var(--void);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot.r { background: #ef4444; }
+    .terminal-dot.y { background: #f59e0b; }
+    .terminal-dot.g { background: #10b981; }
+
+    .terminal-title {
+      margin-left: 8px;
+      font-size: 11px;
+      color: var(--text-ghost);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .terminal-body {
+      padding: 16px;
+      height: 180px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .terminal-body::-webkit-scrollbar { width: 6px; }
+    .terminal-body::-webkit-scrollbar-track { background: var(--void); }
+    .terminal-body::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 3px; }
+
+    .log-line {
+      display: flex;
+      gap: 12px;
+    }
+
+    .log-time { color: var(--text-ghost); }
+    .log-msg { color: var(--green); }
+    .log-msg.warn { color: var(--amber); }
+    .log-msg.error { color: var(--red); }
+    .log-msg.info { color: var(--cyan); }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .penta-grid { grid-template-columns: repeat(3, 1fr); }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      .penta-grid { grid-template-columns: repeat(2, 1fr); }
+      .metrics { grid-template-columns: 1fr; }
+      .topbar { padding: 0 16px; }
+      .canvas { padding: 20px; }
+      .rooms { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       GATE
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="gate" id="gate">
+    <div class="gate-inner">
+      <div class="gate-glyph">
+        <svg viewBox="0 0 100 100">
+          <polygon points="50,5 95,27.5 95,72.5 50,95 5,72.5 5,27.5" />
+          <polygon points="50,20 80,35 80,65 50,80 20,65 20,35" />
+          <circle cx="50" cy="50" r="12" />
+        </svg>
+      </div>
+      <h1 class="gate-title">GENESIS</h1>
+      <p class="gate-sub">SOVEREIGN PLATFORM v2.0</p>
+
+      <div class="gate-field">
+        <input type="text" class="gate-input" id="uid" placeholder="Owner ID" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="gate-field">
+        <input type="password" class="gate-input" id="key" placeholder="Passphrase">
+      </div>
+
+      <button class="gate-btn" id="enter">AUTHENTICATE</button>
+
+      <p class="gate-error" id="err">Access Denied</p>
+
+      <div class="gate-footer">
+        YubiKey ready &mdash; Touch when prompted
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SHELL
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="shell" id="shell">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-mark">
+          <svg viewBox="0 0 100 100">
+            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" />
+            <circle cx="50" cy="50" r="15" />
+          </svg>
+          <span class="topbar-name">GENESIS</span>
+        </div>
+        <div class="topbar-divider"></div>
+        <div class="topbar-status">OPERATIONAL</div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user" id="usr">murray-ux</span>
+        <button class="topbar-exit" id="exit">EXIT</button>
+      </div>
+    </header>
+
+    <main class="canvas">
+
+      <!-- Metrics -->
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">UPTIME</div>
+          <div><span class="metric-value" id="m-up">0</span><span class="metric-unit">s</span></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">ROOMS</div>
+          <div><span class="metric-value">41</span><span class="metric-unit">active</span></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">MESSAGES</div>
+          <div><span class="metric-value" id="m-msg">0</span></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">POLICY CHECKS</div>
+          <div><span class="metric-value" id="m-pol">0</span></div>
+        </div>
+      </div>
+
+      <!-- Pentagon -->
+      <section>
+        <div class="section-head">
+          <span class="section-tag">PENTAGON</span>
+          <span class="section-title">5 Public Facets</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="penta-grid">
+          <div class="penta-card">
+            <div class="penta-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></svg>
+            </div>
+            <div class="penta-name">CMD</div>
+            <div class="penta-desc">Command Execution</div>
+          </div>
+          <div class="penta-card">
+            <div class="penta-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div class="penta-name">IDN</div>
+            <div class="penta-desc">Identity & Auth</div>
+          </div>
+          <div class="penta-card">
+            <div class="penta-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="penta-name">EVD</div>
+            <div class="penta-desc">Evidence Chain</div>
+          </div>
+          <div class="penta-card">
+            <div class="penta-icon">
+              <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="penta-name">EXE</div>
+            <div class="penta-desc">Workflow Engine</div>
+          </div>
+          <div class="penta-card">
+            <div class="penta-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+            <div class="penta-name">OUT</div>
+            <div class="penta-desc">Output Generation</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Underfloor -->
+      <section>
+        <div class="section-head">
+          <span class="section-tag">UNDERFLOOR</span>
+          <span class="section-title">5 Layers / 41 Rooms</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="layers">
+          <!-- L0 -->
+          <div class="layer" data-layer="l0">
+            <div class="layer-head">
+              <div class="layer-left">
+                <div class="layer-badge l0">L0</div>
+                <div class="layer-info">
+                  <h3>Kernel</h3>
+                  <span>Crypto, Hashing, Time, IDs</span>
+                </div>
+              </div>
+              <div class="layer-right">
+                <span class="layer-count">7 rooms</span>
+                <span class="layer-chevron">&#9662;</span>
+              </div>
+            </div>
+            <div class="layer-body">
+              <div class="rooms">
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#127777;</div><div class="room-name">Thermostat</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#129704;</div><div class="room-name">Chip</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128267;</div><div class="room-name">Battery</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128336;</div><div class="room-name">Clock</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#129517;</div><div class="room-name">Compass</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#9889;</div><div class="room-name">Fuse</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#10024;</div><div class="room-name">Spark</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- L1 -->
+          <div class="layer" data-layer="l1">
+            <div class="layer-head">
+              <div class="layer-left">
+                <div class="layer-badge l1">L1</div>
+                <div class="layer-info">
+                  <h3>Conduit</h3>
+                  <span>Message Passing & Routing</span>
+                </div>
+              </div>
+              <div class="layer-right">
+                <span class="layer-count">7 rooms</span>
+                <span class="layer-chevron">&#9662;</span>
+              </div>
+            </div>
+            <div class="layer-body">
+              <div class="rooms">
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128293;</div><div class="room-name">Flares</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128274;</div><div class="room-name">Locks</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128682;</div><div class="room-name">Doors</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128226;</div><div class="room-name">Horn</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#129668;</div><div class="room-name">Mirrors</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128225;</div><div class="room-name">Antenna</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128260;</div><div class="room-name">Relay</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- L2 -->
+          <div class="layer" data-layer="l2">
+            <div class="layer-head">
+              <div class="layer-left">
+                <div class="layer-badge l2">L2</div>
+                <div class="layer-info">
+                  <h3>Reservoir</h3>
+                  <span>State, Cache, Persistence</span>
+                </div>
+              </div>
+              <div class="layer-right">
+                <span class="layer-count">8 rooms</span>
+                <span class="layer-chevron">&#9662;</span>
+              </div>
+            </div>
+            <div class="layer-body">
+              <div class="rooms">
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128188;</div><div class="room-name">Trunk</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128295;</div><div class="room-name">Spares</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#10052;</div><div class="room-name">Coolant</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128167;</div><div class="room-name">Wash</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#9981;</div><div class="room-name">Tank</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#129529;</div><div class="room-name">Filter</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128736;</div><div class="room-name">Jack</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#129534;</div><div class="room-name">Glove</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- L3 -->
+          <div class="layer" data-layer="l3">
+            <div class="layer-head">
+              <div class="layer-left">
+                <div class="layer-badge l3">L3</div>
+                <div class="layer-info">
+                  <h3>Valve</h3>
+                  <span>Policy, Breakers, Rate Limits</span>
+                </div>
+              </div>
+              <div class="layer-right">
+                <span class="layer-count">9 rooms</span>
+                <span class="layer-chevron">&#9662;</span>
+              </div>
+            </div>
+            <div class="layer-body">
+              <div class="rooms">
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128721;</div><div class="room-name">Brakes</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128373;</div><div class="room-name">Tint</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#127746;</div><div class="room-name">Wipers</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#9981;</div><div class="room-name">Fuel</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#9881;</div><div class="room-name">Clutch</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#9881;</div><div class="room-name">Gears</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128095;</div><div class="room-name">Pedals</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128200;</div><div class="room-name">Gauges</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#129704;</div><div class="room-name">Seatbelts</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- L4 -->
+          <div class="layer" data-layer="l4">
+            <div class="layer-head">
+              <div class="layer-left">
+                <div class="layer-badge l4">L4</div>
+                <div class="layer-info">
+                  <h3>Manifold</h3>
+                  <span>Orchestration, Pipelines, Fan-out</span>
+                </div>
+              </div>
+              <div class="layer-right">
+                <span class="layer-count">10 rooms</span>
+                <span class="layer-chevron">&#9662;</span>
+              </div>
+            </div>
+            <div class="layer-body">
+              <div class="rooms">
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128663;</div><div class="room-name">Engine</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#129431;</div><div class="room-name">Wings</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128268;</div><div class="room-name">Mods</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128168;</div><div class="room-name">Exhaust</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#127744;</div><div class="room-name">Turbo</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128739;</div><div class="room-name">Chassis</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128656;</div><div class="room-name">Bumper</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#128136;</div><div class="room-name">Spoiler</div></div>
+                <div class="room"><div class="room-light"></div><div class="room-glyph">&#9898;</div><div class="room-name">Wheels</div></div>
+                <div class="room"><div class="room-light purple"></div><div class="room-glyph">&#127912;</div><div class="room-name">Playroom</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Terminal -->
+      <section>
+        <div class="section-head">
+          <span class="section-tag">LOG</span>
+          <span class="section-title">System Events</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot r"></div>
+            <div class="terminal-dot y"></div>
+            <div class="terminal-dot g"></div>
+            <span class="terminal-title">genesis.log</span>
+          </div>
+          <div class="terminal-body" id="log"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    const UID = 'murray-ux', KEY = 'genesis';
+    const gate = document.getElementById('gate');
+    const shell = document.getElementById('shell');
+    const uidEl = document.getElementById('uid');
+    const keyEl = document.getElementById('key');
+    const errEl = document.getElementById('err');
+    const logEl = document.getElementById('log');
+
+    let up = 0, msg = 0, pol = 0;
+
+    document.getElementById('enter').onclick = () => {
+      if (uidEl.value === UID && keyEl.value === KEY) {
+        gate.classList.add('fade');
+        setTimeout(() => shell.classList.add('on'), 400);
+        document.getElementById('usr').textContent = uidEl.value;
+        emit('info', `Authenticated as ${uidEl.value}`);
+        emit('info', 'Genesis 2.0 online');
+        emit('info', 'Pentagon: 5 facets active');
+        emit('info', 'Underfloor: 41 rooms nominal');
+        tick();
+      } else {
+        errEl.classList.add('show');
+        emit('error', 'Authentication failed');
+        setTimeout(() => errEl.classList.remove('show'), 2500);
+      }
+    };
+
+    keyEl.onkeypress = e => e.key === 'Enter' && document.getElementById('enter').click();
+    uidEl.onkeypress = e => e.key === 'Enter' && keyEl.focus();
+
+    document.getElementById('exit').onclick = () => {
+      shell.classList.remove('on');
+      gate.classList.remove('fade');
+      uidEl.value = keyEl.value = '';
+      emit('warn', 'Session terminated');
+    };
+
+    document.querySelectorAll('.layer-head').forEach(h => {
+      h.onclick = () => h.parentElement.classList.toggle('open');
+    });
+
+    document.querySelectorAll('.room').forEach(r => {
+      r.onclick = () => emit('info', `Room: ${r.querySelector('.room-name').textContent}`);
+    });
+
+    function emit(type, text) {
+      const t = new Date().toLocaleTimeString('en-GB', { hour12: false });
+      logEl.innerHTML += `<div class="log-line"><span class="log-time">${t}</span><span class="log-msg ${type}">${text}</span></div>`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function tick() {
+      setInterval(() => {
+        up++;
+        msg += Math.floor(Math.random() * 3);
+        pol += Math.floor(Math.random() * 2);
+        document.getElementById('m-up').textContent = up;
+        document.getElementById('m-msg').textContent = msg;
+        document.getElementById('m-pol').textContent = pol;
+        if (Math.random() < 0.08) {
+          const rooms = ['Clock', 'Battery', 'Engine', 'Fuel', 'Coolant', 'Relay'];
+          emit('info', `${rooms[Math.floor(Math.random() * rooms.length)]} — nominal`);
+        }
+      }, 1000);
+    }
+
+    emit('info', 'Control Panel loaded');
+    emit('info', 'Awaiting authentication...');
+  </script>
+</body>
+</html>
