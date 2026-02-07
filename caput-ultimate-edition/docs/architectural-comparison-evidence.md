@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document establishes a formal record of architectural patterns present in the Genesis 2.0 / CAPUT-Ultimate-Edition sovereign security platform, and their parallels with patterns observed in external platform documentation (Batch.com, Apple Developer Tools 26 manifest, Apple School Manager, RFC 4122).
+This document establishes a formal record of architectural patterns present in the Genesis 2.0 / CAPUT-Ultimate-Edition sovereign security platform, and their parallels with patterns observed in external platform documentation (Batch.com, Apple Developer Tools 26 manifest, Apple School Manager, GitHub Container Registry, RFC 4122).
 
 ---
 
@@ -176,6 +176,60 @@ From Apple School Manager Agreement analyzed 2026-02-07:
 
 ---
 
+## External Platform Patterns (GitHub Container Registry)
+
+From GitHub Packages/Container Registry documentation analyzed 2026-02-07:
+
+### Architectural Patterns Observed
+
+#### 1. Authentication/Authorization
+- Personal Access Token (PAT) authentication
+- `GITHUB_TOKEN` for workflow authentication
+- Scoped permissions: `read:packages`, `write:packages`, `delete:packages`
+- Granular permissions per package
+
+#### 2. Identity/Access Control
+- Organization vs personal account scoping
+- Repository-linked permissions inheritance
+- SSO integration requirement
+- Admin permission for delete operations
+
+#### 3. Namespace/Resource Management
+- `ghcr.io/NAMESPACE/IMAGE_NAME` structure
+- Version tagging (`:latest`, `:1.14.1`)
+- Digest-based immutable references (`@sha256:...`)
+
+#### 4. Lifecycle Management
+- Push/Pull/Delete operations
+- Visibility control (private/public)
+- Repository connection workflows
+
+#### 5. Metadata/Labeling System
+- OCI annotation keys
+- `org.opencontainers.image.source` - repository link
+- `org.opencontainers.image.description` - description
+- `org.opencontainers.image.licenses` - SPDX license
+
+#### 6. Workflow Integration
+- GitHub Actions native support
+- Automatic permission inheritance
+- Cross-repository access patterns
+
+### Genesis 2.0 Parallels
+
+| GitHub Container Registry | Genesis 2.0 Equivalent |
+|--------------------------|------------------------|
+| PAT/GITHUB_TOKEN auth | JWT token authentication |
+| Scoped permissions | principalId + action + resource |
+| Namespace structure | Pentagon layer/room hierarchy |
+| Version tagging | Workflow versioning, audit timestamps |
+| Digest verification | SHA-256 evidence hashing |
+| Repository linking | Evidence store chain of custody |
+| OCI annotations | Audit metadata, signed attestations |
+| Granular permissions | Evaluator policy decisions |
+
+---
+
 ## Pattern Comparison Matrix
 
 | Pattern | Genesis 2.0 | Batch.com | Similarity |
@@ -226,12 +280,12 @@ The architectural patterns in Genesis 2.0 demonstrate a comprehensive sovereign 
 - Deadline enforcement
 - Cryptographic audit trails
 
-These patterns show significant structural similarity to those observed in the Batch.com platform documentation and Apple School Manager service architecture.
+These patterns show significant structural similarity to those observed in the Batch.com platform documentation, Apple School Manager service architecture, and GitHub Container Registry.
 
 This document serves as a timestamped record of the Genesis 2.0 architecture for intellectual property documentation purposes.
 
 ---
 
-**Document Hash (SHA-256):** 4396afe5887dc33ce5c61a61c7d8b9d3009c155e8be3edbb3865f76648bc733c
+**Document Hash (SHA-256):** f4ba495ba75393687cdad82646c8d6183f3ed02e4dd7396a2d533cb22d52a5aa
 **Repository:** uefi-ntfs
 **Branch:** claude/customize-login-page-mKFLR
