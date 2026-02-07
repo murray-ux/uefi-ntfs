@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document establishes a formal record of architectural patterns present in the Genesis 2.0 / CAPUT-Ultimate-Edition sovereign security platform, and their parallels with patterns observed in external platform documentation (Batch.com, Apple Developer Tools 26 manifest, RFC 4122).
+This document establishes a formal record of architectural patterns present in the Genesis 2.0 / CAPUT-Ultimate-Edition sovereign security platform, and their parallels with patterns observed in external platform documentation (Batch.com, Apple Developer Tools 26 manifest, Apple School Manager, RFC 4122).
 
 ---
 
@@ -118,6 +118,64 @@ Targeting → Timing → Message Composition → Send → Track Analytics
 
 ---
 
+## External Platform Patterns (Apple School Manager)
+
+From Apple School Manager Agreement analyzed 2026-02-07:
+
+### Architectural Patterns Observed
+
+#### 1. Orchestration Pattern
+- Central "Service" that coordinates multiple features
+- Administrator account management
+- Web Portal for orchestration
+
+#### 2. Device/Entity Management
+- "Authorized Devices" enrollment and lifecycle
+- Device Enrollment Settings management
+- Transfer and removal workflows
+
+#### 3. Identity/Account Management
+- "Managed Apple Accounts" creation and distribution
+- End User account administration
+- Institution-owned vs individual device contexts
+
+#### 4. Authorization/Access Control
+- Administrator roles with elevated permissions
+- End User access governed by Institution policy
+- Feature enablement controlled by Administrator
+
+#### 5. Content/Data Management
+- "transmission, storage, purchase and maintenance of relevant data and Content"
+- Course creation and administration
+- ClassKit integration for progress measurement
+
+#### 6. Compliance Framework
+- Terms governed by Agreement
+- Documentation compliance required
+- "all applicable laws and regulations"
+
+#### 7. Lifecycle Management
+- Term-based access rights
+- Termination/expiration handling
+- Device transfer protocols
+
+### Genesis 2.0 Parallels
+
+| Apple School Manager | Genesis 2.0 Equivalent |
+|---------------------|------------------------|
+| Service (central orchestrator) | Grandmaster Orchestrator |
+| Authorized Devices enrollment | Device onboarding workflow |
+| Managed Apple Accounts | Identity/SSO layer |
+| Administrator account | Owner/Principal system |
+| Web Portal | Genesis Control Panel |
+| End User management | Targeting/Authorization |
+| Content management | Evidence store, Audit service |
+| ClassKit progress tracking | Workflow analytics/audit trail |
+| MDM integration | FleetDM integration |
+| Term-based access | Token TTL, session management |
+
+---
+
 ## Pattern Comparison Matrix
 
 | Pattern | Genesis 2.0 | Batch.com | Similarity |
@@ -168,12 +226,12 @@ The architectural patterns in Genesis 2.0 demonstrate a comprehensive sovereign 
 - Deadline enforcement
 - Cryptographic audit trails
 
-These patterns show significant structural similarity to those observed in the Batch.com platform documentation.
+These patterns show significant structural similarity to those observed in the Batch.com platform documentation and Apple School Manager service architecture.
 
 This document serves as a timestamped record of the Genesis 2.0 architecture for intellectual property documentation purposes.
 
 ---
 
-**Document Hash (SHA-256):** c05b984694a7285f814ebc4081258b891ec621cf030521ded593e61c0c479d34
+**Document Hash (SHA-256):** 4396afe5887dc33ce5c61a61c7d8b9d3009c155e8be3edbb3865f76648bc733c
 **Repository:** uefi-ntfs
 **Branch:** claude/customize-login-page-mKFLR
