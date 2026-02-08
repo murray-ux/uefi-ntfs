@@ -11,6 +11,7 @@
 //   - Attestation verifies the receipt chain, not regex patterns.
 //   - Every audit event carries full spoke context.
 //   - Every failure carries a charter failure code.
+//   - AbortSignal-style cancellation for composable abort sources.
 //
 // Failure codes (Charter §3.1):
 //   W-001  Illegal state transition
@@ -19,6 +20,7 @@
 //   W-004  Deadline exceeded
 //   W-005  Execute function threw
 //   W-006  Audit write failed
+//   W-007  Aborted by signal
 //
 // Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
 
@@ -37,6 +39,7 @@ export const WHEEL_CODES = {
   W004: "W-004",
   W005: "W-005",
   W006: "W-006",
+  W007: "W-007",
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -64,6 +67,133 @@ function isTerminal(p: Phase): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// WheelAbortController — Composable abort signals (AbortSignal.any() pattern)
+// ---------------------------------------------------------------------------
+
+export type AbortReason = string | Error | { code: string; message: string };
+
+export interface WheelAbortSignal {
+  readonly aborted: boolean;
+  readonly reason: AbortReason | undefined;
+  addEventListener(type: 'abort', listener: () => void): void;
+  removeEventListener(type: 'abort', listener: () => void): void;
+}
+
+/**
+ * WheelAbortController — composable abort signals for workflow cancellation.
+ *
+ * Follows the AbortSignal.any() pattern:
+ *   - Multiple abort sources can be composed
+ *   - First abort reason wins
+ *   - Events fire in registration order
+ *   - Dependent signals are marked aborted before events fire
+ */
+export class WheelAbortController {
+  private _aborted = false;
+  private _reason: AbortReason | undefined;
+  private _listeners: Set<() => void> = new Set();
+  private _sources: WheelAbortSignal[] = [];
+
+  readonly signal: WheelAbortSignal = {
+    get aborted() { return this._aborted; },
+    get reason() { return this._reason; },
+    addEventListener: (type: 'abort', listener: () => void) => {
+      if (type === 'abort') {
+        this._listeners.add(listener);
+        // If already aborted, fire immediately (sync)
+        if (this._aborted) {
+          listener();
+        }
+      }
+    },
+    removeEventListener: (type: 'abort', listener: () => void) => {
+      if (type === 'abort') {
+        this._listeners.delete(listener);
+      }
+    },
+  };
+
+  constructor() {
+    // Bind signal getters to this instance
+    Object.defineProperty(this.signal, 'aborted', {
+      get: () => this._aborted,
+    });
+    Object.defineProperty(this.signal, 'reason', {
+      get: () => this._reason,
+    });
+  }
+
+  /**
+   * Abort with a reason. First abort wins — subsequent calls are ignored.
+   */
+  abort(reason?: AbortReason): void {
+    if (this._aborted) return;
+
+    this._aborted = true;
+    this._reason = reason ?? { code: WHEEL_CODES.W007, message: 'Aborted' };
+
+    // Fire listeners in registration order
+    for (const listener of this._listeners) {
+      try {
+        listener();
+      } catch {
+        // Don't let listener errors break the abort chain
+      }
+    }
+  }
+
+  /**
+   * Follow another signal — when it aborts, this controller aborts.
+   */
+  follow(signal: WheelAbortSignal): void {
+    if (this._aborted) return;
+
+    // If source is already aborted, abort immediately with its reason
+    if (signal.aborted) {
+      this.abort(signal.reason);
+      return;
+    }
+
+    this._sources.push(signal);
+    signal.addEventListener('abort', () => {
+      this.abort(signal.reason);
+    });
+  }
+
+  /**
+   * Create a composite signal from multiple sources (AbortSignal.any() pattern).
+   * First source to abort wins.
+   */
+  static any(signals: WheelAbortSignal[]): WheelAbortController {
+    const controller = new WheelAbortController();
+
+    for (const signal of signals) {
+      controller.follow(signal);
+      // If any signal is already aborted, controller is now aborted
+      if (controller.signal.aborted) break;
+    }
+
+    return controller;
+  }
+
+  /**
+   * Create a timeout signal (AbortSignal.timeout() pattern).
+   */
+  static timeout(ms: number): WheelAbortController {
+    const controller = new WheelAbortController();
+
+    setTimeout(() => {
+      controller.abort({
+        code: WHEEL_CODES.W004,
+        message: `Timeout after ${ms}ms`,
+      });
+    }, ms);
+
+    return controller;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -81,6 +211,11 @@ export interface SpokeSpec {
   deadlineMs: number;
   /** The work. Wheel doesn't know what this does. */
   execute: () => Promise<unknown>;
+  /**
+   * Optional abort signal for external cancellation.
+   * Composable with deadline timeout via WheelAbortController.any().
+   */
+  signal?: WheelAbortSignal;
 }
 
 export interface PhaseReceipt {
@@ -137,11 +272,32 @@ export class Wheel {
    *
    * One spec in, one result out. Create the Wheel once, call spin() for
    * every operation. The executor is in the spec, not in the Wheel.
+   *
+   * Abort sources are composed: external signal + deadline timeout.
+   * First abort wins (AbortSignal.any() pattern).
    */
   async spin(spec: SpokeSpec): Promise<WheelResult> {
     const spoke = this.birth(spec);
 
+    // Compose abort sources: external signal (if any) + deadline timeout
+    const timeoutController = WheelAbortController.timeout(spec.deadlineMs);
+    const abortController = spec.signal
+      ? WheelAbortController.any([spec.signal, timeoutController.signal])
+      : timeoutController;
+
     try {
+      // Check for pre-aborted signal
+      if (abortController.signal.aborted) {
+        const reason = abortController.signal.reason;
+        const msg = typeof reason === 'string' ? reason
+          : reason instanceof Error ? reason.message
+          : (reason as { message: string }).message;
+        const code = typeof reason === 'object' && 'code' in reason
+          ? (reason as { code: string }).code
+          : WHEEL_CODES.W007;
+        return this.kill(spoke, code, msg);
+      }
+
       // ── GATE ──────────────────────────────────────────────────
       // Derive evidence from the spec. One source of truth.
       this.advance(spoke, Phase.GATED, null, "Policy evaluation");
@@ -164,6 +320,11 @@ export class Wheel {
         );
       }
 
+      // Check abort between phases
+      if (abortController.signal.aborted) {
+        return this.abortSpoke(spoke, abortController.signal.reason);
+      }
+
       // ── ATTEST ────────────────────────────────────────────────
       // Verify the receipt chain built so far. If the chain is
       // corrupt, something has modified the spoke in memory.
@@ -177,12 +338,17 @@ export class Wheel {
       }
       await this.audit(spoke, "SPOKE_ATTESTED");
 
+      // Check abort between phases
+      if (abortController.signal.aborted) {
+        return this.abortSpoke(spoke, abortController.signal.reason);
+      }
+
       // ── EXECUTE ───────────────────────────────────────────────
       this.advance(spoke, Phase.EXECUTING, null, `Deadline: ${spec.deadlineMs}ms`);
       await this.audit(spoke, "SPOKE_EXECUTING");
 
       const t0 = Date.now();
-      spoke.output = await this.race(spec.execute(), spec.deadlineMs, spoke.spokeId);
+      spoke.output = await this.race(spec.execute(), abortController, spoke.spokeId);
       spoke.durationMs = Date.now() - t0;
 
       // ── SEAL ──────────────────────────────────────────────────
@@ -192,9 +358,25 @@ export class Wheel {
 
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      const code = msg.includes(WHEEL_CODES.W004) ? WHEEL_CODES.W004 : WHEEL_CODES.W005;
+      const code = msg.includes(WHEEL_CODES.W004) ? WHEEL_CODES.W004
+        : msg.includes(WHEEL_CODES.W007) ? WHEEL_CODES.W007
+        : WHEEL_CODES.W005;
       return this.kill(spoke, code, msg);
     }
+  }
+
+  /**
+   * Abort a spoke due to signal cancellation.
+   */
+  private async abortSpoke(spoke: Spoke, reason: AbortReason | undefined): Promise<WheelResult> {
+    const msg = typeof reason === 'string' ? reason
+      : reason instanceof Error ? reason.message
+      : reason ? (reason as { message: string }).message
+      : 'Aborted by signal';
+    const code = typeof reason === 'object' && reason && 'code' in reason
+      ? (reason as { code: string }).code
+      : WHEEL_CODES.W007;
+    return this.kill(spoke, code, msg);
   }
 
   // =========================================================================
@@ -294,22 +476,56 @@ export class Wheel {
     return this.freeze(spoke);
   }
 
-  private race(work: Promise<unknown>, deadlineMs: number, spokeId: string): Promise<unknown> {
+  /**
+   * Race work against abort signal. Abort can come from timeout or external signal.
+   */
+  private race(
+    work: Promise<unknown>,
+    controller: WheelAbortController,
+    spokeId: string
+  ): Promise<unknown> {
     return new Promise((resolve, reject) => {
       let settled = false;
 
-      const timer = setTimeout(() => {
+      // Listen for abort
+      const onAbort = () => {
         if (!settled) {
           settled = true;
-          reject(new Error(
-            `${WHEEL_CODES.W004}: Deadline exceeded (${deadlineMs}ms) — spoke ${spokeId}`
-          ));
+          const reason = controller.signal.reason;
+          const msg = typeof reason === 'string' ? reason
+            : reason instanceof Error ? reason.message
+            : reason ? (reason as { message: string }).message
+            : 'Aborted';
+          const code = typeof reason === 'object' && reason && 'code' in reason
+            ? (reason as { code: string }).code
+            : WHEEL_CODES.W007;
+          reject(new Error(`${code}: ${msg} — spoke ${spokeId}`));
         }
-      }, deadlineMs);
+      };
+
+      controller.signal.addEventListener('abort', onAbort);
+
+      // Check if already aborted
+      if (controller.signal.aborted) {
+        onAbort();
+        return;
+      }
 
       work.then(
-        (v) => { if (!settled) { settled = true; clearTimeout(timer); resolve(v); } },
-        (e) => { if (!settled) { settled = true; clearTimeout(timer); reject(e); } },
+        (v) => {
+          if (!settled) {
+            settled = true;
+            controller.signal.removeEventListener('abort', onAbort);
+            resolve(v);
+          }
+        },
+        (e) => {
+          if (!settled) {
+            settled = true;
+            controller.signal.removeEventListener('abort', onAbort);
+            reject(e);
+          }
+        },
       );
     });
   }

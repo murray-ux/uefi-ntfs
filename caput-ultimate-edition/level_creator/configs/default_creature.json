@@ -1,0 +1,70 @@
+{
+  "name": "Default Creature Generation",
+  "version": "1.0.0",
+  "contentType": "creature",
+
+  "global": {
+    "density": 0.6,
+    "scale": 1.0,
+    "variety": 0.7,
+    "qualityLevel": "medium"
+  },
+
+  "chunk": {
+    "size": 64,
+    "height": 32,
+    "boundaryOverlap": 2
+  },
+
+  "layers": {
+    "1": {
+      "enabled": true,
+      "samplingMethod": "poisson",
+      "minSpacing": 3.0,
+      "maxPoints": 500,
+      "densityConfig": {
+        "baseFrequency": 0.03,
+        "octaves": 4,
+        "persistence": 0.5,
+        "baseDensity": 0.6
+      }
+    },
+    "2": {
+      "enabled": true,
+      "connectionMethod": "mst",
+      "maxConnections": 4,
+      "hierarchyDepth": 7
+    },
+    "3": {
+      "enabled": true,
+      "meshMethod": "marching_cubes",
+      "lodLevels": 3,
+      "targetTriangles": 10000,
+      "resolution": 0.5
+    },
+    "4": {
+      "enabled": true,
+      "textureResolution": 1024,
+      "animationFPS": 30,
+      "audioEnabled": true
+    },
+    "5": {
+      "enabled": true,
+      "placementMethod": "raycast",
+      "groupingEnabled": true,
+      "interactionGraph": true
+    }
+  },
+
+  "constraints": {
+    "forbiddenZones": [],
+    "slopeLimit": 35,
+    "minHeight": 0,
+    "maxHeight": 50,
+    "exclusionRadius": 2.0
+  },
+
+  "templates": [
+    "creature_biped.json"
+  ]
+}

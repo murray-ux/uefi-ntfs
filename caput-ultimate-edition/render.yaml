@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: genesis-dashboard
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: echo "No build required"
+    startCommand: node src/ui/dashboard-server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production

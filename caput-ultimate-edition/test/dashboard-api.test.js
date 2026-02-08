@@ -5,7 +5,7 @@
 // Tests rate limiting, JWT authentication, and metrics endpoints.
 // Run: node --test test/dashboard-api.test.js
 //
-// Copyright (c) 2025 Murray Bembrick — Founder & Lead Developer — Apache-2.0
+// Copyright (c) 2025 murray-ux — Founder & Lead Developer — Apache-2.0
 
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';

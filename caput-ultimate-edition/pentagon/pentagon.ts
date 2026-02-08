@@ -85,6 +85,7 @@ import { Chassis } from "./underfloor/L4-manifold/chassis";
 import { Bumper } from "./underfloor/L4-manifold/bumper";
 import { Spoiler } from "./underfloor/L4-manifold/spoiler";
 import { Wheels } from "./underfloor/L4-manifold/wheels";
+import { Playroom } from "./underfloor/L4-manifold/playroom";
 
 // ---------------------------------------------------------------------------
 // Pentagon config — the ONLY thing the consumer provides
@@ -200,6 +201,7 @@ export class Pentagon {
   private readonly bumper: Bumper;
   private readonly spoiler: Spoiler;
   private readonly wheels: Wheels;
+  private readonly playroom: Playroom;
 
   constructor(config: PentagonConfig) {
     this.ownerId = config.ownerId;
@@ -296,6 +298,7 @@ export class Pentagon {
     this.bumper = new Bumper(this.kernel);
     this.spoiler = new Spoiler(this.kernel);
     this.wheels = new Wheels(this.kernel);
+    this.playroom = new Playroom(this.kernel);
 
     // ── Cross-wire rooms ───────────────────────────────────────────────
     // Wipers auto-clean: flush coolant cache
@@ -435,6 +438,8 @@ export class Pentagon {
                 return this.spoiler.stats();
               case "wheels":
                 return this.wheels.stats();
+              case "playroom":
+                return this.playroom.stats();
               default:
                 return { command: name, input: inp, handled: false };
             }
@@ -662,6 +667,7 @@ export class Pentagon {
         bumper: this.bumper.stats(),
         spoiler: this.spoiler.stats(),
         wheels: this.wheels.stats(),
+        playroom: this.playroom.stats(),
       },
     };
   }
