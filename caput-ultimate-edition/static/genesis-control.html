@@ -582,6 +582,178 @@
       transform: scale(1.1);
     }
 
+    /* Dev Button */
+    .dev-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 92px;
+      width: 56px;
+      height: 56px;
+      background: #1a1a2e;
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: transform 0.2s, background 0.2s;
+      display: none;
+    }
+
+    .dev-btn:hover {
+      transform: scale(1.1);
+      background: #2d2d4a;
+    }
+
+    .dashboard.show .dev-btn { display: flex; align-items: center; justify-content: center; }
+
+    /* Dev Panel Modal */
+    .dev-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dev-panel.show { display: flex; }
+
+    .dev-modal {
+      background: #1a1a2e;
+      border-radius: 20px;
+      width: 480px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .dev-header {
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dev-header h2 {
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .dev-close {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .dev-body {
+      padding: 20px 24px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .dev-section {
+      margin-bottom: 24px;
+    }
+
+    .dev-section:last-child { margin-bottom: 0; }
+
+    .dev-section-title {
+      color: #8888aa;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .dev-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: #252542;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+
+    .dev-row:last-child { margin-bottom: 0; }
+
+    .dev-row-label {
+      color: white;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .dev-row-desc {
+      color: #8888aa;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    /* Toggle Switch */
+    .dev-toggle {
+      width: 50px;
+      height: 28px;
+      background: #3d3d5c;
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dev-toggle.on { background: #22c55e; }
+
+    .dev-toggle::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+    }
+
+    .dev-toggle.on::after { left: 24px; }
+
+    /* Dev Actions */
+    .dev-action {
+      width: 100%;
+      padding: 14px 16px;
+      background: #252542;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 15px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: background 0.2s;
+    }
+
+    .dev-action:hover { background: #333355; }
+
+    .dev-action.danger {
+      background: #7f1d1d;
+    }
+
+    .dev-action.danger:hover { background: #991b1b; }
+
+    .dev-action-icon {
+      margin-right: 10px;
+    }
+
     /* Responsive */
     @media (max-width: 1100px) {
       .facets { grid-template-columns: repeat(3, 1fr); }
@@ -874,7 +1046,143 @@
 
     </main>
 
+    <button class="dev-btn" onclick="toggleDevPanel()" title="Developer Settings">🔧</button>
     <button class="help-btn" onclick="showHelp()" title="Need help?">?</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       DEVELOPER PANEL - iOS Developer Settings patterns
+       prefs:root=DEVELOPER_SETTINGS
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="dev-panel" id="devPanel">
+    <div class="dev-modal">
+      <div class="dev-header">
+        <h2>🔧 Developer Settings</h2>
+        <button class="dev-close" onclick="toggleDevPanel()">×</button>
+      </div>
+      <div class="dev-body">
+
+        <!-- Trusted Devices -->
+        <div class="dev-section">
+          <div class="dev-section-title">Trusted Devices</div>
+          <button class="dev-action" onclick="devAction('clearTrusted')">
+            <span class="dev-action-icon">🔒</span>Clear Trusted Computers
+          </button>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Require Trust on Connect</div>
+              <div class="dev-row-desc">Prompt for device authorization</div>
+            </div>
+            <div class="dev-toggle on" data-setting="requireTrust" onclick="toggleSetting(this)"></div>
+          </div>
+        </div>
+
+        <!-- Logging -->
+        <div class="dev-section">
+          <div class="dev-section-title">Logging</div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Enable Log Capture</div>
+              <div class="dev-row-desc">Record system events to file</div>
+            </div>
+            <div class="dev-toggle on" data-setting="logCapture" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Verbose Mode</div>
+              <div class="dev-row-desc">Include debug-level messages</div>
+            </div>
+            <div class="dev-toggle" data-setting="verboseLog" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Profile Logging</div>
+              <div class="dev-row-desc">Performance profiling enabled</div>
+            </div>
+            <div class="dev-toggle" data-setting="profileLog" onclick="toggleSetting(this)"></div>
+          </div>
+        </div>
+
+        <!-- UI Automation -->
+        <div class="dev-section">
+          <div class="dev-section-title">UI Automation</div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Enable UI Automation</div>
+              <div class="dev-row-desc">Allow automated testing</div>
+            </div>
+            <div class="dev-toggle" data-setting="uiAutomation" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Show Touch Indicators</div>
+              <div class="dev-row-desc">Visual feedback for interactions</div>
+            </div>
+            <div class="dev-toggle" data-setting="touchIndicators" onclick="toggleSetting(this)"></div>
+          </div>
+        </div>
+
+        <!-- Networking -->
+        <div class="dev-section">
+          <div class="dev-section-title">Networking</div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Rate Limiting</div>
+              <div class="dev-row-desc">Throttle API requests</div>
+            </div>
+            <div class="dev-toggle on" data-setting="rateLimiting" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">HTTP Logging</div>
+              <div class="dev-row-desc">Log all HTTP requests</div>
+            </div>
+            <div class="dev-toggle" data-setting="httpLogging" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Network Conditioner</div>
+              <div class="dev-row-desc">Simulate slow connections</div>
+            </div>
+            <div class="dev-toggle" data-setting="networkConditioner" onclick="toggleSetting(this)"></div>
+          </div>
+        </div>
+
+        <!-- API Testing -->
+        <div class="dev-section">
+          <div class="dev-section-title">API Testing</div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Mock API Responses</div>
+              <div class="dev-row-desc">Use test fixtures</div>
+            </div>
+            <div class="dev-toggle" data-setting="mockApi" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="dev-row">
+            <div>
+              <div class="dev-row-label">Bypass Authentication</div>
+              <div class="dev-row-desc">Skip token validation</div>
+            </div>
+            <div class="dev-toggle" data-setting="bypassAuth" onclick="toggleSetting(this)"></div>
+          </div>
+        </div>
+
+        <!-- Reset Operations -->
+        <div class="dev-section">
+          <div class="dev-section-title">Reset Operations</div>
+          <button class="dev-action" onclick="devAction('resetLocalData')">
+            <span class="dev-action-icon">🗑️</span>Reset Local Data
+          </button>
+          <button class="dev-action" onclick="devAction('resetSettings')">
+            <span class="dev-action-icon">⚙️</span>Reset All Settings
+          </button>
+          <button class="dev-action danger" onclick="devAction('factoryReset')">
+            <span class="dev-action-icon">⚠️</span>Factory Reset
+          </button>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1170,6 +1478,7 @@
         'LAYERS: Click a layer header to expand and see its rooms\n\n' +
         'ROOMS: Click any room to check its status\n\n' +
         'LOG: Activity is recorded at the bottom of the page\n\n' +
+        'DEV SETTINGS: Click the wrench icon for developer options\n\n' +
         'DEEP LINKS: Share direct links to any room or facet!\n' +
         '  #room=Thermostat - Link to a room\n' +
         '  #facet=CMD - Link to a facet\n' +
@@ -1177,6 +1486,138 @@
         'Need more help? Contact your system administrator.'
       );
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DEVELOPER PANEL - iOS Developer Settings patterns
+    // prefs:root=DEVELOPER_SETTINGS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const devPanel = document.getElementById('devPanel');
+
+    // Developer settings state (persisted to localStorage)
+    const devSettings = JSON.parse(localStorage.getItem('genesis_dev_settings') || '{}');
+
+    // Initialize toggle states from saved settings
+    function initDevToggles() {
+      document.querySelectorAll('.dev-toggle').forEach(function(toggle) {
+        const setting = toggle.dataset.setting;
+        if (devSettings[setting] !== undefined) {
+          toggle.classList.toggle('on', devSettings[setting]);
+        }
+      });
+    }
+    initDevToggles();
+
+    // Toggle dev panel visibility
+    function toggleDevPanel() {
+      devPanel.classList.toggle('show');
+      if (devPanel.classList.contains('show')) {
+        log('info', 'Developer Settings opened');
+      }
+    }
+
+    // Close on backdrop click
+    devPanel.onclick = function(e) {
+      if (e.target === devPanel) {
+        toggleDevPanel();
+      }
+    };
+
+    // Toggle individual setting
+    function toggleSetting(el) {
+      el.classList.toggle('on');
+      const setting = el.dataset.setting;
+      const enabled = el.classList.contains('on');
+      devSettings[setting] = enabled;
+      localStorage.setItem('genesis_dev_settings', JSON.stringify(devSettings));
+
+      log(enabled ? 'info' : 'warn', 'Dev: ' + formatSettingName(setting) + ' ' + (enabled ? 'enabled' : 'disabled'));
+
+      // Special handling for certain settings
+      if (setting === 'verboseLog' && enabled) {
+        log('info', 'Verbose logging active - all debug messages will be shown');
+      }
+      if (setting === 'networkConditioner' && enabled) {
+        log('warn', 'Network conditioner active - requests may be slow');
+      }
+      if (setting === 'bypassAuth' && enabled) {
+        log('warn', 'Auth bypass active - NOT FOR PRODUCTION');
+      }
+    }
+
+    // Format setting name for display
+    function formatSettingName(setting) {
+      return setting
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, function(s) { return s.toUpperCase(); });
+    }
+
+    // Dev action handlers
+    function devAction(action) {
+      switch (action) {
+        case 'clearTrusted':
+          if (confirm('Clear all trusted computers?\n\nYou will need to re-authorize devices on next connection.')) {
+            log('warn', 'Dev: Cleared trusted computers list');
+            alert('Trusted computers cleared.');
+          }
+          break;
+
+        case 'resetLocalData':
+          if (confirm('Reset local data?\n\nThis will clear cached data but preserve settings.')) {
+            sessionStorage.clear();
+            log('warn', 'Dev: Local data reset');
+            alert('Local data cleared.');
+          }
+          break;
+
+        case 'resetSettings':
+          if (confirm('Reset all settings to defaults?\n\nThis cannot be undone.')) {
+            localStorage.removeItem('genesis_dev_settings');
+            Object.keys(devSettings).forEach(function(k) { delete devSettings[k]; });
+            initDevToggles();
+            log('warn', 'Dev: All settings reset to defaults');
+            alert('Settings reset to defaults.');
+          }
+          break;
+
+        case 'factoryReset':
+          if (confirm('⚠️ FACTORY RESET ⚠️\n\nThis will:\n- Clear all local data\n- Reset all settings\n- Sign you out\n\nAre you absolutely sure?')) {
+            if (confirm('This is your final warning.\n\nProceed with factory reset?')) {
+              localStorage.clear();
+              sessionStorage.clear();
+              log('error', 'Dev: Factory reset initiated');
+              alert('Factory reset complete.\n\nPage will reload.');
+              location.reload();
+            }
+          }
+          break;
+      }
+    }
+
+    // Keyboard shortcut to open dev panel (Cmd+Shift+D / Ctrl+Shift+D)
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        if (dashboardEl.classList.contains('show')) {
+          toggleDevPanel();
+        }
+      }
+    });
+
+    // Deep link support for dev panel
+    if (window.location.hash.includes('dev')) {
+      DeepLink.pending = DeepLink.pending || {};
+      DeepLink.pending.dev = true;
+    }
+
+    // Extend DeepLink.navigate to handle dev panel
+    const originalNavigate = DeepLink.navigate;
+    DeepLink.navigate = function(params) {
+      originalNavigate.call(DeepLink, params);
+      if (params.dev) {
+        toggleDevPanel();
+      }
+    };
   </script>
 </body>
 </html>
