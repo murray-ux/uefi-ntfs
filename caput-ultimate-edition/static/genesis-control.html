@@ -754,6 +754,480 @@
       margin-right: 10px;
     }
 
+    /* ═══════════════════════════════════════════════════════════════════════
+       TOAST NOTIFICATIONS
+    ═══════════════════════════════════════════════════════════════════════ */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 280px;
+      max-width: 400px;
+      pointer-events: auto;
+      transform: translateX(120%);
+      opacity: 0;
+      animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .toast.hide {
+      animation: toastOut 0.3s ease-in forwards;
+    }
+
+    @keyframes toastIn {
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes toastOut {
+      to { transform: translateX(120%); opacity: 0; }
+    }
+
+    .toast-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .toast-icon.success { background: #dcfce7; }
+    .toast-icon.error { background: #fee2e2; }
+    .toast-icon.warning { background: #fef3c7; }
+    .toast-icon.info { background: #dbeafe; }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 2px;
+    }
+
+    .toast-message {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      color: #999;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       ROOM DETAIL MODAL
+    ═══════════════════════════════════════════════════════════════════════ */
+    .room-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .room-modal.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .room-modal-content {
+      background: white;
+      border-radius: 20px;
+      width: 440px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .room-modal.show .room-modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .room-modal-header {
+      padding: 24px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .room-modal-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .room-modal-name {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .room-modal-layer {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .room-modal-close {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .room-modal-close:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .room-modal-body {
+      padding: 24px;
+    }
+
+    .room-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .room-stat {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .room-stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .room-stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .room-stat-value.online { color: #16a34a; }
+    .room-stat-value.warning { color: #d97706; }
+    .room-stat-value.error { color: #dc2626; }
+
+    .room-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .room-action-btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .room-action-btn.primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .room-action-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .room-action-btn.secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .room-action-btn.secondary:hover {
+      background: #e5e5e5;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       SETTINGS PANEL
+    ═══════════════════════════════════════════════════════════════════════ */
+    .settings-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 160px;
+      width: 56px;
+      height: 56px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50%;
+      color: #666;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: transform 0.2s, background 0.2s;
+      display: none;
+    }
+
+    .settings-btn:hover {
+      transform: scale(1.1);
+      background: #e5e5e5;
+    }
+
+    .dashboard.show .settings-btn { display: flex; align-items: center; justify-content: center; }
+
+    .settings-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .settings-panel.show { display: flex; }
+
+    .settings-modal {
+      background: white;
+      border-radius: 20px;
+      width: 480px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .settings-header {
+      padding: 20px 24px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .settings-close {
+      background: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: #666;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .settings-body {
+      padding: 20px 24px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .settings-section {
+      margin-bottom: 24px;
+    }
+
+    .settings-section:last-child { margin-bottom: 0; }
+
+    .settings-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .settings-row:last-child { border-bottom: none; }
+
+    .settings-row-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .settings-toggle {
+      width: 50px;
+      height: 28px;
+      background: #e0e0e0;
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .settings-toggle.on { background: #667eea; }
+
+    .settings-toggle::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .settings-toggle.on::after { left: 24px; }
+
+    /* Theme selector */
+    .theme-selector {
+      display: flex;
+      gap: 12px;
+    }
+
+    .theme-option {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .theme-option:hover { transform: scale(1.1); }
+
+    .theme-option.active { border-color: #667eea; }
+
+    .theme-option.light { background: linear-gradient(135deg, #f5f5f7, #e0e0e0); }
+    .theme-option.dark { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+    .theme-option.system { background: linear-gradient(135deg, #f5f5f7 50%, #1a1a2e 50%); }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       LOG FILTERING
+    ═══════════════════════════════════════════════════════════════════════ */
+    .log-toolbar {
+      padding: 12px 24px;
+      background: #252542;
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #3d3d5c;
+    }
+
+    .log-filter {
+      padding: 6px 14px;
+      background: #3d3d5c;
+      border: none;
+      border-radius: 20px;
+      color: #aaa;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .log-filter:hover { background: #4d4d6c; color: white; }
+    .log-filter.active { background: #667eea; color: white; }
+
+    .log-clear {
+      margin-left: auto;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid #666;
+      border-radius: 20px;
+      color: #888;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .log-clear:hover { border-color: #f87171; color: #f87171; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       SMOOTH ANIMATIONS
+    ═══════════════════════════════════════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .stat-card {
+      animation: fadeInUp 0.5s ease-out backwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .facet {
+      animation: fadeInUp 0.5s ease-out backwards;
+    }
+
+    .facet:nth-child(1) { animation-delay: 0.15s; }
+    .facet:nth-child(2) { animation-delay: 0.2s; }
+    .facet:nth-child(3) { animation-delay: 0.25s; }
+    .facet:nth-child(4) { animation-delay: 0.3s; }
+    .facet:nth-child(5) { animation-delay: 0.35s; }
+
+    .layer-body {
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .room {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .room:active {
+      transform: scale(0.95);
+    }
+
     /* Responsive */
     @media (max-width: 1100px) {
       .facets { grid-template-columns: repeat(3, 1fr); }
@@ -766,6 +1240,81 @@
       .header { padding: 12px 16px; flex-wrap: wrap; gap: 12px; }
       .content { padding: 16px; }
       .rooms { grid-template-columns: repeat(3, 1fr); }
+
+      /* Mobile floating buttons */
+      .help-btn, .dev-btn, .settings-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+      }
+
+      .help-btn { right: 16px; bottom: 16px; }
+      .dev-btn { right: 72px; bottom: 16px; }
+      .settings-btn { right: 128px; bottom: 16px; }
+
+      /* Mobile modals */
+      .dev-modal, .settings-modal, .room-modal-content {
+        width: 95%;
+        max-width: 400px;
+        margin: 16px;
+      }
+
+      .room-stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      /* Mobile toast */
+      .toast-container {
+        left: 16px;
+        right: 16px;
+        top: auto;
+        bottom: 80px;
+      }
+
+      .toast {
+        min-width: auto;
+        width: 100%;
+      }
+
+      /* Mobile log */
+      .log-toolbar {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .log-filter {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .facets { grid-template-columns: 1fr; }
+      .rooms { grid-template-columns: repeat(2, 1fr); }
+
+      .login-box {
+        width: 95%;
+        padding: 32px 24px;
+        margin: 16px;
+      }
+
+      .header-title { font-size: 18px; }
+      .header-status { display: none; }
+
+      .stat-value { font-size: 28px; }
+
+      .room-actions {
+        flex-direction: column;
+      }
+    }
+
+    /* Reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
@@ -1040,14 +1589,124 @@
 
         <div class="log-panel">
           <div class="log-header">System Events</div>
+          <div class="log-toolbar">
+            <button class="log-filter active" data-filter="all" onclick="filterLog('all')">All</button>
+            <button class="log-filter" data-filter="info" onclick="filterLog('info')">Info</button>
+            <button class="log-filter" data-filter="warn" onclick="filterLog('warn')">Warnings</button>
+            <button class="log-filter" data-filter="error" onclick="filterLog('error')">Errors</button>
+            <button class="log-clear" onclick="clearLog()">Clear</button>
+          </div>
           <div class="log-body" id="logBody"></div>
         </div>
       </section>
 
     </main>
 
+    <button class="settings-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
     <button class="dev-btn" onclick="toggleDevPanel()" title="Developer Settings">🔧</button>
     <button class="help-btn" onclick="showHelp()" title="Need help?">?</button>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Room Detail Modal -->
+  <div class="room-modal" id="roomModal">
+    <div class="room-modal-content">
+      <div class="room-modal-header">
+        <div>
+          <div class="room-modal-icon" id="roomModalIcon">🌡️</div>
+          <div class="room-modal-name" id="roomModalName">Thermostat</div>
+          <div class="room-modal-layer" id="roomModalLayer">Layer 0 - Kernel</div>
+        </div>
+        <button class="room-modal-close" onclick="closeRoomModal()">×</button>
+      </div>
+      <div class="room-modal-body">
+        <div class="room-stat-grid">
+          <div class="room-stat">
+            <div class="room-stat-label">Status</div>
+            <div class="room-stat-value online" id="roomModalStatus">Online</div>
+          </div>
+          <div class="room-stat">
+            <div class="room-stat-label">Uptime</div>
+            <div class="room-stat-value" id="roomModalUptime">99.9%</div>
+          </div>
+          <div class="room-stat">
+            <div class="room-stat-label">Last Check</div>
+            <div class="room-stat-value" id="roomModalLastCheck">Just now</div>
+          </div>
+          <div class="room-stat">
+            <div class="room-stat-label">Messages</div>
+            <div class="room-stat-value" id="roomModalMessages">1,247</div>
+          </div>
+        </div>
+        <div class="room-actions">
+          <button class="room-action-btn secondary" onclick="copyRoomLink()">Copy Link</button>
+          <button class="room-action-btn primary" onclick="refreshRoom()">Refresh Status</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-modal">
+      <div class="settings-header">
+        <h2>Settings</h2>
+        <button class="settings-close" onclick="toggleSettings()">×</button>
+      </div>
+      <div class="settings-body">
+
+        <div class="settings-section">
+          <div class="settings-section-title">Appearance</div>
+          <div class="settings-row">
+            <span class="settings-row-label">Theme</span>
+            <div class="theme-selector">
+              <div class="theme-option light active" data-theme="light" onclick="setTheme('light')" title="Light"></div>
+              <div class="theme-option dark" data-theme="dark" onclick="setTheme('dark')" title="Dark"></div>
+              <div class="theme-option system" data-theme="system" onclick="setTheme('system')" title="System"></div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-row-label">Compact Mode</span>
+            <div class="settings-toggle" data-setting="compactMode" onclick="toggleAppSetting(this)"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Notifications</div>
+          <div class="settings-row">
+            <span class="settings-row-label">Show Toast Notifications</span>
+            <div class="settings-toggle on" data-setting="showToasts" onclick="toggleAppSetting(this)"></div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-row-label">Sound Alerts</span>
+            <div class="settings-toggle" data-setting="soundAlerts" onclick="toggleAppSetting(this)"></div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-row-label">Desktop Notifications</span>
+            <div class="settings-toggle" data-setting="desktopNotify" onclick="toggleAppSetting(this)"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Dashboard</div>
+          <div class="settings-row">
+            <span class="settings-row-label">Auto-refresh Stats</span>
+            <div class="settings-toggle on" data-setting="autoRefresh" onclick="toggleAppSetting(this)"></div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-row-label">Show Layer Previews</span>
+            <div class="settings-toggle on" data-setting="layerPreviews" onclick="toggleAppSetting(this)"></div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-row-label">Animate Transitions</span>
+            <div class="settings-toggle on" data-setting="animations" onclick="toggleAppSetting(this)"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
@@ -1616,6 +2275,294 @@
       originalNavigate.call(DeepLink, params);
       if (params.dev) {
         toggleDevPanel();
+      }
+      if (params.settings) {
+        toggleSettings();
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TOAST NOTIFICATIONS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const toastContainer = document.getElementById('toastContainer');
+
+    function toast(type, title, message) {
+      const appSettings = JSON.parse(localStorage.getItem('genesis_app_settings') || '{}');
+      if (appSettings.showToasts === false) return;
+
+      const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+      };
+
+      const toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      toastEl.innerHTML = `
+        <div class="toast-icon ${type}">${icons[type]}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+      `;
+
+      toastContainer.appendChild(toastEl);
+
+      // Auto-remove after 4 seconds
+      setTimeout(function() {
+        toastEl.classList.add('hide');
+        setTimeout(function() {
+          toastEl.remove();
+        }, 300);
+      }, 4000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ROOM MODAL
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const roomModal = document.getElementById('roomModal');
+    let currentRoomData = null;
+
+    // Room metadata
+    const roomData = {
+      // Layer 0 - Kernel
+      Thermostat: { icon: '🌡️', layer: 0, layerName: 'Kernel', desc: 'Temperature monitoring' },
+      Chip: { icon: '🔲', layer: 0, layerName: 'Kernel', desc: 'Processing unit' },
+      Battery: { icon: '🔋', layer: 0, layerName: 'Kernel', desc: 'Power management' },
+      Clock: { icon: '🕐', layer: 0, layerName: 'Kernel', desc: 'Time synchronization' },
+      Compass: { icon: '🧭', layer: 0, layerName: 'Kernel', desc: 'Navigation core' },
+      Fuse: { icon: '⚡', layer: 0, layerName: 'Kernel', desc: 'Circuit protection' },
+      Spark: { icon: '✨', layer: 0, layerName: 'Kernel', desc: 'Ignition system' },
+      // Layer 1 - Conduit
+      Flares: { icon: '🔥', layer: 1, layerName: 'Conduit', desc: 'Alert signals' },
+      Locks: { icon: '🔒', layer: 1, layerName: 'Conduit', desc: 'Access control' },
+      Doors: { icon: '🚪', layer: 1, layerName: 'Conduit', desc: 'Entry points' },
+      Horn: { icon: '📢', layer: 1, layerName: 'Conduit', desc: 'Announcements' },
+      Mirrors: { icon: '🪞', layer: 1, layerName: 'Conduit', desc: 'Reflection layer' },
+      Antenna: { icon: '📡', layer: 1, layerName: 'Conduit', desc: 'Signal broadcast' },
+      Relay: { icon: '🔄', layer: 1, layerName: 'Conduit', desc: 'Message routing' },
+      // Layer 2 - Reservoir
+      Trunk: { icon: '🧳', layer: 2, layerName: 'Reservoir', desc: 'Primary storage' },
+      Spares: { icon: '🔧', layer: 2, layerName: 'Reservoir', desc: 'Backup components' },
+      Coolant: { icon: '❄️', layer: 2, layerName: 'Reservoir', desc: 'Thermal regulation' },
+      Wash: { icon: '💧', layer: 2, layerName: 'Reservoir', desc: 'Data cleansing' },
+      Tank: { icon: '⛽', layer: 2, layerName: 'Reservoir', desc: 'Resource pool' },
+      Filter: { icon: '🧹', layer: 2, layerName: 'Reservoir', desc: 'Data filtering' },
+      Jack: { icon: '🔩', layer: 2, layerName: 'Reservoir', desc: 'Lift mechanism' },
+      Glove: { icon: '🧤', layer: 2, layerName: 'Reservoir', desc: 'Secure handling' },
+      // Layer 3 - Valve
+      Brakes: { icon: '🛑', layer: 3, layerName: 'Valve', desc: 'Flow control' },
+      Tint: { icon: '🕶️', layer: 3, layerName: 'Valve', desc: 'Privacy layer' },
+      Wipers: { icon: '🌧️', layer: 3, layerName: 'Valve', desc: 'Data cleanup' },
+      Fuel: { icon: '⛽', layer: 3, layerName: 'Valve', desc: 'Resource allocation' },
+      Clutch: { icon: '⚙️', layer: 3, layerName: 'Valve', desc: 'Engagement control' },
+      Gears: { icon: '⚙️', layer: 3, layerName: 'Valve', desc: 'Speed regulation' },
+      Pedals: { icon: '👟', layer: 3, layerName: 'Valve', desc: 'Input controls' },
+      Gauges: { icon: '📊', layer: 3, layerName: 'Valve', desc: 'Metrics display' },
+      Seatbelts: { icon: '🔲', layer: 3, layerName: 'Valve', desc: 'Safety constraints' },
+      // Layer 4 - Manifold
+      Engine: { icon: '🚗', layer: 4, layerName: 'Manifold', desc: 'Core processor' },
+      Wings: { icon: '🦅', layer: 4, layerName: 'Manifold', desc: 'Flight systems' },
+      Mods: { icon: '🔌', layer: 4, layerName: 'Manifold', desc: 'Extensions' },
+      Exhaust: { icon: '💨', layer: 4, layerName: 'Manifold', desc: 'Output stream' },
+      Turbo: { icon: '🌀', layer: 4, layerName: 'Manifold', desc: 'Acceleration' },
+      Chassis: { icon: '🛠️', layer: 4, layerName: 'Manifold', desc: 'Framework' },
+      Bumper: { icon: '🚙', layer: 4, layerName: 'Manifold', desc: 'Protection' },
+      Spoiler: { icon: '🏎️', layer: 4, layerName: 'Manifold', desc: 'Stability' },
+      Wheels: { icon: '⚪', layer: 4, layerName: 'Manifold', desc: 'Motion' },
+      Playroom: { icon: '🎨', layer: 4, layerName: 'Manifold', desc: 'Creative sandbox' }
+    };
+
+    // Enhanced openRoom function
+    function openRoom(name) {
+      const data = roomData[name] || { icon: '📦', layer: 0, layerName: 'Unknown', desc: 'Room' };
+      currentRoomData = { name: name, ...data };
+
+      document.getElementById('roomModalIcon').textContent = data.icon;
+      document.getElementById('roomModalName').textContent = name;
+      document.getElementById('roomModalLayer').textContent = `Layer ${data.layer} - ${data.layerName}`;
+      document.getElementById('roomModalStatus').textContent = 'Online';
+      document.getElementById('roomModalUptime').textContent = (95 + Math.random() * 5).toFixed(1) + '%';
+      document.getElementById('roomModalLastCheck').textContent = 'Just now';
+      document.getElementById('roomModalMessages').textContent = Math.floor(Math.random() * 5000).toLocaleString();
+
+      roomModal.classList.add('show');
+      log('info', 'Opened room: ' + name);
+
+      history.replaceState(null, '', DeepLink.generate({ room: name }));
+    }
+
+    function closeRoomModal() {
+      roomModal.classList.remove('show');
+      currentRoomData = null;
+    }
+
+    function copyRoomLink() {
+      if (!currentRoomData) return;
+      const link = DeepLink.getLink({ room: currentRoomData.name });
+      navigator.clipboard.writeText(link).then(function() {
+        toast('success', 'Link Copied', 'Direct link to ' + currentRoomData.name + ' copied');
+        log('info', 'Copied deep link for ' + currentRoomData.name);
+      });
+    }
+
+    function refreshRoom() {
+      if (!currentRoomData) return;
+      document.getElementById('roomModalLastCheck').textContent = 'Refreshing...';
+      setTimeout(function() {
+        document.getElementById('roomModalLastCheck').textContent = 'Just now';
+        document.getElementById('roomModalUptime').textContent = (95 + Math.random() * 5).toFixed(1) + '%';
+        toast('success', 'Status Updated', currentRoomData.name + ' is online');
+        log('info', currentRoomData.name + ' status refreshed');
+      }, 500);
+    }
+
+    // Close modal on backdrop click
+    roomModal.onclick = function(e) {
+      if (e.target === roomModal) {
+        closeRoomModal();
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SETTINGS PANEL
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const settingsPanel = document.getElementById('settingsPanel');
+    const appSettings = JSON.parse(localStorage.getItem('genesis_app_settings') || '{"showToasts": true, "autoRefresh": true, "layerPreviews": true, "animations": true}');
+
+    // Initialize settings toggles
+    function initAppSettings() {
+      document.querySelectorAll('.settings-toggle').forEach(function(toggle) {
+        const setting = toggle.dataset.setting;
+        if (appSettings[setting] !== undefined) {
+          toggle.classList.toggle('on', appSettings[setting]);
+        }
+      });
+    }
+    initAppSettings();
+
+    function toggleSettings() {
+      settingsPanel.classList.toggle('show');
+      if (settingsPanel.classList.contains('show')) {
+        log('info', 'Settings opened');
+      }
+    }
+
+    // Close on backdrop click
+    settingsPanel.onclick = function(e) {
+      if (e.target === settingsPanel) {
+        toggleSettings();
+      }
+    };
+
+    function toggleAppSetting(el) {
+      el.classList.toggle('on');
+      const setting = el.dataset.setting;
+      const enabled = el.classList.contains('on');
+      appSettings[setting] = enabled;
+      localStorage.setItem('genesis_app_settings', JSON.stringify(appSettings));
+
+      toast('info', 'Setting Updated', formatSettingName(setting) + ' ' + (enabled ? 'enabled' : 'disabled'));
+      log('info', 'Setting: ' + formatSettingName(setting) + ' ' + (enabled ? 'enabled' : 'disabled'));
+
+      // Apply animation setting immediately
+      if (setting === 'animations') {
+        document.body.style.setProperty('--animation-duration', enabled ? '0.3s' : '0s');
+      }
+    }
+
+    function setTheme(theme) {
+      document.querySelectorAll('.theme-option').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.theme === theme);
+      });
+      appSettings.theme = theme;
+      localStorage.setItem('genesis_app_settings', JSON.stringify(appSettings));
+      toast('info', 'Theme Changed', 'Switched to ' + theme + ' theme');
+      log('info', 'Theme set to ' + theme);
+      // Theme implementation would go here
+    }
+
+    // Keyboard shortcut for settings (Cmd+, / Ctrl+,)
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault();
+        if (dashboardEl.classList.contains('show')) {
+          toggleSettings();
+        }
+      }
+      // ESC to close modals
+      if (e.key === 'Escape') {
+        if (roomModal.classList.contains('show')) closeRoomModal();
+        if (settingsPanel.classList.contains('show')) toggleSettings();
+        if (devPanel.classList.contains('show')) toggleDevPanel();
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // LOG FILTERING
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let currentLogFilter = 'all';
+
+    function filterLog(filter) {
+      currentLogFilter = filter;
+
+      // Update active button
+      document.querySelectorAll('.log-filter').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+
+      // Filter entries
+      document.querySelectorAll('.log-entry').forEach(function(entry) {
+        const msg = entry.querySelector('.log-msg');
+        if (filter === 'all') {
+          entry.style.display = '';
+        } else {
+          entry.style.display = msg.classList.contains(filter) ? '' : 'none';
+        }
+      });
+
+      log('info', 'Log filter: ' + filter);
+    }
+
+    function clearLog() {
+      logBody.innerHTML = '';
+      log('info', 'Log cleared');
+      toast('info', 'Log Cleared', 'Activity log has been cleared');
+    }
+
+    // Enhanced log function with filtering
+    const originalLog = log;
+    function log(type, message) {
+      const time = new Date().toLocaleTimeString('en-AU', { hour12: false });
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.dataset.type = type;
+      entry.innerHTML = '<span class="log-time">[' + time + ']</span> <span class="log-msg ' + type + '">' + message + '</span>';
+
+      // Apply current filter
+      if (currentLogFilter !== 'all' && type !== currentLogFilter) {
+        entry.style.display = 'none';
+      }
+
+      logBody.appendChild(entry);
+      logBody.scrollTop = logBody.scrollHeight;
+    }
+
+    // Welcome toast after login
+    const origLogin = loginBtn.onclick;
+    loginBtn.onclick = function() {
+      const wasLoggedOut = !dashboardEl.classList.contains('show');
+      origLogin.call(this);
+      if (wasLoggedOut && dashboardEl.classList.contains('show')) {
+        setTimeout(function() {
+          toast('success', 'Welcome Back', 'Signed in as ' + uidEl.value);
+        }, 500);
       }
     };
   </script>
