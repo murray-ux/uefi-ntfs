@@ -1001,6 +1001,182 @@
     // Initial log
     log('info', 'Control Panel ready');
     log('info', 'Please sign in to continue');
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DEEP LINKING - iOS prefs: style URL navigation
+    // Patterns:
+    //   #layer=0           → Open Layer 0 (Kernel)
+    //   #room=Thermostat   → Open specific room
+    //   #facet=CMD         → Open facet
+    //   #layer=2&room=Tank → Combined navigation
+    //   #settings          → Show settings
+    //   #help              → Show help
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const DeepLink = {
+      // Parse hash into params object
+      parse: function(hash) {
+        if (!hash || hash === '#') return {};
+        const params = {};
+        hash.replace(/^#/, '').split('&').forEach(function(part) {
+          const [key, value] = part.split('=');
+          if (key) params[decodeURIComponent(key)] = value ? decodeURIComponent(value) : true;
+        });
+        return params;
+      },
+
+      // Generate hash from params
+      generate: function(params) {
+        return '#' + Object.entries(params)
+          .map(function([k, v]) {
+            return v === true ? encodeURIComponent(k) : encodeURIComponent(k) + '=' + encodeURIComponent(v);
+          })
+          .join('&');
+      },
+
+      // Navigate to deep link
+      navigate: function(params) {
+        // Must be logged in
+        if (!dashboardEl.classList.contains('show')) {
+          log('warn', 'Deep link requires authentication');
+          DeepLink.pending = params;
+          return;
+        }
+
+        // Handle layer
+        if (params.layer !== undefined) {
+          const layerEl = document.querySelector('[data-layer="' + params.layer + '"]');
+          if (layerEl) {
+            layerEl.classList.add('open');
+            layerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            log('info', 'Deep link: Opened Layer ' + params.layer);
+          }
+        }
+
+        // Handle room
+        if (params.room) {
+          const roomEl = document.querySelector('.room-name');
+          // Find the room by name
+          document.querySelectorAll('.room').forEach(function(el) {
+            if (el.querySelector('.room-name').textContent === params.room) {
+              // Expand parent layer
+              const layerBody = el.closest('.layer-body');
+              if (layerBody) {
+                layerBody.parentElement.classList.add('open');
+              }
+              // Highlight room
+              el.style.outline = '3px solid #667eea';
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              setTimeout(function() { el.style.outline = ''; }, 2000);
+              log('info', 'Deep link: Navigated to ' + params.room);
+            }
+          });
+        }
+
+        // Handle facet
+        if (params.facet) {
+          showFacet(params.facet);
+          log('info', 'Deep link: Opened ' + params.facet + ' facet');
+        }
+
+        // Handle help
+        if (params.help) {
+          showHelp();
+        }
+      },
+
+      // Get shareable link for current view
+      getLink: function(params) {
+        return window.location.origin + window.location.pathname + DeepLink.generate(params);
+      },
+
+      // Pending deep link (before login)
+      pending: null
+    };
+
+    // Handle initial deep link
+    if (window.location.hash) {
+      DeepLink.navigate(DeepLink.parse(window.location.hash));
+    }
+
+    // Handle hash changes
+    window.addEventListener('hashchange', function() {
+      DeepLink.navigate(DeepLink.parse(window.location.hash));
+    });
+
+    // Execute pending deep link after login
+    const originalLoginClick = loginBtn.onclick;
+    loginBtn.onclick = function() {
+      originalLoginClick.call(this);
+      if (dashboardEl.classList.contains('show') && DeepLink.pending) {
+        setTimeout(function() {
+          DeepLink.navigate(DeepLink.pending);
+          DeepLink.pending = null;
+        }, 100);
+      }
+    };
+
+    // Add copy link button to rooms
+    function openRoom(name) {
+      const link = DeepLink.getLink({ room: name });
+      log('info', 'Opened room: ' + name);
+      const confirmed = confirm(
+        'Room: ' + name + '\n\n' +
+        'Status: Online\n' +
+        'Last check: Just now\n\n' +
+        'Direct link:\n' + link + '\n\n' +
+        'Copy link to clipboard?'
+      );
+      if (confirmed) {
+        navigator.clipboard.writeText(link).then(function() {
+          log('info', 'Copied deep link for ' + name);
+        });
+      }
+      // Update URL without triggering navigation
+      history.replaceState(null, '', DeepLink.generate({ room: name }));
+    }
+
+    // Add copy link to facets
+    function showFacet(name) {
+      const descs = {
+        CMD: 'Command Execution - Run system commands securely',
+        IDN: 'Identity & Authentication - Manage logins and access',
+        EVD: 'Evidence Storage - Store and retrieve evidence files',
+        EXE: 'Workflow Execution - Run automated workflows',
+        OUT: 'Output Generation - Create reports and exports'
+      };
+      const link = DeepLink.getLink({ facet: name });
+      log('info', 'Accessed ' + name + ' facet');
+      const confirmed = confirm(
+        name + ' Facet\n\n' +
+        descs[name] + '\n\n' +
+        'Status: Active\n\n' +
+        'Direct link:\n' + link + '\n\n' +
+        'Copy link to clipboard?'
+      );
+      if (confirmed) {
+        navigator.clipboard.writeText(link).then(function() {
+          log('info', 'Copied deep link for ' + name + ' facet');
+        });
+      }
+      history.replaceState(null, '', DeepLink.generate({ facet: name }));
+    }
+
+    // Update help to include deep link info
+    function showHelp() {
+      alert(
+        'Genesis Control Panel - Quick Guide\n\n' +
+        'PENTAGON: Click any of the 5 main functions to access them\n\n' +
+        'LAYERS: Click a layer header to expand and see its rooms\n\n' +
+        'ROOMS: Click any room to check its status\n\n' +
+        'LOG: Activity is recorded at the bottom of the page\n\n' +
+        'DEEP LINKS: Share direct links to any room or facet!\n' +
+        '  #room=Thermostat - Link to a room\n' +
+        '  #facet=CMD - Link to a facet\n' +
+        '  #layer=0 - Open a layer\n\n' +
+        'Need more help? Contact your system administrator.'
+      );
+    }
   </script>
 </body>
 </html>
