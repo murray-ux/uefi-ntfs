@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HEREV Arsenal | GENESIS Security Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #030712;
+      --bg-card: rgba(15, 23, 42, 0.8);
+      --bg-hover: rgba(30, 41, 59, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f1f5f9;
+      --text-muted: #64748b;
+      --cyan: #00f5ff;
+      --green: #10b981;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --purple: #a855f7;
+      --blue: #3b82f6;
+      --pink: #ec4899;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, #0f172a 50%, #1a0a2e 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 14px;
+      letter-spacing: 4px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      background: linear-gradient(135deg, var(--red), var(--orange), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .hebrew {
+      font-size: 24px;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+
+    .subtitle { color: var(--text-muted); font-size: 16px; max-width: 600px; margin: 0 auto; }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-bottom: 48px;
+      padding: 24px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Search and Filters */
+    .controls {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 300px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 16px 24px 16px 52px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
+    }
+
+    .search-box::before {
+      content: "\\1F50D";
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+
+    .filter-btn.active {
+      background: rgba(0, 245, 255, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* Category Navigation */
+    .category-nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+    }
+
+    .category-nav a {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .category-nav a:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 48px;
+      scroll-margin-top: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-icon {
+      font-size: 32px;
+    }
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .section-count {
+      background: rgba(0, 245, 255, 0.15);
+      color: var(--cyan);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Resource Grid */
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .resource-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .resource-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 245, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .resource-card:hover::before {
+      opacity: 1;
+    }
+
+    .resource-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .resource-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .priority-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .priority-critical {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--red);
+    }
+
+    .priority-high {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--orange);
+    }
+
+    .priority-medium {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--blue);
+    }
+
+    .resource-description {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .resource-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .resource-category {
+      font-size: 11px;
+      color: var(--purple);
+      background: rgba(168, 85, 247, 0.15);
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .resource-link {
+      font-size: 12px;
+      color: var(--cyan);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .resource-link:hover {
+      text-decoration: underline;
+    }
+
+    .resource-stars {
+      font-size: 12px;
+      color: var(--orange);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding-top: 48px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    footer a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Hidden utility */
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 36px; }
+      .stats-bar { flex-wrap: wrap; gap: 24px; }
+      .resource-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Keyboard shortcut hint */
+    .kbd {
+      background: rgba(255,255,255,0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">GENESIS 2.0</div>
+      <div class="hebrew">חרב</div>
+      <h1>HEREV ARSENAL</h1>
+      <p class="subtitle">
+        The blade that guards the realm. A curated collection of 100+ security resources,
+        tools, and intelligence feeds for the sovereign defender.
+      </p>
+    </header>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value" id="total-count">0</div>
+        <div class="stat-label">Total Resources</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="critical-count">0</div>
+        <div class="stat-label">Critical Priority</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="category-count">0</div>
+        <div class="stat-label">Categories</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="section-count">0</div>
+        <div class="stat-label">Sections</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="search" placeholder="Search arsenal... (Ctrl+K)" autocomplete="off">
+      </div>
+      <div class="filter-group">
+        <button class="filter-btn active" data-priority="all">All</button>
+        <button class="filter-btn" data-priority="critical">Critical</button>
+        <button class="filter-btn" data-priority="high">High</button>
+        <button class="filter-btn" data-priority="medium">Medium</button>
+      </div>
+    </div>
+
+    <nav class="category-nav" id="category-nav">
+      <!-- Generated by JS -->
+    </nav>
+
+    <main id="arsenal-container">
+      <!-- Generated by JS -->
+    </main>
+
+    <footer>
+      <p>HEREV Arsenal v1.0.0 | GENESIS 2.0 Sovereign Security Platform</p>
+      <p style="margin-top: 8px;">
+        <a href="genesis-control.html">Control Panel</a> |
+        <a href="../genesis-security-dashboard.html">Security Dashboard</a> |
+        <a href="index.html">Developer Pro</a>
+      </p>
+      <p style="margin-top: 16px; color: var(--text-muted);">
+        Copyright 2026 murray-ux | Forbidden Ninja City
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HEREV ARSENAL DATA
+    // ═══════════════════════════════════════════════════════════════════════════
+    const ARSENAL = {
+      masterCollections: [
+        { id: 'seclists', name: 'SecLists', description: "The security tester's companion — usernames, passwords, URLs, fuzzing payloads, web shells", url: 'https://github.com/danielmiessler/SecLists', category: 'payloads', stars: '55k+', priority: 'critical' },
+        { id: 'payloads-all-the-things', name: 'PayloadsAllTheThings', description: 'List of useful payloads and bypass for Web Application Security and Pentest/CTF', url: 'https://github.com/swisskyrepo/PayloadsAllTheThings', category: 'payloads', stars: '60k+', priority: 'critical' },
+        { id: 'the-hacker', name: 'The Art of Hacking', description: 'Comprehensive resource for ethical hacking and security research', url: 'https://github.com/The-Art-of-Hacking/h4cker', category: 'training', stars: '18k+', priority: 'high' },
+        { id: 'ultimate-cybersecurity', name: 'Ultimate Cybersecurity Resources', description: 'Curated list of cybersecurity resources for learning and practicing', url: 'https://github.com/DhanushNehru/Ultimate-Cybersecurity-Resources', category: 'training', priority: 'high' },
+        { id: 'hacker-roadmap', name: 'Hacker Roadmap', description: 'Your beginner pen testing start guide', url: 'https://github.com/sundowndev/hacker-roadmap', category: 'training', priority: 'high' }
+      ],
+      offensive: [
+        { id: 'awesome-pentest', name: 'Awesome Pentest', description: 'Collection of penetration testing resources and tools', url: 'https://github.com/enaqx/awesome-pentest', category: 'offensive', priority: 'critical' },
+        { id: 'awesome-hacking', name: 'Awesome Hacking', description: 'Curated list of hacking tools, resources, and references', url: 'https://github.com/carpedm20/awesome-hacking', category: 'offensive', priority: 'high' },
+        { id: 'awesome-red-teaming', name: 'Awesome Red Teaming', description: 'Red teaming resources for adversary simulation', url: 'https://github.com/yeyintminthuhtut/Awesome-Red-Teaming', category: 'offensive', priority: 'critical' },
+        { id: 'pentest-wiki', name: 'Pentest Wiki', description: 'Penetration testing knowledge base', url: 'https://github.com/nixawk/pentest-wiki', category: 'offensive', priority: 'high' },
+        { id: 'pentest-cheatsheets', name: 'Pentest Cheatsheets', description: 'Cheatsheets for penetration testing', url: 'https://github.com/coreb1t/awesome-pentest-cheat-sheets', category: 'offensive', priority: 'high' },
+        { id: 'gtfobins', name: 'GTFOBins', description: 'Unix binaries that can be exploited for privilege escalation', url: 'https://gtfobins.github.io/', category: 'offensive', priority: 'critical' }
+      ],
+      defensive: [
+        { id: 'awesome-security', name: 'Awesome Security', description: 'Curated list of security resources and tools', url: 'https://github.com/sbilly/awesome-security', category: 'defensive', priority: 'critical' },
+        { id: 'awesome-devsecops', name: 'Awesome DevSecOps', description: 'DevSecOps resources, tools, and best practices', url: 'https://github.com/devsecops/awesome-devsecops', category: 'defensive', priority: 'critical' },
+        { id: 'awesome-appsec', name: 'Awesome AppSec', description: 'Application security resources and learning materials', url: 'https://github.com/paragonie/awesome-appsec', category: 'defensive', priority: 'high' },
+        { id: 'api-security-checklist', name: 'API Security Checklist', description: 'Checklist for securing API endpoints', url: 'https://github.com/shieldfy/API-Security-Checklist', category: 'defensive', priority: 'critical' },
+        { id: 'detection-lab', name: 'DetectionLab', description: 'Build a lab environment for security testing', url: 'https://github.com/clong/DetectionLab', category: 'defensive', priority: 'high' }
+      ],
+      forensics: [
+        { id: 'awesome-incident-response', name: 'Awesome Incident Response', description: 'Tools and resources for incident response', url: 'https://github.com/meirwah/awesome-incident-response', category: 'forensics', priority: 'critical' },
+        { id: 'awesome-forensics', name: 'Awesome Forensics', description: 'Digital forensics resources and tools', url: 'https://github.com/Cugu/awesome-forensics', category: 'forensics', priority: 'critical' },
+        { id: 'awesome-malware-analysis', name: 'Awesome Malware Analysis', description: 'Malware analysis tools and resources', url: 'https://github.com/rshipp/awesome-malware-analysis', category: 'malware', priority: 'critical' },
+        { id: 'cyberchef', name: 'CyberChef', description: 'The Cyber Swiss Army Knife by GCHQ', url: 'https://gchq.github.io/CyberChef/', category: 'tools', priority: 'critical' },
+        { id: 'awesome-yara', name: 'Awesome YARA', description: 'YARA rules and resources for malware detection', url: 'https://github.com/InQuest/awesome-yara', category: 'malware', priority: 'high' }
+      ],
+      intelligence: [
+        { id: 'awesome-threat-intelligence', name: 'Awesome Threat Intelligence', description: 'Threat intelligence resources and platforms', url: 'https://github.com/hslatman/awesome-threat-intelligence', category: 'intelligence', priority: 'critical' },
+        { id: 'threat-hunter-playbook', name: 'ThreatHunter Playbook', description: 'Threat hunting techniques and methodologies', url: 'https://github.com/Cyb3rWard0g/ThreatHunter-Playbook', category: 'intelligence', priority: 'critical' },
+        { id: 'apt-notes', name: 'APT Notes', description: 'Collection of APT campaign reports and analysis', url: 'https://github.com/kbandla/APTnotes', category: 'intelligence', priority: 'high' },
+        { id: 'awesome-honeypots', name: 'Awesome Honeypots', description: 'Honeypot resources and implementations', url: 'https://github.com/paralax/awesome-honeypots', category: 'intelligence', priority: 'high' },
+        { id: 'awesome-iocs', name: 'Awesome IOCs', description: 'Indicators of Compromise resources', url: 'https://github.com/sroberts/awesome-iocs', category: 'intelligence', priority: 'high' }
+      ],
+      web: [
+        { id: 'awesome-web-security', name: 'Awesome Web Security', description: 'Web application security resources', url: 'https://github.com/qazbnm456/awesome-web-security', category: 'web', priority: 'critical' },
+        { id: 'awesome-web-hacking', name: 'Awesome Web Hacking', description: 'Web hacking techniques and resources', url: 'https://github.com/infoslack/awesome-web-hacking', category: 'web', priority: 'high' },
+        { id: 'awesome-web3-security', name: 'Awesome Web3 Security', description: 'Web3, blockchain, and smart contract security', url: 'https://github.com/Anugrahsr/Awesome-web3-Security', category: 'web', priority: 'high' },
+        { id: 'awesome-bug-bounty', name: 'Awesome Bug Bounty', description: 'Bug bounty resources and writeups', url: 'https://github.com/djadmin/awesome-bug-bounty', category: 'web', priority: 'high' },
+        { id: 'hacker101', name: 'Hacker101', description: 'Free class for web security', url: 'https://github.com/Hacker0x01/hacker101', category: 'training', priority: 'high' }
+      ],
+      vulnerabilities: [
+        { id: 'vulhub', name: 'Vulhub', description: 'Pre-built vulnerable docker environments for testing', url: 'https://github.com/vulhub/vulhub', category: 'training', priority: 'critical' },
+        { id: 'awesome-cve-poc', name: 'Awesome CVE PoC', description: 'CVE proof-of-concept collection', url: 'https://github.com/qazbnm456/awesome-cve-poc', category: 'offensive', priority: 'high' },
+        { id: 'trickest-cve', name: 'Trickest CVE', description: 'CVE database with PoCs', url: 'https://github.com/trickest/cve', category: 'offensive', priority: 'high' },
+        { id: 'awesome-exploit-development', name: 'Awesome Exploit Development', description: 'Exploit development resources', url: 'https://github.com/FabioBaroni/awesome-exploit-development', category: 'offensive', priority: 'high' },
+        { id: 'linux-kernel-exploitation', name: 'Linux Kernel Exploitation', description: 'Linux kernel security and exploitation', url: 'https://github.com/xairy/linux-kernel-exploitation', category: 'offensive', priority: 'high' }
+      ],
+      osint: [
+        { id: 'awesome-osint', name: 'Awesome OSINT', description: 'Open Source Intelligence resources', url: 'https://github.com/jivoi/awesome-osint', category: 'osint', priority: 'critical' },
+        { id: 'awesome-asset-discovery', name: 'Awesome Asset Discovery', description: 'Asset discovery and reconnaissance', url: 'https://github.com/redhuntlabs/Awesome-Asset-Discovery', category: 'osint', priority: 'high' },
+        { id: 'awesome-social-engineering', name: 'Awesome Social Engineering', description: 'Social engineering resources', url: 'https://github.com/v2-dev/awesome-social-engineering', category: 'osint', priority: 'medium' }
+      ],
+      mobile: [
+        { id: 'awesome-android-security', name: 'Awesome Android Security', description: 'Android security resources and tools', url: 'https://github.com/ashishb/android-security-awesome', category: 'mobile', priority: 'high' },
+        { id: 'awesome-ios-security', name: 'Awesome iOS/macOS Security', description: 'iOS and macOS security resources', url: 'https://github.com/ashishb/osx-and-ios-security-awesome', category: 'mobile', priority: 'high' }
+      ],
+      network: [
+        { id: 'awesome-pcaptools', name: 'Awesome PCAP Tools', description: 'Packet capture and analysis tools', url: 'https://github.com/caesar0301/awesome-pcaptools', category: 'network', priority: 'high' },
+        { id: 'wifi-arsenal', name: 'WiFi Arsenal', description: 'WiFi hacking tools and resources', url: 'https://github.com/0x90/wifi-arsenal', category: 'network', priority: 'high' },
+        { id: 'awesome-cellular-hacking', name: 'Awesome Cellular Hacking', description: 'Cellular/mobile network security', url: 'https://github.com/W00t3k/Awesome-Cellular-Hacking', category: 'network', priority: 'medium' },
+        { id: 'rfsec-toolkit', name: 'RFSec ToolKit', description: 'Radio frequency security tools', url: 'https://github.com/cn0xroot/RFSec-ToolKit', category: 'network', priority: 'medium' }
+      ],
+      iot: [
+        { id: 'awesome-iot-hacks', name: 'Awesome IoT Hacks', description: 'IoT security and hacking resources', url: 'https://github.com/nebgnahz/awesome-iot-hacks', category: 'iot', priority: 'high' },
+        { id: 'awesome-embedded-iot-security', name: 'Awesome Embedded & IoT Security', description: 'Embedded systems and IoT security', url: 'https://github.com/fkie-cad/awesome-embedded-and-iot-security', category: 'iot', priority: 'high' },
+        { id: 'awesome-vehicle-security', name: 'Awesome Vehicle Security', description: 'Automotive and vehicle security', url: 'https://github.com/jaredthecoder/awesome-vehicle-security', category: 'iot', priority: 'high' },
+        { id: 'awesome-ics-security', name: 'Awesome ICS Security', description: 'Industrial Control System security', url: 'https://github.com/hslatman/awesome-industrial-control-system-security', category: 'iot', priority: 'high' }
+      ],
+      aiSecurity: [
+        { id: 'awesome-ai-security', name: 'Awesome AI Security', description: 'AI and ML security resources', url: 'https://github.com/RandomAdversary/Awesome-AI-Security', category: 'ai_security', priority: 'high' },
+        { id: 'awesome-adversarial-ml', name: 'Awesome Adversarial ML', description: 'Adversarial ML attacks and defenses', url: 'https://github.com/yenchenlin/awesome-adversarial-machine-learning', category: 'ai_security', priority: 'high' },
+        { id: 'awesome-ml-cybersecurity', name: 'Awesome ML for Cybersecurity', description: 'Machine learning for security', url: 'https://github.com/jivoi/awesome-ml-for-cybersecurity', category: 'ai_security', priority: 'high' }
+      ],
+      crypto: [
+        { id: 'awesome-cryptography', name: 'Awesome Cryptography', description: 'Cryptography resources and libraries', url: 'https://github.com/sobolevn/awesome-cryptography', category: 'crypto', priority: 'high' },
+        { id: 'awesome-lockpicking', name: 'Awesome Lockpicking', description: 'Physical security and lockpicking', url: 'https://github.com/meitar/awesome-lockpicking', category: 'offensive', priority: 'medium' }
+      ],
+      ctf: [
+        { id: 'ctf-tool', name: 'CTF Tool', description: 'CTF challenge tools and resources', url: 'https://github.com/SandySekharan/CTF-tool', category: 'ctf', priority: 'high' },
+        { id: 'awesome-cyber-skills', name: 'Awesome Cyber Skills', description: 'Cyber security training platforms', url: 'https://github.com/joe-shenouda/awesome-cyber-skills', category: 'training', priority: 'high' },
+        { id: 'free-programming-books', name: 'Free Programming Books', description: 'Free programming and security ebooks', url: 'https://github.com/EbookFoundation/free-programming-books', category: 'training', stars: '330k+', priority: 'high' }
+      ],
+      reference: [
+        { id: 'awesome-infosec', name: 'Awesome InfoSec', description: 'Information security resources', url: 'https://github.com/onlurking/awesome-infosec', category: 'training', priority: 'high' },
+        { id: 'infosec-reference', name: 'InfoSec Reference', description: 'Comprehensive security reference', url: 'https://github.com/rmusser01/Infosec_Reference', category: 'training', priority: 'high' },
+        { id: 'awesome-sec-talks', name: 'Awesome Security Talks', description: 'Security conference talks', url: 'https://github.com/PaulSec/awesome-sec-talks', category: 'training', priority: 'medium' },
+        { id: 'awesome-reversing', name: 'Awesome Reversing', description: 'Reverse engineering resources', url: 'https://github.com/fdivrp/awesome-reversing', category: 'forensics', priority: 'high' },
+        { id: 'awesome-static-analysis', name: 'Awesome Static Analysis', description: 'Static analysis tools for code security', url: 'https://github.com/mre/awesome-static-analysis', category: 'defensive', priority: 'high' },
+        { id: 'awesome-fuzzing', name: 'Awesome Fuzzing', description: 'Fuzzing resources and tools', url: 'https://github.com/secfigo/Awesome-Fuzzing', category: 'offensive', priority: 'high' }
+      ]
+    };
+
+    const SECTION_META = {
+      masterCollections: { icon: '\\u2B50', title: 'Master Collections', desc: 'Essential resources every security professional needs' },
+      offensive: { icon: '\\u2694\\uFE0F', title: 'Offensive Security', desc: 'Penetration testing and red team resources' },
+      defensive: { icon: '\\u1F6E1\\uFE0F', title: 'Defensive Security', desc: 'Blue team and security hardening' },
+      forensics: { icon: '\\u1F50D', title: 'Forensics & IR', desc: 'Incident response and digital forensics' },
+      intelligence: { icon: '\\u1F4E1', title: 'Threat Intelligence', desc: 'Threat hunting and intelligence gathering' },
+      web: { icon: '\\u1F310', title: 'Web Security', desc: 'Web application security and bug bounty' },
+      vulnerabilities: { icon: '\\u1F41B', title: 'Vulnerability Research', desc: 'Exploit development and CVE research' },
+      osint: { icon: '\\u1F441\\uFE0F', title: 'OSINT', desc: 'Open source intelligence gathering' },
+      mobile: { icon: '\\u1F4F1', title: 'Mobile Security', desc: 'Android and iOS security' },
+      network: { icon: '\\u1F4E1', title: 'Network Security', desc: 'Network and wireless security' },
+      iot: { icon: '\\u1F916', title: 'IoT & Embedded', desc: 'IoT, ICS, and embedded systems' },
+      aiSecurity: { icon: '\\u1F9E0', title: 'AI Security', desc: 'Machine learning and AI security' },
+      crypto: { icon: '\\u1F510', title: 'Cryptography', desc: 'Cryptographic tools and resources' },
+      ctf: { icon: '\\u1F3C1', title: 'CTF & Training', desc: 'Capture the flag and learning resources' },
+      reference: { icon: '\\u1F4DA', title: 'Reference', desc: 'General security references and talks' }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RENDER FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    function renderStats() {
+      let total = 0, critical = 0;
+      const categories = new Set();
+
+      for (const section of Object.values(ARSENAL)) {
+        for (const item of section) {
+          total++;
+          categories.add(item.category);
+          if (item.priority === 'critical') critical++;
+        }
+      }
+
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('critical-count').textContent = critical;
+      document.getElementById('category-count').textContent = categories.size;
+      document.getElementById('section-count').textContent = Object.keys(ARSENAL).length;
+    }
+
+    function renderCategoryNav() {
+      const nav = document.getElementById('category-nav');
+      nav.innerHTML = Object.entries(SECTION_META)
+        .map(([key, meta]) => `<a href="#${key}">${meta.title}</a>`)
+        .join('');
+    }
+
+    function renderCard(item) {
+      const priorityClass = `priority-${item.priority || 'medium'}`;
+      const stars = item.stars ? `<span class="resource-stars">\\u2B50 ${item.stars}</span>` : '';
+
+      return `
+        <div class="resource-card" data-priority="${item.priority || 'medium'}" onclick="window.open('${item.url}', '_blank')">
+          <div class="resource-header">
+            <div class="resource-name">${item.name}</div>
+            <span class="priority-badge ${priorityClass}">${item.priority || 'medium'}</span>
+          </div>
+          <div class="resource-description">${item.description}</div>
+          <div class="resource-meta">
+            <span class="resource-category">${item.category}</span>
+            ${stars}
+            <a class="resource-link" href="${item.url}" target="_blank" onclick="event.stopPropagation()">
+              Open \\u2197\\uFE0F
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSection(key, items) {
+      const meta = SECTION_META[key] || { icon: '\\u1F4C1', title: key, desc: '' };
+
+      return `
+        <section id="${key}" class="section">
+          <div class="section-header">
+            <span class="section-icon">${meta.icon}</span>
+            <h2 class="section-title">${meta.title}</h2>
+            <span class="section-count">${items.length} resources</span>
+          </div>
+          <div class="resource-grid">
+            ${items.map(renderCard).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderArsenal(filter = 'all', searchQuery = '') {
+      const container = document.getElementById('arsenal-container');
+      const sections = [];
+
+      for (const [key, items] of Object.entries(ARSENAL)) {
+        let filtered = items;
+
+        // Apply priority filter
+        if (filter !== 'all') {
+          filtered = filtered.filter(item => item.priority === filter);
+        }
+
+        // Apply search filter
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter(item =>
+            item.name.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q) ||
+            item.category.toLowerCase().includes(q)
+          );
+        }
+
+        if (filtered.length > 0) {
+          sections.push(renderSection(key, filtered));
+        }
+      }
+
+      container.innerHTML = sections.length > 0
+        ? sections.join('')
+        : '<div style="text-align:center;padding:48px;color:var(--text-muted)">No resources match your criteria</div>';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // EVENT HANDLERS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    let currentFilter = 'all';
+    let searchTimeout = null;
+
+    function setupEventHandlers() {
+      // Priority filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.priority;
+          renderArsenal(currentFilter, document.getElementById('search').value);
+        });
+      });
+
+      // Search input
+      const searchInput = document.getElementById('search');
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          renderArsenal(currentFilter, e.target.value);
+        }, 200);
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+        if (e.key === 'Escape') {
+          searchInput.blur();
+          searchInput.value = '';
+          renderArsenal(currentFilter, '');
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderStats();
+      renderCategoryNav();
+      renderArsenal();
+      setupEventHandlers();
+    });
+  </script>
+</body>
+</html>

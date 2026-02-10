@@ -484,7 +484,8 @@ caput-ultimate-edition/
 │   ├── eben-evidence.js          # EBEN Evidence Management System
 │   ├── shinobi-security.js       # SHINOBI Ninja Security Layer
 │   ├── tetsuya-defense.js        # TETSUYA Defense & Risk Management
-│   └── viz-engine.js             # VIZ Visualization Engine
+│   ├── viz-engine.js             # VIZ Visualization Engine
+│   └── herev-arsenal.js          # HEREV Security Arsenal (100+ resources)
 │
 ├── legal/
 │   └── legal_automation.ts
@@ -493,7 +494,10 @@ caput-ultimate-edition/
 │   └── cert_master.ts
 │
 ├── static/
-│   └── index.html            # Developer Pro Dashboard
+│   ├── index.html            # Developer Pro Dashboard
+│   ├── genesis-control.html  # Genesis Control Panel
+│   ├── playroom.html         # Kids Finger Painting Room
+│   └── herev-arsenal.html    # Security Arsenal Dashboard
 │
 ├── test/
 │   └── pentagon.test.ts      # 40 room tests
@@ -607,6 +611,7 @@ Owner profile stored in `config/owner-profile.json`:
 | **TETSUYA** | 鉄夜 | Iron Night | Defense & Risk Management — AI agents, shockwave mitigation |
 | **VIZ** | — | Visualize | Visualization Engine — dashboards, real-time displays |
 | **KOL** | קול | Voice | Shared Logging Utility — structured output, JSON mode, colour-coded |
+| **HEREV** | חרב | Sword | Security Arsenal — 100+ curated security resources, tools, intelligence feeds |
 
 ### EBEN Evidence Vault (Admin-Only)
 
@@ -665,6 +670,57 @@ if (assessment.riskLevel > 0.7) {
 // Shockwave Mitigation
 tetsuya.activateMitigationNode('cascade-prevention');
 ```
+
+### HEREV Security Arsenal
+
+```javascript
+import { Herev, herev } from './src/lib/herev-arsenal.js';
+
+// Use singleton instance
+const stats = herev.getStats();
+console.log(`Arsenal: ${stats.totalResources} resources`);
+
+// Get critical priority resources
+const critical = herev.getCritical();
+critical.forEach(r => console.log(`[CRITICAL] ${r.name}: ${r.url}`));
+
+// Search arsenal
+const results = herev.search('pentest');
+console.log(`Found ${results.length} results for "pentest"`);
+
+// Get resources by category
+const osint = herev.getByCategory('osint');
+const offensive = herev.getByCategory('offensive');
+
+// Get specific sections
+const forensics = herev.getSection('forensics');
+const intelligence = herev.getSection('intelligence');
+
+// Export as JSON
+const jsonExport = herev.exportJSON();
+
+// Generate markdown documentation
+const markdown = herev.generateMarkdown();
+```
+
+**Arsenal Categories:**
+- `offensive` — Penetration testing, red team
+- `defensive` — Blue team, hardening
+- `forensics` — Incident response, digital forensics
+- `intelligence` — Threat hunting, IOCs
+- `web` — Web application security
+- `osint` — Open source intelligence
+- `mobile` — Android/iOS security
+- `network` — Network/wireless security
+- `iot` — IoT, ICS, embedded systems
+- `ai_security` — ML/AI security
+- `crypto` — Cryptography
+- `ctf` — Capture the flag, training
+- `payloads` — Wordlists, fuzzing payloads
+- `tools` — Security tools
+- `training` — Learning resources
+
+**Arsenal Dashboard:** `static/herev-arsenal.html`
 
 ---
 
@@ -914,6 +970,29 @@ This session added:
 5. **Owner profile configuration** (all 9 email accounts, ADMIN exclusive rights)
 6. **Bug fixes** (OODA methods inside class, unused import removed)
 7. **UI updates** (40-room map, YubiKey endpoints in explorer)
+
+### February 2026 Enhancement — HEREV Security Arsenal
+
+8. **HEREV (חרב) Security Arsenal** — 100+ curated security resources:
+   - Master Collections (SecLists, PayloadsAllTheThings, etc.)
+   - Offensive Security (Pentest, Red Team, Exploit Dev)
+   - Defensive Security (DevSecOps, AppSec, API Security)
+   - Forensics & Incident Response
+   - Threat Intelligence & Hunting
+   - Web Security & Bug Bounty
+   - OSINT & Reconnaissance
+   - Mobile Security (Android/iOS)
+   - Network & Wireless Security
+   - IoT, ICS & Embedded Security
+   - AI/ML Security
+   - CTF & Training Resources
+9. **HEREV Arsenal Dashboard** (`static/herev-arsenal.html`)
+   - Searchable, filterable interface
+   - Priority-based organization (Critical/High/Medium)
+   - Category navigation
+   - Real-time statistics
+10. **Security Dashboard Integration** — Arsenal links in main security dashboard
+11. **GENESIS Bootstrap Integration** — HEREV auto-loads with all other modules
 
 ---
 

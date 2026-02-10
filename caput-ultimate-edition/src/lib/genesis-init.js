@@ -130,6 +130,7 @@ export class GenesisBootstrap extends EventEmitter {
     this.keruv = null;
     this.nephesh = null;
     this.viz = null;
+    this.herev = null;  // Security Arsenal
 
     // Dashboard server
     this.dashboard = null;
@@ -250,6 +251,15 @@ export class GenesisBootstrap extends EventEmitter {
       logOk('EBEN', 'Evidence Vault sealed — אבן');
     }
 
+    // HEREV — Security Arsenal
+    const HerevClass = await loadModule('Herev', '../lib/herev-arsenal.js');
+    if (HerevClass) {
+      this.herev = new HerevClass();
+      this._recordBoot('HEREV', true);
+      const stats = this.herev.getStats();
+      logOk('HEREV', `Security Arsenal loaded (${stats.totalResources} resources) — חרב`);
+    }
+
     console.log('');
   }
 
@@ -325,6 +335,7 @@ export class GenesisBootstrap extends EventEmitter {
       KERUV: this.keruv,
       SHINOBI: this.shinobi,
       EBEN: this.eben,
+      HEREV: this.herev,
       RUACH: this.ruach,
       OHR: this.ohr,
       HADAAT: this.hadaat,
@@ -656,7 +667,8 @@ export class GenesisBootstrap extends EventEmitter {
       HADAAT: this.hadaat,
       KERUV: this.keruv,
       NEPHESH: this.nephesh,
-      VIZ: this.viz
+      VIZ: this.viz,
+      HEREV: this.herev
     };
     return map[name] || null;
   }
