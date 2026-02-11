@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth Portal - Login</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════════
+       CSS Variables - Wikimedia-inspired theming
+       ═══════════════════════════════════════════════════════════════════════ */
+    :root {
+      /* Light theme (default) */
+      --bg-page: #f8f9fa;
+      --bg-content: #ffffff;
+      --bg-input: #ffffff;
+      --bg-header: #ffffff;
+      --bg-footer: #f8f9fa;
+      --bg-hover: #eaecf0;
+      --bg-selected: #eaf3ff;
+
+      --text-primary: #202122;
+      --text-secondary: #54595d;
+      --text-muted: #72777d;
+      --text-link: #3366cc;
+      --text-link-hover: #447ff5;
+      --text-link-visited: #795cb2;
+
+      --border-color: #a2a9b1;
+      --border-light: #c8ccd1;
+      --border-input: #a2a9b1;
+
+      --accent-primary: #3366cc;
+      --accent-success: #14866d;
+      --accent-warning: #fc3;
+      --accent-error: #d33;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+      --shadow-md: 0 2px 4px rgba(0,0,0,0.1);
+
+      /* Typography */
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Lato, Helvetica, Arial, sans-serif;
+      --font-size-base: 14px;
+      --font-size-sm: 13px;
+      --font-size-lg: 16px;
+      --font-size-xl: 20px;
+      --font-size-xxl: 24px;
+      --line-height: 1.6;
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+
+      /* Layout */
+      --max-width-content: 600px;
+      --max-width-page: 1200px;
+      --border-radius: 2px;
+    }
+
+    /* Dark theme */
+    [data-theme="dark"] {
+      --bg-page: #101418;
+      --bg-content: #1a1d21;
+      --bg-input: #27292d;
+      --bg-header: #1a1d21;
+      --bg-footer: #101418;
+      --bg-hover: #27292d;
+      --bg-selected: #2a4b77;
+
+      --text-primary: #eaecf0;
+      --text-secondary: #a2a9b1;
+      --text-muted: #72777d;
+      --text-link: #6b9aff;
+      --text-link-hover: #8fb1ff;
+      --text-link-visited: #b197fc;
+
+      --border-color: #54595d;
+      --border-light: #3a3f44;
+      --border-input: #54595d;
+    }
+
+    /* Text size variants */
+    [data-text-size="medium"] { --font-size-base: 16px; --font-size-sm: 14px; }
+    [data-text-size="large"] { --font-size-base: 18px; --font-size-sm: 16px; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Base Styles
+       ═══════════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      font-size: var(--font-size-base);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height);
+      color: var(--text-primary);
+      background: var(--bg-page);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: var(--text-link);
+      text-decoration: none;
+    }
+    a:hover { color: var(--text-link-hover); text-decoration: underline; }
+    a:visited { color: var(--text-link-visited); }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Header
+       ═══════════════════════════════════════════════════════════════════════ */
+    .header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-light);
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .header-logo:hover { text-decoration: none; color: var(--text-primary); }
+
+    .header-logo svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    /* Language selector */
+    .language-selector {
+      position: relative;
+    }
+
+    .language-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: var(--space-xs) var(--space-sm);
+      font-size: var(--font-size-sm);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .language-btn:hover { background: var(--bg-hover); }
+
+    .language-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--bg-content);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      min-width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      z-index: 200;
+    }
+    .language-dropdown.open { display: block; }
+
+    .language-option {
+      padding: var(--space-sm) var(--space-md);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+    .language-option:hover { background: var(--bg-hover); }
+    .language-option.selected { background: var(--bg-selected); }
+    .language-native { color: var(--text-muted); font-size: var(--font-size-sm); }
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: var(--space-xs) var(--space-sm);
+      cursor: pointer;
+      font-size: var(--font-size-lg);
+      line-height: 1;
+    }
+    .theme-toggle:hover { background: var(--bg-hover); }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Main Content
+       ═══════════════════════════════════════════════════════════════════════ */
+    .main {
+      flex: 1;
+      padding: var(--space-xl) var(--space-md);
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--max-width-content);
+    }
+
+    .card {
+      background: var(--bg-content);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius);
+      padding: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .card-header {
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: var(--font-size-xxl);
+      font-weight: 400;
+    }
+
+    .card-subtitle {
+      margin: var(--space-sm) 0 0;
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Forms
+       ═══════════════════════════════════════════════════════════════════════ */
+    .form-group {
+      margin-bottom: var(--space-md);
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: var(--space-xs);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      font-size: var(--font-size-base);
+      font-family: inherit;
+      border: 1px solid var(--border-input);
+      border-radius: var(--border-radius);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-hint {
+      margin-top: var(--space-xs);
+      font-size: var(--font-size-sm);
+      color: var(--text-muted);
+    }
+
+    .form-error {
+      color: var(--accent-error);
+    }
+
+    .form-checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-sm);
+      cursor: pointer;
+    }
+
+    .form-checkbox input {
+      margin-top: 3px;
+      accent-color: var(--accent-primary);
+    }
+
+    .form-actions {
+      margin-top: var(--space-lg);
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      font-size: var(--font-size-base);
+      font-family: inherit;
+      font-weight: 600;
+      border: 1px solid transparent;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: #fff;
+      border-color: var(--accent-primary);
+    }
+    .btn-primary:hover {
+      background: #2a4b8d;
+      border-color: #2a4b8d;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent-primary);
+      border-color: var(--border-color);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      text-decoration: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Messages / Alerts
+       ═══════════════════════════════════════════════════════════════════════ */
+    .message {
+      padding: var(--space-md);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--space-md);
+      border-left: 4px solid;
+    }
+
+    .message-success {
+      background: #d5fdd5;
+      border-color: var(--accent-success);
+      color: #14532d;
+    }
+    [data-theme="dark"] .message-success {
+      background: #14532d;
+      color: #d5fdd5;
+    }
+
+    .message-error {
+      background: #fee;
+      border-color: var(--accent-error);
+      color: #7f1d1d;
+    }
+    [data-theme="dark"] .message-error {
+      background: #7f1d1d;
+      color: #fee;
+    }
+
+    .message-info {
+      background: #eaf3ff;
+      border-color: var(--accent-primary);
+      color: #1e3a5f;
+    }
+    [data-theme="dark"] .message-info {
+      background: #1e3a5f;
+      color: #eaf3ff;
+    }
+
+    .message-warning {
+      background: #fef3cd;
+      border-color: var(--accent-warning);
+      color: #664d03;
+    }
+    [data-theme="dark"] .message-warning {
+      background: #664d03;
+      color: #fef3cd;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Tabs / Navigation
+       ═══════════════════════════════════════════════════════════════════════ */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: var(--space-lg);
+      gap: var(--space-xs);
+    }
+
+    .tab {
+      padding: var(--space-sm) var(--space-md);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: var(--font-size-base);
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .tab.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Help Section
+       ═══════════════════════════════════════════════════════════════════════ */
+    .help-section {
+      margin-top: var(--space-lg);
+    }
+
+    .help-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+    }
+
+    .help-item {
+      margin-bottom: var(--space-md);
+    }
+
+    .help-question {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+
+    .help-answer {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    /* Collapsible sections */
+    details {
+      margin-bottom: var(--space-md);
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: var(--space-sm);
+      background: var(--bg-hover);
+      border-radius: var(--border-radius);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    summary::before {
+      content: '▶';
+      font-size: 0.7em;
+      transition: transform 0.2s;
+    }
+
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    details > div {
+      padding: var(--space-md);
+      border-left: 2px solid var(--border-light);
+      margin-left: var(--space-md);
+      margin-top: var(--space-sm);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Footer
+       ═══════════════════════════════════════════════════════════════════════ */
+    .footer {
+      background: var(--bg-footer);
+      border-top: 1px solid var(--border-light);
+      padding: var(--space-md);
+      text-align: center;
+      font-size: var(--font-size-sm);
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-sm);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Settings Panel
+       ═══════════════════════════════════════════════════════════════════════ */
+    .settings-group {
+      margin-bottom: var(--space-lg);
+    }
+
+    .settings-group-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-sm);
+    }
+
+    .settings-options {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .settings-option {
+      padding: var(--space-sm) var(--space-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      background: var(--bg-input);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .settings-option:hover {
+      background: var(--bg-hover);
+    }
+
+    .settings-option.selected {
+      border-color: var(--accent-primary);
+      background: var(--bg-selected);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Responsive
+       ═══════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 600px) {
+      .header {
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .tabs {
+        overflow-x: auto;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Utilities
+       ═══════════════════════════════════════════════════════════════════════ */
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .text-muted { color: var(--text-muted); }
+    .mt-md { margin-top: var(--space-md); }
+    .mb-md { margin-bottom: var(--space-md); }
+  </style>
+</head>
+<body>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Header
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <header class="header">
+    <a href="#" class="header-logo" onclick="showPage('login')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Auth Portal
+    </a>
+
+    <div class="header-actions">
+      <!-- Language Selector -->
+      <div class="language-selector">
+        <button class="language-btn" onclick="toggleLanguageDropdown()">
+          <span id="current-language">English</span>
+          <span>▼</span>
+        </button>
+        <div class="language-dropdown" id="language-dropdown"></div>
+      </div>
+
+      <!-- Theme Toggle -->
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+        <span id="theme-icon">🌙</span>
+      </button>
+
+      <!-- Settings -->
+      <button class="btn btn-secondary" onclick="showPage('settings')">⚙️ Settings</button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Main Content
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <main class="main">
+    <div class="container">
+
+      <!-- ═══════════════════════════════════════════════════════════════════
+           Login Page
+           ═══════════════════════════════════════════════════════════════════ -->
+      <div id="page-login" class="page">
+        <div class="card">
+          <div class="card-header">
+            <h1 class="card-title">Log in</h1>
+          </div>
+
+          <div id="login-message"></div>
+
+          <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label class="form-label" for="login-username">Username</label>
+              <input type="text" id="login-username" class="form-input" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="login-password">Password</label>
+              <input type="password" id="login-password" class="form-input" required autocomplete="current-password">
+            </div>
+
+            <div class="form-group">
+              <label class="form-checkbox">
+                <input type="checkbox" id="login-remember">
+                <span>Keep me logged in</span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Log in</button>
+            </div>
+          </form>
+
+          <div class="mt-md">
+            <p><a href="#" onclick="showPage('reset-password')">Forgot your password?</a></p>
+            <p>Don't have an account? <a href="#" onclick="showPage('create-account')">Create one</a></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="help-section">
+            <details>
+              <summary>Help with logging in</summary>
+              <div>
+                <p>Enter your username and password to log in. If you've forgotten your password, use the password reset link above.</p>
+                <p>Your session will expire after 24 hours of inactivity.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════════
+           Create Account Page
+           ═══════════════════════════════════════════════════════════════════ -->
+      <div id="page-create-account" class="page hidden">
+        <div class="card">
+          <div class="card-header">
+            <h1 class="card-title">Create account</h1>
+            <p class="card-subtitle">Join to access all features</p>
+          </div>
+
+          <div id="create-message"></div>
+
+          <form id="create-form" onsubmit="handleCreateAccount(event)">
+            <div class="form-group">
+              <label class="form-label" for="create-username">Username *</label>
+              <input type="text" id="create-username" class="form-input" required autocomplete="username" pattern="[a-zA-Z0-9_-]{3,30}">
+              <p class="form-hint">3-30 characters. Letters, numbers, underscores, and hyphens only.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="create-password">Password *</label>
+              <input type="password" id="create-password" class="form-input" required autocomplete="new-password" minlength="8">
+              <p class="form-hint">At least 8 characters.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="create-password-confirm">Confirm password *</label>
+              <input type="password" id="create-password-confirm" class="form-input" required autocomplete="new-password">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="create-email">Email address (optional)</label>
+              <input type="email" id="create-email" class="form-input" autocomplete="email">
+              <p class="form-hint">Required for password recovery. We recommend confirming your email address.</p>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Create account</button>
+              <button type="button" class="btn btn-secondary" onclick="showPage('login')">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════════
+           Password Reset Page
+           ═══════════════════════════════════════════════════════════════════ -->
+      <div id="page-reset-password" class="page hidden">
+        <div class="card">
+          <div class="card-header">
+            <h1 class="card-title">Reset password</h1>
+          </div>
+
+          <div id="reset-message"></div>
+
+          <form id="reset-form" onsubmit="handlePasswordReset(event)">
+            <div class="form-group">
+              <label class="form-label" for="reset-username">Username</label>
+              <input type="text" id="reset-username" class="form-input" autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reset-email">Email address</label>
+              <input type="email" id="reset-email" class="form-input" autocomplete="email">
+            </div>
+
+            <p class="form-hint mb-md">
+              Enter your username or email address (or both). If an account exists with that information, a password reset email will be sent.
+            </p>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Request password reset</button>
+              <button type="button" class="btn btn-secondary" onclick="showPage('login')">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="help-section">
+            <h3 class="help-title">Password Reset Help</h3>
+
+            <details>
+              <summary>When should I reset my password?</summary>
+              <div>
+                <p>Reset your password if you've forgotten it, suspect unauthorized access, or want to update it for security reasons.</p>
+              </div>
+            </details>
+
+            <details>
+              <summary>How do I make sure I can reset my password?</summary>
+              <div>
+                <p>To enable password resets, you must associate an email address with your account:</p>
+                <ul>
+                  <li>When creating your account, provide an email address</li>
+                  <li>After creating an account, add an email in Settings → Email options</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>I have multiple accounts with the same email</summary>
+              <div>
+                <p>If you enter only your email address, you'll receive separate reset emails for all accounts associated with that address.</p>
+                <p>To reset just one account, enter only the username.</p>
+              </div>
+            </details>
+
+            <details>
+              <summary>I'm getting password reset emails I didn't request</summary>
+              <div>
+                <p>Enable <strong>Enhanced Password Reset (EPR)</strong> in Settings. This requires both username AND email to trigger a reset, preventing unwanted emails from people who know just one piece of information.</p>
+              </div>
+            </details>
+
+            <details>
+              <summary>I didn't receive a reset email</summary>
+              <div>
+                <p>Possible reasons:</p>
+                <ul>
+                  <li>No email address on your account</li>
+                  <li>Misspelled username or email</li>
+                  <li>EPR is enabled but you only entered one field</li>
+                  <li>Email went to spam/junk folder</li>
+                  <li>Too many reset requests (wait and try again)</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════════
+           Settings Page
+           ═══════════════════════════════════════════════════════════════════ -->
+      <div id="page-settings" class="page hidden">
+        <div class="card">
+          <div class="card-header">
+            <h1 class="card-title">Settings</h1>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" onclick="showSettingsTab('display')">Display</button>
+            <button class="tab" onclick="showSettingsTab('email')">Email</button>
+            <button class="tab" onclick="showSettingsTab('security')">Security</button>
+          </div>
+
+          <!-- Display Settings -->
+          <div id="settings-display" class="tab-panel active">
+            <div class="settings-group">
+              <div class="settings-group-title">Text Size</div>
+              <p class="form-hint mb-md">Adjust text for better readability.</p>
+              <div class="settings-options">
+                <button class="settings-option selected" onclick="setTextSize('standard')" data-size="standard">Standard</button>
+                <button class="settings-option" onclick="setTextSize('medium')" data-size="medium">Medium</button>
+                <button class="settings-option" onclick="setTextSize('large')" data-size="large">Large</button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-group-title">Color Theme</div>
+              <p class="form-hint mb-md">Choose your preferred color scheme.</p>
+              <div class="settings-options">
+                <button class="settings-option selected" onclick="setTheme('light')" data-theme="light">☀️ Light</button>
+                <button class="settings-option" onclick="setTheme('dark')" data-theme="dark">🌙 Dark</button>
+                <button class="settings-option" onclick="setTheme('auto')" data-theme="auto">🔄 Automatic</button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <label class="form-checkbox">
+                <input type="checkbox" id="setting-expand-sections" onchange="toggleExpandSections()">
+                <span><strong>Expand all sections</strong><br>
+                <span class="text-muted">Always expand collapsible sections by default.</span></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Email Settings -->
+          <div id="settings-email" class="tab-panel">
+            <div class="form-group">
+              <label class="form-label" for="settings-email-input">Email address</label>
+              <input type="email" id="settings-email-input" class="form-input">
+              <p class="form-hint">Used for password recovery and notifications.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-checkbox">
+                <input type="checkbox" id="setting-email-notifications">
+                <span><strong>Email notifications</strong><br>
+                <span class="text-muted">Receive email notifications for important account activity.</span></span>
+              </label>
+            </div>
+
+            <div class="message message-info" style="margin-top: var(--space-md)">
+              <strong>Email confirmation:</strong> Please confirm your email address to enable all features. Check your inbox for a confirmation link.
+            </div>
+          </div>
+
+          <!-- Security Settings -->
+          <div id="settings-security" class="tab-panel">
+            <div class="settings-group">
+              <label class="form-checkbox">
+                <input type="checkbox" id="setting-epr" onchange="toggleEPR()">
+                <span><strong>Enhanced Password Reset (EPR)</strong><br>
+                <span class="text-muted">Require BOTH username AND email address to request a password reset. This prevents unwanted reset emails from people who know only your username or email.</span></span>
+              </label>
+            </div>
+
+            <div class="message message-warning mt-md">
+              <strong>Important:</strong> If you enable EPR, you must provide both your username AND email address when resetting your password. The system will not indicate that both are required (for security reasons).
+            </div>
+
+            <div class="settings-group mt-md">
+              <div class="settings-group-title">Password</div>
+              <button class="btn btn-secondary" onclick="showPage('reset-password')">Change password</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveSettings()">Save settings</button>
+          <button class="btn btn-secondary" onclick="showPage('login')">Back to login</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Footer
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="#" onclick="showPage('reset-password')">Help</a>
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of use</a>
+      <a href="#">Contact</a>
+    </div>
+    <p>Text is available under the Creative Commons Attribution-ShareAlike License.</p>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       JavaScript
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════
+    // State
+    // ═══════════════════════════════════════════════════════════════════════
+    const state = {
+      currentPage: 'login',
+      theme: localStorage.getItem('theme') || 'light',
+      textSize: localStorage.getItem('textSize') || 'standard',
+      language: localStorage.getItem('language') || 'en',
+      expandSections: localStorage.getItem('expandSections') === 'true',
+      epr: localStorage.getItem('epr') === 'true',
+    };
+
+    const languages = [
+      { code: 'en', name: 'English', native: 'English' },
+      { code: 'es', name: 'Spanish', native: 'español' },
+      { code: 'fr', name: 'French', native: 'français' },
+      { code: 'de', name: 'German', native: 'Deutsch' },
+      { code: 'zh', name: 'Chinese', native: '中文' },
+      { code: 'ja', name: 'Japanese', native: '日本語' },
+      { code: 'pt', name: 'Portuguese', native: 'português' },
+      { code: 'ru', name: 'Russian', native: 'русский' },
+      { code: 'ar', name: 'Arabic', native: 'العربية' },
+      { code: 'it', name: 'Italian', native: 'italiano' },
+      { code: 'ko', name: 'Korean', native: '한국어' },
+      { code: 'vi', name: 'Vietnamese', native: 'Tiếng Việt' },
+      { code: 'tr', name: 'Turkish', native: 'Türkçe' },
+      { code: 'id', name: 'Indonesian', native: 'Bahasa Indonesia' },
+    ];
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Page Navigation
+    // ═══════════════════════════════════════════════════════════════════════
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      document.getElementById('page-' + pageId)?.classList.remove('hidden');
+      state.currentPage = pageId;
+      window.scrollTo(0, 0);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Theme
+    // ═══════════════════════════════════════════════════════════════════════
+    function setTheme(theme) {
+      state.theme = theme;
+      localStorage.setItem('theme', theme);
+      applyTheme();
+      updateThemeButtons();
+    }
+
+    function toggleTheme() {
+      setTheme(state.theme === 'dark' ? 'light' : 'dark');
+    }
+
+    function applyTheme() {
+      let effectiveTheme = state.theme;
+      if (state.theme === 'auto') {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', effectiveTheme);
+      document.getElementById('theme-icon').textContent = effectiveTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    function updateThemeButtons() {
+      document.querySelectorAll('[data-theme]').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.theme === state.theme);
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Text Size
+    // ═══════════════════════════════════════════════════════════════════════
+    function setTextSize(size) {
+      state.textSize = size;
+      localStorage.setItem('textSize', size);
+      document.documentElement.setAttribute('data-text-size', size);
+      document.querySelectorAll('[data-size]').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.size === size);
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Language
+    // ═══════════════════════════════════════════════════════════════════════
+    function initLanguageDropdown() {
+      const dropdown = document.getElementById('language-dropdown');
+      dropdown.innerHTML = languages.map(lang => `
+        <div class="language-option ${lang.code === state.language ? 'selected' : ''}"
+             onclick="setLanguage('${lang.code}')">
+          <span>${lang.name}</span>
+          <span class="language-native">${lang.native}</span>
+        </div>
+      `).join('');
+      updateCurrentLanguage();
+    }
+
+    function toggleLanguageDropdown() {
+      document.getElementById('language-dropdown').classList.toggle('open');
+    }
+
+    function setLanguage(code) {
+      state.language = code;
+      localStorage.setItem('language', code);
+      updateCurrentLanguage();
+      document.getElementById('language-dropdown').classList.remove('open');
+      // In production: trigger translation reload
+    }
+
+    function updateCurrentLanguage() {
+      const lang = languages.find(l => l.code === state.language);
+      document.getElementById('current-language').textContent = lang?.name || 'English';
+      document.querySelectorAll('.language-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.textContent.includes(lang?.name));
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.language-selector')) {
+        document.getElementById('language-dropdown').classList.remove('open');
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Settings
+    // ═══════════════════════════════════════════════════════════════════════
+    function showSettingsTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('settings-' + tabId)?.classList.add('active');
+    }
+
+    function toggleExpandSections() {
+      state.expandSections = document.getElementById('setting-expand-sections').checked;
+      localStorage.setItem('expandSections', state.expandSections);
+      if (state.expandSections) {
+        document.querySelectorAll('details').forEach(d => d.open = true);
+      }
+    }
+
+    function toggleEPR() {
+      state.epr = document.getElementById('setting-epr').checked;
+      localStorage.setItem('epr', state.epr);
+    }
+
+    function saveSettings() {
+      showMessage('login-message', 'Settings saved successfully.', 'success');
+      showPage('login');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Form Handlers
+    // ═══════════════════════════════════════════════════════════════════════
+    function showMessage(containerId, message, type = 'info') {
+      const container = document.getElementById(containerId);
+      container.innerHTML = `<div class="message message-${type}">${message}</div>`;
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      // Simulate login (replace with actual API call)
+      if (username && password) {
+        showMessage('login-message', 'Login successful! Redirecting...', 'success');
+        // In production: redirect to dashboard
+      } else {
+        showMessage('login-message', 'Invalid username or password.', 'error');
+      }
+    }
+
+    function handleCreateAccount(e) {
+      e.preventDefault();
+      const password = document.getElementById('create-password').value;
+      const confirm = document.getElementById('create-password-confirm').value;
+
+      if (password !== confirm) {
+        showMessage('create-message', 'Passwords do not match.', 'error');
+        return;
+      }
+
+      showMessage('create-message', 'Account created successfully! Please check your email to confirm your address.', 'success');
+    }
+
+    function handlePasswordReset(e) {
+      e.preventDefault();
+      // Privacy-first: always show success message
+      showMessage('reset-message',
+        'If an account with that information exists, a password reset email has been sent. Please check your inbox.',
+        'success'
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Initialize
+    // ═══════════════════════════════════════════════════════════════════════
+    function init() {
+      applyTheme();
+      setTextSize(state.textSize);
+      initLanguageDropdown();
+
+      // Apply stored settings
+      document.getElementById('setting-expand-sections').checked = state.expandSections;
+      document.getElementById('setting-epr').checked = state.epr;
+
+      if (state.expandSections) {
+        document.querySelectorAll('details').forEach(d => d.open = true);
+      }
+
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (state.theme === 'auto') applyTheme();
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

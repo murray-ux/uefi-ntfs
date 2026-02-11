@@ -1,0 +1,37 @@
+{
+  "name": "auth-portal",
+  "version": "1.0.0",
+  "description": "Wikimedia-style authentication portal with EPR support",
+  "main": "dist/auth.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "npx serve public",
+    "cli:password": "npx ts-node src/cli/changePassword.ts",
+    "db:init": "sqlite3 data/auth.db < src/db/schema.sql",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "keywords": [
+    "authentication",
+    "login",
+    "password-reset",
+    "mediawiki",
+    "wikimedia",
+    "epr",
+    "multi-language"
+  ],
+  "author": "Auth Portal",
+  "license": "CC-BY-SA-4.0",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "serve": "^14.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
