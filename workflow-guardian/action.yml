@@ -1,0 +1,121 @@
+name: 'Workflow Guardian'
+description: 'Self-Adaptive CI/CD Security Scanner - MAPE-K powered workflow risk detection'
+author: 'WorkflowGuardian'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Path to scan (file or directory)'
+    required: false
+    default: '.github/workflows'
+  confidence-threshold:
+    description: 'Minimum confidence to act on findings (0.0-1.0)'
+    required: false
+    default: '0.75'
+  block-threshold:
+    description: 'Risk score threshold to block (0-100)'
+    required: false
+    default: '80'
+  warn-threshold:
+    description: 'Risk score threshold to warn (0-100)'
+    required: false
+    default: '30'
+  strict:
+    description: 'Fail on warnings (not just blocks)'
+    required: false
+    default: 'false'
+  output-format:
+    description: 'Output format: text, json, or sarif'
+    required: false
+    default: 'text'
+
+outputs:
+  verdict:
+    description: 'Overall verdict: BLOCK, WARN, or ALLOW'
+    value: ${{ steps.scan.outputs.verdict }}
+  risk-score:
+    description: 'Highest risk score found'
+    value: ${{ steps.scan.outputs.risk_score }}
+  findings-count:
+    description: 'Number of findings'
+    value: ${{ steps.scan.outputs.findings_count }}
+  report:
+    description: 'Full scan report (JSON)'
+    value: ${{ steps.scan.outputs.report }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --production
+
+    - name: Build scanner
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm run build
+
+    - name: Run Workflow Guardian
+      id: scan
+      shell: bash
+      env:
+        GUARDIAN_CONFIDENCE: ${{ inputs.confidence-threshold }}
+        GUARDIAN_BLOCK_THRESHOLD: ${{ inputs.block-threshold }}
+        GUARDIAN_WARN_THRESHOLD: ${{ inputs.warn-threshold }}
+      run: |
+        set +e
+
+        ARGS="${{ inputs.path }}"
+        if [ "${{ inputs.output-format }}" = "json" ]; then
+          ARGS="$ARGS --json"
+        fi
+        if [ "${{ inputs.strict }}" = "true" ]; then
+          ARGS="$ARGS --strict"
+        fi
+
+        OUTPUT=$(node ${{ github.action_path }}/dist/index.js scan $ARGS)
+        EXIT_CODE=$?
+
+        echo "$OUTPUT"
+
+        # Parse results for outputs
+        if [ "${{ inputs.output-format }}" = "json" ]; then
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          VERDICT=$(echo "$OUTPUT" | jq -r '.[0].verdict // "ALLOW"')
+          RISK_SCORE=$(echo "$OUTPUT" | jq -r '[.[].riskScore] | max // 0')
+          FINDINGS=$(echo "$OUTPUT" | jq -r '[.[].details | length] | add // 0')
+        else
+          VERDICT="ALLOW"
+          [ $EXIT_CODE -eq 1 ] && VERDICT="WARN"
+          [ $EXIT_CODE -eq 2 ] && VERDICT="BLOCK"
+          RISK_SCORE="N/A"
+          FINDINGS="N/A"
+        fi
+
+        echo "verdict=$VERDICT" >> $GITHUB_OUTPUT
+        echo "risk_score=$RISK_SCORE" >> $GITHUB_OUTPUT
+        echo "findings_count=$FINDINGS" >> $GITHUB_OUTPUT
+
+        exit $EXIT_CODE
+
+    - name: Create annotations
+      if: always()
+      shell: bash
+      run: |
+        if [ "${{ steps.scan.outputs.verdict }}" = "BLOCK" ]; then
+          echo "::error::Workflow Guardian: BLOCKED - Critical security issues detected"
+        elif [ "${{ steps.scan.outputs.verdict }}" = "WARN" ]; then
+          echo "::warning::Workflow Guardian: Security issues detected, review recommended"
+        fi

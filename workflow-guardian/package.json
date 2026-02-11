@@ -1,0 +1,37 @@
+{
+  "name": "workflow-guardian",
+  "version": "1.0.0",
+  "description": "Self-Adaptive CI/CD Security Engine - MAPE-K powered workflow risk scanner",
+  "main": "dist/guardian.js",
+  "bin": {
+    "workflow-guardian": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "scan": "node dist/index.js scan",
+    "test": "node --test dist/**/*.test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "github-actions",
+    "security",
+    "ci-cd",
+    "workflow",
+    "scanner",
+    "mape-k",
+    "self-adaptive"
+  ],
+  "author": "WorkflowGuardian",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "yaml": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
