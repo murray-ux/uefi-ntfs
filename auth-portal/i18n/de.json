@@ -1,0 +1,72 @@
+{
+  "login": {
+    "title": "Anmelden",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "rememberMe": "Angemeldet bleiben",
+    "submit": "Anmelden",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "createOne": "Erstellen"
+  },
+  "passwordReset": {
+    "title": "Passwort zurücksetzen",
+    "usernameLabel": "Benutzername",
+    "emailLabel": "E-Mail-Adresse",
+    "hint": "Gib deinen Benutzernamen oder deine E-Mail-Adresse ein (oder beides).",
+    "submit": "Zurücksetzung anfordern",
+    "successMessage": "Falls ein Konto mit diesen Daten existiert, wurde eine E-Mail zum Zurücksetzen gesendet."
+  },
+  "createAccount": {
+    "title": "Konto erstellen",
+    "subtitle": "Registriere dich, um alle Funktionen zu nutzen",
+    "usernameLabel": "Benutzername",
+    "passwordLabel": "Passwort",
+    "confirmPasswordLabel": "Passwort bestätigen",
+    "emailLabel": "E-Mail-Adresse (optional)",
+    "submit": "Konto erstellen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "display": "Anzeige",
+    "email": "E-Mail",
+    "security": "Sicherheit",
+    "textSize": "Textgröße",
+    "colorTheme": "Farbschema",
+    "expandSections": "Alle Abschnitte erweitern",
+    "epr": "Erweiterte Passwortzurücksetzung",
+    "eprDescription": "Benutzername und E-Mail für Passwortzurücksetzung erforderlich",
+    "save": "Einstellungen speichern"
+  },
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel",
+    "auto": "Automatisch"
+  },
+  "textSize": {
+    "standard": "Standard",
+    "medium": "Mittel",
+    "large": "Groß"
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "back": "Zurück",
+    "help": "Hilfe",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "termsOfUse": "Nutzungsbedingungen",
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "success": "Erfolg"
+  },
+  "errors": {
+    "invalidCredentials": "Ungültiger Benutzername oder Passwort",
+    "accountLocked": "Dieses Konto wurde gesperrt",
+    "usernameRequired": "Benutzername ist erforderlich",
+    "passwordRequired": "Passwort ist erforderlich",
+    "passwordMismatch": "Passwörter stimmen nicht überein",
+    "usernameTooShort": "Benutzername muss mindestens 3 Zeichen haben",
+    "passwordTooShort": "Passwort muss mindestens 8 Zeichen haben",
+    "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein",
+    "networkError": "Netzwerkfehler. Bitte erneut versuchen."
+  }
+}

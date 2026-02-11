@@ -1,0 +1,72 @@
+{
+  "login": {
+    "title": "Se connecter",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "rememberMe": "Rester connecté",
+    "submit": "Se connecter",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas de compte ?",
+    "createOne": "Créer un compte"
+  },
+  "passwordReset": {
+    "title": "Réinitialiser le mot de passe",
+    "usernameLabel": "Nom d'utilisateur",
+    "emailLabel": "Adresse e-mail",
+    "hint": "Entrez votre nom d'utilisateur ou adresse e-mail (ou les deux).",
+    "submit": "Demander la réinitialisation",
+    "successMessage": "Si un compte avec ces informations existe, un e-mail de réinitialisation a été envoyé."
+  },
+  "createAccount": {
+    "title": "Créer un compte",
+    "subtitle": "Rejoignez-nous pour accéder à toutes les fonctionnalités",
+    "usernameLabel": "Nom d'utilisateur",
+    "passwordLabel": "Mot de passe",
+    "confirmPasswordLabel": "Confirmer le mot de passe",
+    "emailLabel": "Adresse e-mail (facultatif)",
+    "submit": "Créer un compte"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "display": "Affichage",
+    "email": "E-mail",
+    "security": "Sécurité",
+    "textSize": "Taille du texte",
+    "colorTheme": "Thème de couleur",
+    "expandSections": "Développer toutes les sections",
+    "epr": "Réinitialisation de mot de passe améliorée",
+    "eprDescription": "Exiger le nom d'utilisateur et l'e-mail pour réinitialiser le mot de passe",
+    "save": "Enregistrer les paramètres"
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "auto": "Automatique"
+  },
+  "textSize": {
+    "standard": "Standard",
+    "medium": "Moyen",
+    "large": "Grand"
+  },
+  "common": {
+    "cancel": "Annuler",
+    "back": "Retour",
+    "help": "Aide",
+    "privacyPolicy": "Politique de confidentialité",
+    "termsOfUse": "Conditions d'utilisation",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  },
+  "errors": {
+    "invalidCredentials": "Nom d'utilisateur ou mot de passe invalide",
+    "accountLocked": "Ce compte a été verrouillé",
+    "usernameRequired": "Le nom d'utilisateur est obligatoire",
+    "passwordRequired": "Le mot de passe est obligatoire",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "usernameTooShort": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+    "networkError": "Erreur réseau. Veuillez réessayer."
+  }
+}

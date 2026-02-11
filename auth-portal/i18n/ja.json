@@ -1,0 +1,72 @@
+{
+  "login": {
+    "title": "ログイン",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "rememberMe": "ログイン状態を保持",
+    "submit": "ログイン",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "createOne": "作成する"
+  },
+  "passwordReset": {
+    "title": "パスワードをリセット",
+    "usernameLabel": "ユーザー名",
+    "emailLabel": "メールアドレス",
+    "hint": "ユーザー名またはメールアドレスを入力してください（両方も可）。",
+    "submit": "パスワードリセットを申請",
+    "successMessage": "該当するアカウントが存在する場合、パスワードリセットメールが送信されました。"
+  },
+  "createAccount": {
+    "title": "アカウント作成",
+    "subtitle": "すべての機能にアクセスするには登録してください",
+    "usernameLabel": "ユーザー名",
+    "passwordLabel": "パスワード",
+    "confirmPasswordLabel": "パスワード（確認）",
+    "emailLabel": "メールアドレス（任意）",
+    "submit": "アカウントを作成"
+  },
+  "settings": {
+    "title": "設定",
+    "display": "表示",
+    "email": "メール",
+    "security": "セキュリティ",
+    "textSize": "文字サイズ",
+    "colorTheme": "カラーテーマ",
+    "expandSections": "すべてのセクションを展開",
+    "epr": "強化パスワードリセット",
+    "eprDescription": "パスワードリセットにユーザー名とメールアドレスの両方を必要とする",
+    "save": "設定を保存"
+  },
+  "theme": {
+    "light": "ライト",
+    "dark": "ダーク",
+    "auto": "自動"
+  },
+  "textSize": {
+    "standard": "標準",
+    "medium": "中",
+    "large": "大"
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "back": "戻る",
+    "help": "ヘルプ",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsOfUse": "利用規約",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功"
+  },
+  "errors": {
+    "invalidCredentials": "ユーザー名またはパスワードが無効です",
+    "accountLocked": "このアカウントはロックされています",
+    "usernameRequired": "ユーザー名は必須です",
+    "passwordRequired": "パスワードは必須です",
+    "passwordMismatch": "パスワードが一致しません",
+    "usernameTooShort": "ユーザー名は3文字以上必要です",
+    "passwordTooShort": "パスワードは8文字以上必要です",
+    "invalidEmail": "有効なメールアドレスを入力してください",
+    "networkError": "ネットワークエラー。もう一度お試しください。"
+  }
+}
