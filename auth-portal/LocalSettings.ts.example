@@ -1,0 +1,237 @@
+/**
+ * LocalSettings.ts - Local configuration for Auth Portal
+ *
+ * Copy this file to LocalSettings.ts and edit it to configure your wiki.
+ * This file is not included in the repository and should not be committed.
+ *
+ * @see DefaultSettings.ts for all available settings and their defaults
+ */
+
+import type { LocalSettings } from './src/types';
+
+// ============================================================================
+// REQUIRED SETTINGS - You MUST configure these
+// ============================================================================
+
+/**
+ * Secret key for session encryption
+ * Generate with: openssl rand -hex 32
+ */
+export const wgSecretKey = 'CHANGE_THIS_TO_A_RANDOM_64_CHARACTER_HEX_STRING';
+
+// ============================================================================
+// Site Configuration
+// ============================================================================
+
+/**
+ * Name of your site
+ */
+export const wgSiteName = 'My Wiki';
+
+/**
+ * Base URL (no trailing slash)
+ */
+export const wgServer = 'https://wiki.example.com';
+
+/**
+ * Environment
+ */
+export const wgEnvironment = 'production';
+
+// ============================================================================
+// Database Configuration
+// ============================================================================
+
+/**
+ * Database type: 'sqlite' | 'mysql' | 'postgres'
+ */
+export const wgDBtype = 'sqlite';
+
+/**
+ * SQLite: path to database directory
+ */
+export const wgSQLiteDataDir = './data';
+
+/**
+ * MySQL/PostgreSQL configuration (uncomment if using)
+ */
+// export const wgDBserver = 'localhost';
+// export const wgDBname = 'auth_portal';
+// export const wgDBuser = 'wiki_user';
+// export const wgDBpassword = 'secure_password';
+
+/**
+ * Load balancing with read replicas (uncomment to enable)
+ */
+// export const wgLBFactoryConf = {
+//   class: 'LBFactoryMulti',
+//   servers: [
+//     { host: 'db-primary.example.com', weight: 0, type: 'primary' as const },
+//     { host: 'db-replica1.example.com', weight: 10, type: 'replica' as const },
+//     { host: 'db-replica2.example.com', weight: 10, type: 'replica' as const },
+//   ],
+// };
+
+// ============================================================================
+// Cache Configuration
+// ============================================================================
+
+/**
+ * Main cache type
+ * Options: 'none', 'db', 'memcached', 'redis', 'apcu'
+ */
+export const wgMainCacheType = 'none';
+
+/**
+ * Memcached servers (if using memcached)
+ */
+// export const wgMemCachedServers = ['127.0.0.1:11211'];
+
+/**
+ * Redis servers (if using redis)
+ */
+// export const wgRedisServers = ['tcp://127.0.0.1:6379'];
+
+// ============================================================================
+// Email Configuration
+// ============================================================================
+
+/**
+ * Enable email features
+ */
+export const wgEnableEmail = true;
+
+/**
+ * SMTP configuration
+ */
+export const wgSMTP = {
+  host: 'smtp.example.com',
+  port: 587,
+  secure: false, // true for TLS
+  auth: {
+    user: 'smtp_user',
+    pass: 'smtp_password',
+  },
+};
+
+/**
+ * From address for system emails
+ */
+export const wgEmergencyContact = 'noreply@example.com';
+export const wgPasswordSender = 'noreply@example.com';
+
+// ============================================================================
+// Security Configuration
+// ============================================================================
+
+/**
+ * Enable Enhanced Password Reset by default
+ */
+export const wgEPREnabledDefault = true;
+
+/**
+ * Secure cookies (enable for HTTPS)
+ */
+export const wgCookieSecure = true;
+
+/**
+ * Password hashing algorithm
+ * Options: 'mw-b' (MediaWiki compatible), 'bcrypt', 'argon2'
+ */
+export const wgPasswordHashAlgorithm = 'bcrypt';
+
+/**
+ * Enable audit logging
+ */
+export const wgAuditLogEnabled = true;
+
+// ============================================================================
+// User Configuration
+// ============================================================================
+
+/**
+ * Allow new account creation
+ */
+export const wgAllowAccountCreation = true;
+
+/**
+ * Require email confirmation
+ */
+export const wgEmailConfirmToEdit = false;
+
+// ============================================================================
+// Language Configuration
+// ============================================================================
+
+/**
+ * Default language
+ */
+export const wgLanguageCode = 'en';
+
+// ============================================================================
+// Permissions Configuration
+// ============================================================================
+
+/**
+ * Custom group permissions (merged with defaults)
+ */
+export const wgGroupPermissions = {
+  // Allow all users to read
+  '*': {
+    read: true,
+    createaccount: true,
+  },
+  // Add custom "trusted" group
+  trusted: {
+    read: true,
+    edit: true,
+    changepassword: true,
+    upload: true,
+  },
+};
+
+// ============================================================================
+// Hooks Configuration
+// ============================================================================
+
+/**
+ * Register custom hooks
+ */
+export const wgHooks = {
+  // Example: Log all logins
+  // 'UserLoginComplete': [
+  //   (user: unknown) => {
+  //     console.log('User logged in:', user);
+  //     return true;
+  //   },
+  // ],
+};
+
+// ============================================================================
+// Export settings
+// ============================================================================
+
+const localSettings: LocalSettings = {
+  wgSecretKey,
+  wgSiteName,
+  wgServer,
+  wgEnvironment,
+  wgDBtype,
+  wgSQLiteDataDir,
+  wgMainCacheType,
+  wgEnableEmail,
+  wgSMTP,
+  wgEmergencyContact,
+  wgPasswordSender,
+  wgEPREnabledDefault,
+  wgCookieSecure,
+  wgPasswordHashAlgorithm,
+  wgAuditLogEnabled,
+  wgAllowAccountCreation,
+  wgEmailConfirmToEdit,
+  wgLanguageCode,
+  wgGroupPermissions,
+  wgHooks,
+};
+
+export default localSettings;

@@ -1,0 +1,76 @@
+{
+  "@metadata": {
+    "authors": [],
+    "description": "Message documentation for translators. This file uses the special 'qqq' language code which doesn't correspond to a real language."
+  },
+  "login": {
+    "title": "Title of the login page/form.",
+    "username": "Label for the username input field.",
+    "password": "Label for the password input field.",
+    "rememberMe": "Label for the 'keep me logged in' checkbox. Extends session duration.",
+    "submit": "Text on the login submit button.",
+    "forgotPassword": "Link text to the password reset page. Should be phrased as a question.",
+    "noAccount": "Text asking if user doesn't have an account. Followed by a 'create one' link.",
+    "createOne": "Link text to create a new account. Follows 'noAccount' text."
+  },
+  "passwordReset": {
+    "title": "Title of the password reset page.",
+    "usernameLabel": "Label for username field on password reset form.",
+    "emailLabel": "Label for email field on password reset form.",
+    "hint": "Help text explaining what to enter for password reset. Mention that either username OR email can be used.",
+    "submit": "Text on the password reset submit button.",
+    "successMessage": "Message shown after password reset request. IMPORTANT: For privacy, this message is always shown regardless of whether the account exists. Do not change the wording to reveal account existence."
+  },
+  "createAccount": {
+    "title": "Title of the account creation page.",
+    "subtitle": "Subtitle/tagline for account creation. Should encourage joining.",
+    "usernameLabel": "Label for username field.",
+    "passwordLabel": "Label for password field.",
+    "confirmPasswordLabel": "Label for password confirmation field.",
+    "emailLabel": "Label for optional email field. Include '(optional)' in translation.",
+    "submit": "Text on the account creation submit button."
+  },
+  "settings": {
+    "title": "Title of the user settings/preferences page.",
+    "display": "Tab name for display settings (themes, text size).",
+    "email": "Tab name for email settings.",
+    "security": "Tab name for security settings.",
+    "textSize": "Label for text size preference.",
+    "colorTheme": "Label for color theme preference.",
+    "expandSections": "Label for 'expand all sections' toggle.",
+    "epr": "Short name for Enhanced Password Reset feature.",
+    "eprDescription": "Description of what Enhanced Password Reset does. Explain that it requires both username AND email for password reset.",
+    "save": "Text on the save settings button."
+  },
+  "theme": {
+    "light": "Name for light/day color theme.",
+    "dark": "Name for dark/night color theme.",
+    "auto": "Name for automatic theme (follows system preference)."
+  },
+  "textSize": {
+    "standard": "Name for standard/default text size.",
+    "medium": "Name for medium/increased text size.",
+    "large": "Name for large/maximum text size."
+  },
+  "common": {
+    "cancel": "Generic cancel button text.",
+    "back": "Generic back button/link text.",
+    "help": "Link text to help pages.",
+    "privacyPolicy": "Link text to privacy policy.",
+    "termsOfUse": "Link text to terms of use/service.",
+    "loading": "Text shown while content is loading.",
+    "error": "Generic error label.",
+    "success": "Generic success label."
+  },
+  "errors": {
+    "invalidCredentials": "Error shown when username or password is wrong. Do not specify which one is wrong for security.",
+    "accountLocked": "Error shown when account has been locked by administrator.",
+    "usernameRequired": "Validation error when username field is empty.",
+    "passwordRequired": "Validation error when password field is empty.",
+    "passwordMismatch": "Validation error when password and confirmation don't match.",
+    "usernameTooShort": "Validation error when username is too short. Minimum is 3 characters.",
+    "passwordTooShort": "Validation error when password is too short. Minimum is 8 characters.",
+    "invalidEmail": "Validation error for invalid email format.",
+    "networkError": "Error shown when network request fails. Should suggest retrying."
+  }
+}
