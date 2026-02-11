@@ -16,9 +16,17 @@ import type {
   WebResponse,
   User,
   Session,
+  UserPreferences,
 } from './types';
 import { Hooks } from './Hooks';
 import { getConfig } from './Setup';
+import {
+  login,
+  createAccount,
+  requestPasswordReset,
+  updatePreferences,
+  validateSession,
+} from './auth';
 
 // ============================================================================
 // Action Handler Interface
@@ -173,13 +181,53 @@ class SubmitAction implements ActionHandler {
       return this.errorResponse(403, 'Login blocked');
     }
 
-    // TODO: Actual authentication logic
-    // For now, return a placeholder response
-    return {
+    // Authenticate using auth module
+    const result = await login(username, password);
+
+    if (!result.success) {
+      await Hooks.run('UserLoginFailed', username, 'invalid-credentials');
+      return {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: false, error: result.message }),
+      };
+    }
+
+    // Run successful login hook
+    if (result.user) {
+      await Hooks.run('UserLoginComplete', result.user);
+    }
+
+    // Build response with session cookie
+    const response: WebResponse = {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ success: true, message: 'Login handler placeholder' }),
+      body: JSON.stringify({
+        success: true,
+        message: result.message,
+        user: result.user,
+        returnto: request.returnto,
+      }),
     };
+
+    // Set session cookie if token provided
+    if (result.token) {
+      const config = getConfig();
+      response.cookies = [{
+        name: config.sessionName,
+        value: result.token,
+        options: {
+          httpOnly: true,
+          secure: config.cookieSecure,
+          sameSite: 'lax',
+          maxAge: request.rememberMe ? config.extendedSessionExpiry : config.sessionExpiry,
+          path: config.cookiePath,
+          domain: config.cookieDomain || undefined,
+        },
+      }];
+    }
+
+    return response;
   }
 
   private async handleCreateAccount(request: WebRequest): Promise<WebResponse> {
@@ -189,18 +237,63 @@ class SubmitAction implements ActionHandler {
       return this.errorResponse(400, 'Username and password required');
     }
 
+    // Check if account creation is allowed
+    const config = getConfig();
+    if (!config.allowAccountCreation) {
+      return this.errorResponse(403, 'Account creation is disabled');
+    }
+
     // Run BeforeCreateAccount hook
     const allowed = await Hooks.run('BeforeCreateAccount', username, email);
     if (allowed === false) {
       return this.errorResponse(403, 'Account creation blocked');
     }
 
-    // TODO: Actual account creation logic
-    return {
-      status: 200,
+    // Create account using auth module
+    const result = await createAccount(username, password, email);
+
+    if (!result.success) {
+      return {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: false, error: result.message }),
+      };
+    }
+
+    // Run account created hook
+    if (result.user) {
+      await Hooks.run('AccountCreated', result.user);
+    }
+
+    // Build response with session cookie (auto-login after registration)
+    const response: WebResponse = {
+      status: 201,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ success: true, message: 'Account creation handler placeholder' }),
+      body: JSON.stringify({
+        success: true,
+        message: result.message,
+        user: result.user,
+        requiresEmailConfirmation: result.requiresEmailConfirmation,
+      }),
     };
+
+    // Set session cookie if token provided
+    if (result.token) {
+      response.cookies = [{
+        name: config.sessionName,
+        value: result.token,
+        options: {
+          httpOnly: true,
+          secure: config.cookieSecure,
+          sameSite: 'lax',
+          maxAge: config.sessionExpiry,
+          path: config.cookiePath,
+          domain: config.cookieDomain || undefined,
+        },
+      }];
+    }
+
+    return response;
   }
 
   private async handlePasswordReset(request: WebRequest): Promise<WebResponse> {
@@ -224,25 +317,70 @@ class SubmitAction implements ActionHandler {
       };
     }
 
-    // TODO: Actual password reset logic
+    // Request password reset using auth module
+    // Note: This always returns success for privacy (doesn't reveal if account exists)
+    const result = await requestPasswordReset(username, email);
+
+    // Run completion hook (even if no user found, for audit logging)
+    await Hooks.run('PasswordResetComplete', username || email || 'unknown');
+
     return {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        success: true,
-        message: 'If an account exists, a password reset email has been sent.',
+        success: result.success,
+        message: result.message,
       }),
     };
   }
 
   private async handleSaveSettings(request: WebRequest, user: User): Promise<WebResponse> {
-    // TODO: Actual settings save logic
-    await Hooks.run('UserPreferencesSaved', user, user.preferences);
+    // Extract preference updates from request
+    const preferences: Partial<UserPreferences> = {};
+
+    // Map form fields to preference keys
+    if ('language' in request && typeof request.language === 'string') {
+      preferences.language = request.language;
+    }
+    if ('theme' in request && typeof request.theme === 'string') {
+      preferences.theme = request.theme as 'light' | 'dark' | 'auto';
+    }
+    if ('textSize' in request && typeof request.textSize === 'string') {
+      preferences.textSize = request.textSize as 'standard' | 'medium' | 'large';
+    }
+    if ('expandSections' in request) {
+      preferences.expandSections = Boolean(request.expandSections);
+    }
+    if ('enhancedPasswordReset' in request) {
+      preferences.enhancedPasswordReset = Boolean(request.enhancedPasswordReset);
+    }
+    if ('emailNotifications' in request) {
+      preferences.emailNotifications = Boolean(request.emailNotifications);
+    }
+
+    // Update preferences using auth module
+    const result = updatePreferences(user.id, preferences);
+
+    if (!result.success) {
+      return {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: false, error: result.message }),
+      };
+    }
+
+    // Run hook with updated preferences
+    const updatedPrefs = result.user?.preferences || { ...user.preferences, ...preferences };
+    await Hooks.run('UserPreferencesSaved', user, updatedPrefs);
 
     return {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ success: true, message: 'Settings saved' }),
+      body: JSON.stringify({
+        success: true,
+        message: result.message,
+        user: result.user,
+      }),
     };
   }
 
@@ -396,11 +534,18 @@ export class ActionEntryPoint {
     const sessionId = this.request.sessionId;
     if (!sessionId) return;
 
-    // TODO: Load session from storage
-    // this.session = await SessionStore.get(sessionId);
-    // if (this.session) {
-    //   this.user = await UserStore.get(this.session.userId);
-    // }
+    // Validate session and load user using auth module
+    const user = validateSession(sessionId);
+    if (user) {
+      this.user = user;
+      this.session = {
+        id: sessionId,
+        userId: user.id,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        data: {},
+      };
+    }
   }
 
   /**

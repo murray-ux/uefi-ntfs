@@ -268,6 +268,13 @@ export interface WebRequest {
   password?: string;
   email?: string;
   rememberMe?: boolean;
+  // Preferences form data
+  language?: string;
+  theme?: string;
+  textSize?: string;
+  expandSections?: boolean;
+  enhancedPasswordReset?: boolean;
+  emailNotifications?: boolean;
   // Session
   sessionId?: string;
   // IP for rate limiting
