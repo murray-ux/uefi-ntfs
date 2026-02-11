@@ -1912,5 +1912,78 @@
       updateUI();
     });
   </script>
+
+  <!-- GENESIS Navigation Dock -->
+  <nav class="genesis-dock">
+    <a href="genesis-portal.html" class="dock-item" data-tooltip="Portal Home" style="--dock-color: #667eea">&#127968;</a>
+    <a href="genesis-control.html" class="dock-item" data-tooltip="Control Panel" style="--dock-color: #8b5cf6">&#9741;</a>
+    <a href="herev-arsenal.html" class="dock-item" data-tooltip="Security Arsenal" style="--dock-color: #ef4444">&#9876;</a>
+    <a href="yubikey-security-dashboard.html" class="dock-item active" data-tooltip="YubiKey" style="--dock-color: #22c55e">&#128273;</a>
+    <a href="index.html" class="dock-item" data-tooltip="Developer" style="--dock-color: #f59e0b">&#128187;</a>
+  </nav>
+
+  <style>
+    .genesis-dock {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    .dock-item {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      position: relative;
+    }
+    .dock-item:hover {
+      transform: translateY(-8px) scale(1.1);
+      background: var(--dock-color, #667eea);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .dock-item.active {
+      background: var(--dock-color, #667eea);
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+    }
+    .dock-item::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      background: rgba(10, 10, 15, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 12px;
+      color: #f1f5f9;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      margin-bottom: 8px;
+    }
+    .dock-item:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+  </style>
 </body>
 </html>
