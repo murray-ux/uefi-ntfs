@@ -7,9 +7,12 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "npx serve public",
-    "cli:password": "npx ts-node src/cli/changePassword.ts",
+    "maintenance": "npx ts-node maintenance/run.ts",
     "db:init": "sqlite3 data/auth.db < src/db/schema.sql",
     "test": "node --test dist/**/*.test.js"
+  },
+  "bin": {
+    "maintenance/run": "maintenance/run.ts"
   },
   "keywords": [
     "authentication",
