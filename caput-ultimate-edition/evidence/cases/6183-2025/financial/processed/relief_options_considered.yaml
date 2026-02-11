@@ -1,0 +1,49 @@
+# Financial Relief Options Considered
+# Case: 6183-2025 Bembrick
+# Last updated: 2026-02-11
+
+options:
+  - id: FREL-OPT-001
+    date: 2025-11-10
+    type: Court Disclosure
+    description: Form 13 Financial Statement filed with Court
+    status: completed
+    outcome: Full financial position disclosed
+    court_relevance: Core financial disclosure demonstrating transparency
+    documents:
+      - 2025-11-10_Form13_MABembrick.pdf
+
+  - id: FREL-OPT-002
+    date: 2026-02-10
+    type: Solicitor Records Request
+    description: Formal request to Paterson & Dowding for complete client file and trust account records
+    status: pending
+    outcome: null
+    court_relevance: Demonstrates diligence in obtaining full financial picture from former legal representatives
+    documents:
+      - 2026-02-10_Request_PatersonDowding_ClientFile.md
+
+  - id: FREL-OPT-003
+    date: null
+    type: Legal Aid Application
+    description: Application for Legal Aid assistance
+    status: not_started
+    outcome: null
+    court_relevance: Shows exploration of all available financial relief options
+    documents: []
+
+  - id: FREL-OPT-004
+    date: null
+    type: Payment Arrangement
+    description: Court fee payment arrangement or hardship application
+    status: not_started
+    outcome: null
+    court_relevance: Demonstrates good faith efforts to meet obligations despite financial constraints
+    documents: []
+
+summary:
+  total_options: 4
+  completed: 1
+  pending: 1
+  not_started: 2
+  last_review: 2026-02-11

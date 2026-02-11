@@ -1145,6 +1145,124 @@
     .theme-option.system { background: linear-gradient(135deg, #f5f5f7 50%, #1a1a2e 50%); }
 
     /* ═══════════════════════════════════════════════════════════════════════
+       FINANCIAL RELIEF TRACKER
+    ═══════════════════════════════════════════════════════════════════════ */
+    .financial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .financial-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border-left: 4px solid #667eea;
+      transition: all 0.2s;
+    }
+
+    .financial-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .financial-card.completed { border-left-color: #22c55e; }
+    .financial-card.pending { border-left-color: #f59e0b; }
+    .financial-card.not-started { border-left-color: #94a3b8; }
+
+    .financial-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .financial-card-type {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #667eea;
+    }
+
+    .financial-card-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+    .financial-card-status.completed { background: #dcfce7; color: #16a34a; }
+    .financial-card-status.pending { background: #fef3c7; color: #d97706; }
+    .financial-card-status.not-started { background: #f1f5f9; color: #64748b; }
+
+    .financial-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+
+    .financial-card-desc {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .financial-card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .financial-card-date {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .financial-card-docs {
+      font-size: 12px;
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .financial-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .financial-stat {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .financial-stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .financial-stat-value.green { color: #22c55e; }
+    .financial-stat-value.amber { color: #f59e0b; }
+    .financial-stat-value.gray { color: #94a3b8; }
+
+    .financial-stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
        LOG FILTERING
     ═══════════════════════════════════════════════════════════════════════ */
     .log-toolbar {
@@ -1574,6 +1692,92 @@
                 <div class="room" onclick="openRoom('Wheels')"><div class="room-status"></div><div class="room-icon">⚪</div><div class="room-name">Wheels</div></div>
                 <div class="room" onclick="openRoom('Playroom')"><div class="room-status special"></div><div class="room-icon">🎨</div><div class="room-name">Playroom</div></div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Financial Relief Tracker - Case 6183-2025 -->
+      <section class="section" id="financialSection">
+        <div class="section-header">
+          <div class="section-icon">💰</div>
+          <h2 class="section-title">Financial Relief Tracker</h2>
+          <span class="section-badge">Case 6183-2025</span>
+        </div>
+
+        <div class="financial-summary">
+          <div class="financial-stat">
+            <div class="financial-stat-value" id="finTotal">4</div>
+            <div class="financial-stat-label">Total Options</div>
+          </div>
+          <div class="financial-stat">
+            <div class="financial-stat-value green" id="finCompleted">1</div>
+            <div class="financial-stat-label">Completed</div>
+          </div>
+          <div class="financial-stat">
+            <div class="financial-stat-value amber" id="finPending">1</div>
+            <div class="financial-stat-label">Pending</div>
+          </div>
+          <div class="financial-stat">
+            <div class="financial-stat-value gray" id="finNotStarted">2</div>
+            <div class="financial-stat-label">Not Started</div>
+          </div>
+        </div>
+
+        <div class="financial-grid" id="financialGrid">
+          <!-- Card 1: Form 13 -->
+          <div class="financial-card completed">
+            <div class="financial-card-header">
+              <span class="financial-card-type">Court Disclosure</span>
+              <span class="financial-card-status completed">Completed</span>
+            </div>
+            <div class="financial-card-title">Form 13 Financial Statement</div>
+            <div class="financial-card-desc">Full financial position disclosed to Court - income, assets, liabilities, superannuation.</div>
+            <div class="financial-card-meta">
+              <span class="financial-card-date">2025-11-10</span>
+              <span class="financial-card-docs">1 document</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Solicitor Records -->
+          <div class="financial-card pending">
+            <div class="financial-card-header">
+              <span class="financial-card-type">Solicitor Records</span>
+              <span class="financial-card-status pending">Pending</span>
+            </div>
+            <div class="financial-card-title">Paterson & Dowding Request</div>
+            <div class="financial-card-desc">Formal request for complete client file and trust account records from former solicitors.</div>
+            <div class="financial-card-meta">
+              <span class="financial-card-date">2026-02-10</span>
+              <span class="financial-card-docs">1 document</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Legal Aid -->
+          <div class="financial-card not-started">
+            <div class="financial-card-header">
+              <span class="financial-card-type">Legal Aid</span>
+              <span class="financial-card-status not-started">Not Started</span>
+            </div>
+            <div class="financial-card-title">Legal Aid Application</div>
+            <div class="financial-card-desc">Application for Legal Aid assistance - demonstrates exploration of all available financial relief options.</div>
+            <div class="financial-card-meta">
+              <span class="financial-card-date">-</span>
+              <span class="financial-card-docs">0 documents</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Payment Arrangement -->
+          <div class="financial-card not-started">
+            <div class="financial-card-header">
+              <span class="financial-card-type">Payment Arrangement</span>
+              <span class="financial-card-status not-started">Not Started</span>
+            </div>
+            <div class="financial-card-title">Court Fee Hardship Application</div>
+            <div class="financial-card-desc">Payment arrangement or hardship application - good faith efforts to meet obligations despite constraints.</div>
+            <div class="financial-card-meta">
+              <span class="financial-card-date">-</span>
+              <span class="financial-card-docs">0 documents</span>
             </div>
           </div>
         </div>
