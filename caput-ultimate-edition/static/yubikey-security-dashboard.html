@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YubiKey Security Configuration - Murray Bembrick</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --bg-card-hover: #22222e;
+      --border: #2a2a3a;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b0;
+      --text-muted: #606070;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #22c55e;
+      --accent-yellow: #eab308;
+      --accent-red: #ef4444;
+      --accent-orange: #f97316;
+      --accent-cyan: #06b6d4;
+      --fido2-color: #3b82f6;
+      --totp-color: #8b5cf6;
+      --piv-color: #06b6d4;
+      --apple-color: #a855f7;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .header-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .yubikey-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #9aca3c, #84b82e);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .header-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 20px;
+      color: var(--accent-green);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .header-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+    }
+
+    /* Main Layout */
+    .main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    /* Alert Banner */
+    .alert-banner {
+      background: linear-gradient(135deg, rgba(234, 179, 8, 0.15), rgba(249, 115, 22, 0.15));
+      border: 1px solid rgba(234, 179, 8, 0.3);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .alert-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(234, 179, 8, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .alert-content h3 {
+      color: var(--accent-yellow);
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .alert-content p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* Capacity Overview */
+    .capacity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .capacity-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .capacity-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .capacity-card.fido2::before { background: var(--fido2-color); }
+    .capacity-card.totp::before { background: var(--totp-color); }
+    .capacity-card.piv::before { background: var(--piv-color); }
+
+    .capacity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .capacity-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .capacity-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .capacity-badge {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .capacity-card.fido2 .capacity-badge {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--fido2-color);
+    }
+
+    .capacity-card.totp .capacity-badge {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--totp-color);
+    }
+
+    .capacity-card.piv .capacity-badge {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--piv-color);
+    }
+
+    .capacity-stats {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .capacity-used {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .capacity-card.fido2 .capacity-used { color: var(--fido2-color); }
+    .capacity-card.totp .capacity-used { color: var(--totp-color); }
+    .capacity-card.piv .capacity-used { color: var(--piv-color); }
+
+    .capacity-total {
+      font-size: 24px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .capacity-bar {
+      height: 8px;
+      background: var(--bg-secondary);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .capacity-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .capacity-card.fido2 .capacity-fill { background: var(--fido2-color); }
+    .capacity-card.totp .capacity-fill { background: var(--totp-color); }
+    .capacity-card.piv .capacity-fill { background: var(--piv-color); }
+
+    .capacity-remaining {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Section Headers */
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .section-icon.fido2 { background: rgba(59, 130, 246, 0.15); }
+    .section-icon.totp { background: rgba(139, 92, 246, 0.15); }
+    .section-icon.piv { background: rgba(6, 182, 212, 0.15); }
+    .section-icon.device { background: rgba(34, 197, 94, 0.15); }
+    .section-icon.apple { background: rgba(168, 85, 247, 0.15); }
+
+    .section-count {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Service Tables */
+    .service-table {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .service-row {
+      display: grid;
+      grid-template-columns: 50px 1fr 280px 200px 60px;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .service-row:last-child { border-bottom: none; }
+
+    .service-row:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .service-row.header {
+      background: var(--bg-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 20px;
+    }
+
+    .service-row.header:hover { background: var(--bg-secondary); }
+
+    .slot-number {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .service-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .service-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: var(--bg-secondary);
+    }
+
+    .service-icon.google { background: linear-gradient(135deg, #4285f4, #34a853); }
+    .service-icon.microsoft { background: linear-gradient(135deg, #00a4ef, #7fba00); }
+    .service-icon.apple { background: linear-gradient(135deg, #333, #666); }
+    .service-icon.github { background: #24292e; }
+    .service-icon.twitter { background: #1da1f2; }
+    .service-icon.wise { background: linear-gradient(135deg, #9fe870, #00b9ff); }
+    .service-icon.wordpress { background: #21759b; }
+    .service-icon.squarespace { background: #000; }
+    .service-icon.openai { background: linear-gradient(135deg, #10a37f, #1a7f64); }
+    .service-icon.proton { background: linear-gradient(135deg, #6d4aff, #8b5cf6); }
+    .service-icon.evernote { background: #00a82d; }
+    .service-icon.ifttt { background: #000; }
+    .service-icon.parallels { background: linear-gradient(135deg, #ff4d4d, #cc0000); }
+    .service-icon.eufy { background: linear-gradient(135deg, #00a3ff, #0066cc); }
+    .service-icon.ethermail { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+    .service-name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .service-type {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .service-account {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .service-domain {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .service-status {
+      display: flex;
+      justify-content: center;
+    }
+
+    .status-checkbox {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      background: var(--bg-secondary);
+    }
+
+    .status-checkbox:hover {
+      border-color: var(--accent-green);
+    }
+
+    .status-checkbox.checked {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+    }
+
+    .status-checkbox.checked::after {
+      content: '\2713';
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    /* TOTP-specific styling */
+    .totp-table .service-row {
+      grid-template-columns: 50px 1fr 280px 1fr 60px;
+    }
+
+    .priority-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .priority-badge.high {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+    }
+
+    .priority-badge.medium {
+      background: rgba(234, 179, 8, 0.15);
+      color: var(--accent-yellow);
+    }
+
+    .priority-badge.low {
+      background: rgba(96, 96, 112, 0.15);
+      color: var(--text-muted);
+    }
+
+    /* PIV Table */
+    .piv-table .service-row {
+      grid-template-columns: 80px 1fr 150px 1fr 60px;
+    }
+
+    .piv-slot {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--piv-color);
+      border-radius: 6px;
+    }
+
+    /* Apple Protected Services */
+    .apple-services {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .apple-services-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .apple-services-header h4 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .apple-services-header span {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .apple-services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+    }
+
+    .apple-service-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .apple-service-item .service-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+    }
+
+    .apple-service-name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .apple-service-risk {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .apple-service-risk.low {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--accent-green);
+    }
+
+    .apple-service-risk.unknown {
+      background: rgba(234, 179, 8, 0.15);
+      color: var(--accent-yellow);
+    }
+
+    /* Device Map */
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .device-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .device-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .device-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .device-icon.laptop { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .device-icon.macbook { background: linear-gradient(135deg, #374151, #1f2937); }
+    .device-icon.iphone { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .device-icon.router { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .device-icon.modem { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .device-icon.camera { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+    .device-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .device-os {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .device-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .device-layer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .layer-label {
+      color: var(--text-muted);
+      min-width: 100px;
+    }
+
+    .layer-value {
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .layer-badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .layer-badge.fido2 {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--fido2-color);
+    }
+
+    .layer-badge.piv {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--piv-color);
+    }
+
+    .layer-badge.totp {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--totp-color);
+    }
+
+    /* Implementation Checklist */
+    .checklist {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .checklist-progress {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-circle {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+
+    .progress-circle svg {
+      transform: rotate(-90deg);
+    }
+
+    .progress-circle-bg {
+      fill: none;
+      stroke: var(--bg-secondary);
+      stroke-width: 8;
+    }
+
+    .progress-circle-fill {
+      fill: none;
+      stroke: var(--accent-green);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .progress-info h4 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .progress-info p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .checklist-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .checklist-item:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-green);
+    }
+
+    .checklist-item.completed {
+      opacity: 0.6;
+    }
+
+    .checklist-item.completed .checklist-text {
+      text-decoration: line-through;
+    }
+
+    .checklist-check {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .checklist-item.completed .checklist-check {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+    }
+
+    .checklist-item.completed .checklist-check::after {
+      content: '\2713';
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .checklist-number {
+      width: 28px;
+      height: 28px;
+      background: var(--bg-card);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .checklist-text {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .checklist-tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .checklist-tag.prerequisite {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+    }
+
+    .checklist-tag.critical {
+      background: rgba(234, 179, 8, 0.15);
+      color: var(--accent-yellow);
+    }
+
+    .checklist-tag.important {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--fido2-color);
+    }
+
+    .checklist-tag.standard {
+      background: rgba(96, 96, 112, 0.15);
+      color: var(--text-muted);
+    }
+
+    /* Notes Section */
+    .notes-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .notes-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .note-item {
+      display: flex;
+      gap: 12px;
+      padding: 14px;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .note-item:last-child { margin-bottom: 0; }
+
+    .note-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .note-item strong {
+      color: var(--text-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .capacity-grid {
+        grid-template-columns: 1fr;
+      }
+      .device-grid {
+        grid-template-columns: 1fr;
+      }
+      .service-row {
+        grid-template-columns: 40px 1fr 180px 60px !important;
+      }
+      .service-row .service-domain {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main { padding: 16px; }
+      .service-row {
+        grid-template-columns: 1fr 60px !important;
+        gap: 12px;
+      }
+      .slot-number { display: none; }
+      .service-account { display: none; }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section {
+      animation: fadeIn 0.4s ease;
+    }
+
+    .section:nth-child(2) { animation-delay: 0.1s; }
+    .section:nth-child(3) { animation-delay: 0.2s; }
+    .section:nth-child(4) { animation-delay: 0.3s; }
+    .section:nth-child(5) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="yubikey-icon">Y</div>
+        <div>
+          <div class="header-title">YubiKey Security Configuration</div>
+          <div class="header-subtitle">Murray Bembrick's Digital Security Map</div>
+        </div>
+      </div>
+      <div class="header-badge">
+        <span id="configuredCount">0</span> / <span id="totalCount">24</span> Services Configured
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Alert Banner -->
+    <div class="alert-banner">
+      <div class="alert-icon">&#9888;</div>
+      <div class="alert-content">
+        <h3>Second YubiKey Required for Apple Account</h3>
+        <p>Apple requires a minimum of two security keys before enabling Security Keys for Apple Account. Purchase a second YubiKey 5C NFC FIPS before proceeding with Apple configuration. This protects all 17 Sign in with Apple services.</p>
+      </div>
+    </div>
+
+    <!-- Capacity Overview -->
+    <div class="capacity-grid">
+      <div class="capacity-card fido2">
+        <div class="capacity-header">
+          <div>
+            <div class="capacity-label">FIDO2 Passkeys</div>
+            <div class="capacity-title">Discoverable Credentials</div>
+          </div>
+          <div class="capacity-badge">Phishing-Proof</div>
+        </div>
+        <div class="capacity-stats">
+          <span class="capacity-used">13</span>
+          <span class="capacity-total">/ 25</span>
+        </div>
+        <div class="capacity-bar">
+          <div class="capacity-fill" style="width: 52%"></div>
+        </div>
+        <div class="capacity-remaining">12 slots remaining for future services</div>
+      </div>
+
+      <div class="capacity-card totp">
+        <div class="capacity-header">
+          <div>
+            <div class="capacity-label">OATH TOTP</div>
+            <div class="capacity-title">Hardware-Backed Codes</div>
+          </div>
+          <div class="capacity-badge">Yubico Authenticator</div>
+        </div>
+        <div class="capacity-stats">
+          <span class="capacity-used">11</span>
+          <span class="capacity-total">/ 32</span>
+        </div>
+        <div class="capacity-bar">
+          <div class="capacity-fill" style="width: 34%"></div>
+        </div>
+        <div class="capacity-remaining">21 slots remaining for future services</div>
+      </div>
+
+      <div class="capacity-card piv">
+        <div class="capacity-header">
+          <div>
+            <div class="capacity-label">PIV Certificates</div>
+            <div class="capacity-title">Smart Card Slots</div>
+          </div>
+          <div class="capacity-badge">OS Login</div>
+        </div>
+        <div class="capacity-stats">
+          <span class="capacity-used">2</span>
+          <span class="capacity-total">/ 4</span>
+        </div>
+        <div class="capacity-bar">
+          <div class="capacity-fill" style="width: 50%"></div>
+        </div>
+        <div class="capacity-remaining">2 slots reserved for future use</div>
+      </div>
+    </div>
+
+    <!-- FIDO2 Passkey Allocation -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <div class="section-icon fido2">&#128273;</div>
+          FIDO2 Passkey Allocation
+        </h2>
+        <span class="section-count">13 services configured</span>
+      </div>
+      <div class="service-table">
+        <div class="service-row header">
+          <div>Slot</div>
+          <div>Service</div>
+          <div>Account</div>
+          <div>RP Domain</div>
+          <div>Done</div>
+        </div>
+        <div class="service-row" data-service="google-murray">
+          <div class="slot-number">1</div>
+          <div class="service-info">
+            <div class="service-icon google">G</div>
+            <div>
+              <div class="service-name">Google Workspace</div>
+              <div class="service-type">Primary owner + APP</div>
+            </div>
+          </div>
+          <div class="service-account">murray@bembrick.org</div>
+          <div class="service-domain">accounts.google.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-google-murray"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="google-admin">
+          <div class="slot-number">2</div>
+          <div class="service-info">
+            <div class="service-icon google">G</div>
+            <div>
+              <div class="service-name">Google Workspace</div>
+              <div class="service-type">Admin account + APP</div>
+            </div>
+          </div>
+          <div class="service-account">admin@bembrick.org</div>
+          <div class="service-domain">accounts.google.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-google-admin"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="google-info">
+          <div class="slot-number">3</div>
+          <div class="service-info">
+            <div class="service-icon google">G</div>
+            <div>
+              <div class="service-name">Google Workspace</div>
+              <div class="service-type">Business account + APP</div>
+            </div>
+          </div>
+          <div class="service-account">info@bembrick.org</div>
+          <div class="service-domain">accounts.google.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-google-info"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="google-personal">
+          <div class="slot-number">4</div>
+          <div class="service-info">
+            <div class="service-icon google">G</div>
+            <div>
+              <div class="service-name">Personal Gmail</div>
+              <div class="service-type">Enroll in APP</div>
+            </div>
+          </div>
+          <div class="service-account">murraybembrick@gmail.com</div>
+          <div class="service-domain">accounts.google.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-google-personal"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="microsoft">
+          <div class="slot-number">5</div>
+          <div class="service-info">
+            <div class="service-icon microsoft">M</div>
+            <div>
+              <div class="service-name">Microsoft Entra ID</div>
+              <div class="service-type">Register via TAP workaround</div>
+            </div>
+          </div>
+          <div class="service-account">murray@bembrick.org</div>
+          <div class="service-domain">login.microsoft.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-microsoft"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="apple">
+          <div class="slot-number">6</div>
+          <div class="service-info">
+            <div class="service-icon apple">&#63743;</div>
+            <div>
+              <div class="service-name">Apple Account</div>
+              <div class="service-type">Requires 2 keys - protects 17 services</div>
+            </div>
+          </div>
+          <div class="service-account">m.bembrick@icloud.com</div>
+          <div class="service-domain">apple.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-apple"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="github">
+          <div class="slot-number">7</div>
+          <div class="service-info">
+            <div class="service-icon github">&#128025;</div>
+            <div>
+              <div class="service-name">GitHub</div>
+              <div class="service-type">TOTP required first, then passkey</div>
+            </div>
+          </div>
+          <div class="service-account">yjnwyyb682@privaterelay</div>
+          <div class="service-domain">github.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-github"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="twitter">
+          <div class="slot-number">8</div>
+          <div class="service-info">
+            <div class="service-icon twitter">X</div>
+            <div>
+              <div class="service-name">X (Twitter)</div>
+              <div class="service-type">Can be sole 2FA method</div>
+            </div>
+          </div>
+          <div class="service-account">7y6zcw6kzk@privaterelay</div>
+          <div class="service-domain">x.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-twitter"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="wise">
+          <div class="slot-number">9</div>
+          <div class="service-info">
+            <div class="service-icon wise">W</div>
+            <div>
+              <div class="service-name">Wise</div>
+              <div class="service-type">Financial - High priority</div>
+            </div>
+          </div>
+          <div class="service-account">6q7xtnyy8b@privaterelay</div>
+          <div class="service-domain">wise.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-wise"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="wordpress">
+          <div class="slot-number">10</div>
+          <div class="service-info">
+            <div class="service-icon wordpress">W</div>
+            <div>
+              <div class="service-name">WordPress.com</div>
+              <div class="service-type">2-step authentication</div>
+            </div>
+          </div>
+          <div class="service-account">8hrkxdpfst@privaterelay</div>
+          <div class="service-domain">wordpress.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-wordpress"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="squarespace">
+          <div class="slot-number">11</div>
+          <div class="service-info">
+            <div class="service-icon squarespace">S</div>
+            <div>
+              <div class="service-name">Squarespace</div>
+              <div class="service-type">Supports up to 5 passkeys</div>
+            </div>
+          </div>
+          <div class="service-account">zbpfxrnvr6@privaterelay</div>
+          <div class="service-domain">squarespace.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-squarespace"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="openai">
+          <div class="slot-number">12</div>
+          <div class="service-info">
+            <div class="service-icon openai">&#9679;</div>
+            <div>
+              <div class="service-name">ChatGPT / OpenAI</div>
+              <div class="service-type">Passwordless sign-in</div>
+            </div>
+          </div>
+          <div class="service-account">bbhby24sqx@privaterelay</div>
+          <div class="service-domain">openai.com</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-openai"></div>
+          </div>
+        </div>
+        <div class="service-row" data-service="proton">
+          <div class="slot-number">13</div>
+          <div class="service-info">
+            <div class="service-icon proton">P</div>
+            <div>
+              <div class="service-name">ProtonVPN</div>
+              <div class="service-type">Native FIDO2 support</div>
+            </div>
+          </div>
+          <div class="service-account">(new account)</div>
+          <div class="service-domain">proton.me</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="fido2-proton"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OATH TOTP Allocation -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <div class="section-icon totp">&#128337;</div>
+          OATH TOTP Allocation
+        </h2>
+        <span class="section-count">11 accounts via Yubico Authenticator</span>
+      </div>
+      <div class="service-table totp-table">
+        <div class="service-row header">
+          <div>Slot</div>
+          <div>Service</div>
+          <div>Account</div>
+          <div>Purpose</div>
+          <div>Done</div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">1</div>
+          <div class="service-info">
+            <div class="service-icon github">&#128025;</div>
+            <div>
+              <div class="service-name">GitHub</div>
+              <div class="service-type">Required base 2FA</div>
+            </div>
+          </div>
+          <div class="service-account">yjnwyyb682@privaterelay</div>
+          <div><span class="priority-badge high">High</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-github"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">2</div>
+          <div class="service-info">
+            <div class="service-icon evernote">E</div>
+            <div>
+              <div class="service-name">Evernote</div>
+              <div class="service-type">Only option - no FIDO2</div>
+            </div>
+          </div>
+          <div class="service-account">9rvzb48gtz@privaterelay</div>
+          <div><span class="priority-badge high">High</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-evernote"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">3</div>
+          <div class="service-info">
+            <div class="service-icon ifttt">IF</div>
+            <div>
+              <div class="service-name">IFTTT</div>
+              <div class="service-type">Only option - no FIDO2</div>
+            </div>
+          </div>
+          <div class="service-account">mbj8pn7245@privaterelay</div>
+          <div><span class="priority-badge medium">Medium</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-ifttt"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">4</div>
+          <div class="service-info">
+            <div class="service-icon parallels">&#8741;</div>
+            <div>
+              <div class="service-name">Parallels</div>
+              <div class="service-type">MyAccount TOTP</div>
+            </div>
+          </div>
+          <div class="service-account">r9jxndm9rp@privaterelay</div>
+          <div><span class="priority-badge medium">Medium</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-parallels"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">5</div>
+          <div class="service-info">
+            <div class="service-icon eufy">&#127968;</div>
+            <div>
+              <div class="service-name">Eufy Security</div>
+              <div class="service-type">Home security - critical</div>
+            </div>
+          </div>
+          <div class="service-account">(app account)</div>
+          <div><span class="priority-badge high">High</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-eufy"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">6</div>
+          <div class="service-info">
+            <div class="service-icon ethermail">&#9993;</div>
+            <div>
+              <div class="service-name">Ethermail</div>
+              <div class="service-type">Likely TOTP support</div>
+            </div>
+          </div>
+          <div class="service-account">n5w6rg2b7h@privaterelay</div>
+          <div><span class="priority-badge low">Low</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-ethermail"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">7</div>
+          <div class="service-info">
+            <div class="service-icon wise">W</div>
+            <div>
+              <div class="service-name">Wise (backup)</div>
+              <div class="service-type">Secondary to FIDO2</div>
+            </div>
+          </div>
+          <div class="service-account">6q7xtnyy8b@privaterelay</div>
+          <div><span class="priority-badge medium">Medium</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-wise"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">8</div>
+          <div class="service-info">
+            <div class="service-icon twitter">X</div>
+            <div>
+              <div class="service-name">X / Twitter (backup)</div>
+              <div class="service-type">Free for all users</div>
+            </div>
+          </div>
+          <div class="service-account">7y6zcw6kzk@privaterelay</div>
+          <div><span class="priority-badge medium">Medium</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-twitter"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">9</div>
+          <div class="service-info">
+            <div class="service-icon openai">&#9679;</div>
+            <div>
+              <div class="service-name">ChatGPT / OpenAI (backup)</div>
+              <div class="service-type">Secondary MFA method</div>
+            </div>
+          </div>
+          <div class="service-account">bbhby24sqx@privaterelay</div>
+          <div><span class="priority-badge medium">Medium</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-openai"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">10</div>
+          <div class="service-info">
+            <div class="service-icon wordpress">W</div>
+            <div>
+              <div class="service-name">WordPress.com (backup)</div>
+              <div class="service-type">Base 2FA method</div>
+            </div>
+          </div>
+          <div class="service-account">8hrkxdpfst@privaterelay</div>
+          <div><span class="priority-badge medium">Medium</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-wordpress"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="slot-number">11</div>
+          <div class="service-info">
+            <div class="service-icon squarespace">S</div>
+            <div>
+              <div class="service-name">Squarespace (backup)</div>
+              <div class="service-type">Optional backup</div>
+            </div>
+          </div>
+          <div class="service-account">zbpfxrnvr6@privaterelay</div>
+          <div><span class="priority-badge low">Low</span></div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="totp-squarespace"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIV Certificate Allocation -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <div class="section-icon piv">&#128272;</div>
+          PIV Certificate Slots
+        </h2>
+        <span class="section-count">2 of 4 slots allocated</span>
+      </div>
+      <div class="service-table piv-table">
+        <div class="service-row header">
+          <div>Slot</div>
+          <div>Purpose</div>
+          <div>Device</div>
+          <div>How It Works</div>
+          <div>Done</div>
+        </div>
+        <div class="service-row">
+          <div class="piv-slot">9a</div>
+          <div class="service-info">
+            <div class="service-icon laptop">&#128187;</div>
+            <div>
+              <div class="service-name">Authentication</div>
+              <div class="service-type">Windows Login</div>
+            </div>
+          </div>
+          <div class="service-account">MSI Titan GT77HX</div>
+          <div style="font-size: 12px; color: var(--text-secondary);">Smart card auth for Entra ID-joined Windows 11</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="piv-9a"></div>
+          </div>
+        </div>
+        <div class="service-row">
+          <div class="piv-slot">9e</div>
+          <div class="service-info">
+            <div class="service-icon macbook">&#128187;</div>
+            <div>
+              <div class="service-name">Card Authentication</div>
+              <div class="service-type">macOS Login</div>
+            </div>
+          </div>
+          <div class="service-account">MacBook Pro M3 Max</div>
+          <div style="font-size: 12px; color: var(--text-secondary);">Smart card pairing, unlocks FileVault</div>
+          <div class="service-status">
+            <div class="status-checkbox" data-key="piv-9e"></div>
+          </div>
+        </div>
+        <div class="service-row" style="opacity: 0.5;">
+          <div class="piv-slot">9c</div>
+          <div class="service-info">
+            <div class="service-icon" style="background: var(--bg-secondary);">&#128221;</div>
+            <div>
+              <div class="service-name">Digital Signature</div>
+              <div class="service-type">Reserved</div>
+            </div>
+          </div>
+          <div class="service-account">-</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Document signing or S/MIME email</div>
+          <div class="service-status">
+            <div class="status-checkbox disabled" data-key="piv-9c"></div>
+          </div>
+        </div>
+        <div class="service-row" style="opacity: 0.5;">
+          <div class="piv-slot">9d</div>
+          <div class="service-info">
+            <div class="service-icon" style="background: var(--bg-secondary);">&#128274;</div>
+            <div>
+              <div class="service-name">Key Management</div>
+              <div class="service-type">Reserved</div>
+            </div>
+          </div>
+          <div class="service-account">-</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Encryption key management</div>
+          <div class="service-status">
+            <div class="status-checkbox disabled" data-key="piv-9d"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Apple Protected Services -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <div class="section-icon apple">&#63743;</div>
+          Apple Account Protected Services
+        </h2>
+        <span class="section-count">7 services via Sign in with Apple</span>
+      </div>
+      <div class="apple-services">
+        <div class="apple-services-header">
+          <span>&#128737;</span>
+          <h4>Protected by Apple Account Security Keys</h4>
+          <span>These services inherit phishing-proof authentication through Sign in with Apple</span>
+        </div>
+        <div class="apple-services-grid">
+          <div class="apple-service-item">
+            <div class="service-icon" style="background: #e74c3c;">&#127968;</div>
+            <div class="apple-service-name">Realtor.com</div>
+            <span class="apple-service-risk low">Low Risk</span>
+          </div>
+          <div class="apple-service-item">
+            <div class="service-icon" style="background: #9b59b6;">&#127891;</div>
+            <div class="apple-service-name">Trancy</div>
+            <span class="apple-service-risk low">Low Risk</span>
+          </div>
+          <div class="apple-service-item">
+            <div class="service-icon" style="background: #3498db;">&#127775;</div>
+            <div class="apple-service-name">Momentum</div>
+            <span class="apple-service-risk low">Low Risk</span>
+          </div>
+          <div class="apple-service-item">
+            <div class="service-icon" style="background: #1abc9c;">&#128218;</div>
+            <div class="apple-service-name">Library Infinite</div>
+            <span class="apple-service-risk low">Low Risk</span>
+          </div>
+          <div class="apple-service-item">
+            <div class="service-icon" style="background: #e67e22;">&#128296;</div>
+            <div class="apple-service-name">Hammer</div>
+            <span class="apple-service-risk low">Low Risk</span>
+          </div>
+          <div class="apple-service-item">
+            <div class="service-icon" style="background: #95a5a6;">?</div>
+            <div class="apple-service-name">Unknown Service 1</div>
+            <span class="apple-service-risk unknown">Verify</span>
+          </div>
+          <div class="apple-service-item">
+            <div class="service-icon" style="background: #95a5a6;">?</div>
+            <div class="apple-service-name">Unknown Service 2</div>
+            <span class="apple-service-risk unknown">Verify</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Device Protection Map -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <div class="section-icon device">&#128241;</div>
+          Device Protection Map
+        </h2>
+      </div>
+      <div class="device-grid">
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon laptop">&#128187;</div>
+            <div>
+              <div class="device-name">MSI Titan GT77HX</div>
+              <div class="device-os">Windows 11, Entra ID joined</div>
+            </div>
+          </div>
+          <div class="device-layers">
+            <div class="device-layer">
+              <span class="layer-label">OS Login</span>
+              <span class="layer-value">YubiKey FIDO2 or PIV</span>
+              <span class="layer-badge fido2">FIDO2</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Disk</span>
+              <span class="layer-value">BitLocker + TPM + PIN</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Entra ID</span>
+              <span class="layer-value">FIDO2 passkey via TAP</span>
+              <span class="layer-badge fido2">FIDO2</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">DNS</span>
+              <span class="layer-value">DoH via Quad9 / Cloudflare</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">VPN</span>
+              <span class="layer-value">ProtonVPN desktop app</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon macbook">&#128187;</div>
+            <div>
+              <div class="device-name">MacBook Pro 14" M3 Max</div>
+              <div class="device-os">macOS (resolve lock first)</div>
+            </div>
+          </div>
+          <div class="device-layers">
+            <div class="device-layer">
+              <span class="layer-label">OS Login</span>
+              <span class="layer-value">YubiKey PIV smart card</span>
+              <span class="layer-badge piv">PIV</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Disk</span>
+              <span class="layer-value">FileVault (M3 hardware)</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Apple Account</span>
+              <span class="layer-value">FIDO2 security key (USB-C)</span>
+              <span class="layer-badge fido2">FIDO2</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">DNS</span>
+              <span class="layer-value">DoH via .mobileconfig profile</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">VPN</span>
+              <span class="layer-value">ProtonVPN + iCloud Private Relay</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon iphone">&#128241;</div>
+            <div>
+              <div class="device-name">iPhone 17 Pro Max</div>
+              <div class="device-os">Daily phone</div>
+            </div>
+          </div>
+          <div class="device-layers">
+            <div class="device-layer">
+              <span class="layer-label">Device</span>
+              <span class="layer-value">Face ID + alphanumeric passcode</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Apple Account</span>
+              <span class="layer-value">FIDO2 (USB-C or NFC tap)</span>
+              <span class="layer-badge fido2">FIDO2</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Web Auth</span>
+              <span class="layer-value">YubiKey via Safari WebAuthn</span>
+              <span class="layer-badge fido2">FIDO2</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">TOTP</span>
+              <span class="layer-value">Yubico Authenticator (NFC tap)</span>
+              <span class="layer-badge totp">TOTP</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Protection</span>
+              <span class="layer-value">Stolen Device Protection enabled</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon router">&#128225;</div>
+            <div>
+              <div class="device-name">Network Infrastructure</div>
+              <div class="device-os">Zyxel NR5305 + Netgear RAX9</div>
+            </div>
+          </div>
+          <div class="device-layers">
+            <div class="device-layer">
+              <span class="layer-label">5G Modem</span>
+              <span class="layer-value">Zyxel NR5305 - change admin pwd</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Router</span>
+              <span class="layer-value">Netgear RAX9 - WPA3 enabled</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">IoT</span>
+              <span class="layer-value">Guest network isolation for Eufy</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">DNS</span>
+              <span class="layer-value">Quad9 (9.9.9.9) fallback</span>
+            </div>
+            <div class="device-layer">
+              <span class="layer-label">Disabled</span>
+              <span class="layer-value">WPS, UPnP, Remote Management</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Implementation Checklist -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <div class="section-icon" style="background: rgba(34, 197, 94, 0.15);">&#9745;</div>
+          Implementation Order
+        </h2>
+      </div>
+      <div class="checklist">
+        <div class="checklist-progress">
+          <div class="progress-circle">
+            <svg viewBox="0 0 36 36" width="80" height="80">
+              <path class="progress-circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path class="progress-circle-fill" id="progressFill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <div class="progress-text" id="progressPercent">0%</div>
+          </div>
+          <div class="progress-info">
+            <h4>Setup Progress</h4>
+            <p><span id="completedSteps">0</span> of 14 steps completed</p>
+          </div>
+        </div>
+        <div class="checklist-items">
+          <div class="checklist-item" data-step="1">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">1</div>
+            <div class="checklist-text">Buy a second YubiKey 5C NFC FIPS (backup key)</div>
+            <span class="checklist-tag prerequisite">Prerequisite</span>
+          </div>
+          <div class="checklist-item" data-step="2">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">2</div>
+            <div class="checklist-text">Set FIDO2 PINs on both YubiKeys via YubiKey Manager</div>
+            <span class="checklist-tag prerequisite">Prerequisite</span>
+          </div>
+          <div class="checklist-item" data-step="3">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">3</div>
+            <div class="checklist-text">Register both keys on all 4 Google accounts as passkeys + enroll in APP</div>
+            <span class="checklist-tag critical">Critical</span>
+          </div>
+          <div class="checklist-item" data-step="4">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">4</div>
+            <div class="checklist-text">Enforce "Only security key" policy in Google Admin console</div>
+            <span class="checklist-tag critical">Critical</span>
+          </div>
+          <div class="checklist-item" data-step="5">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">5</div>
+            <div class="checklist-text">Register both keys on Microsoft Entra ID using TAP workaround</div>
+            <span class="checklist-tag critical">Critical</span>
+          </div>
+          <div class="checklist-item" data-step="6">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">6</div>
+            <div class="checklist-text">Resolve MacBook lock via Recovery Mode or iforgot.apple.com</div>
+            <span class="checklist-tag important">Important</span>
+          </div>
+          <div class="checklist-item" data-step="7">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">7</div>
+            <div class="checklist-text">Register both keys on Apple Account (protects 17 services)</div>
+            <span class="checklist-tag critical">Critical</span>
+          </div>
+          <div class="checklist-item" data-step="8">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">8</div>
+            <div class="checklist-text">Set up PIV certificates for Windows and macOS login</div>
+            <span class="checklist-tag important">Important</span>
+          </div>
+          <div class="checklist-item" data-step="9">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">9</div>
+            <div class="checklist-text">Register FIDO2 passkeys on GitHub, X, Wise, WordPress, Squarespace, ChatGPT</div>
+            <span class="checklist-tag important">Important</span>
+          </div>
+          <div class="checklist-item" data-step="10">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">10</div>
+            <div class="checklist-text">Enroll TOTP secrets for Evernote, IFTTT, Parallels, Eufy via Yubico Authenticator</div>
+            <span class="checklist-tag standard">Standard</span>
+          </div>
+          <div class="checklist-item" data-step="11">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">11</div>
+            <div class="checklist-text">Sign up for ProtonVPN and register YubiKey as FIDO2 key</div>
+            <span class="checklist-tag standard">Standard</span>
+          </div>
+          <div class="checklist-item" data-step="12">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">12</div>
+            <div class="checklist-text">Configure DoH with Quad9 on Windows, macOS, and iOS</div>
+            <span class="checklist-tag standard">Standard</span>
+          </div>
+          <div class="checklist-item" data-step="13">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">13</div>
+            <div class="checklist-text">Harden network devices: admin passwords, WPA3, guest network, disable WPS/UPnP</div>
+            <span class="checklist-tag standard">Standard</span>
+          </div>
+          <div class="checklist-item" data-step="14">
+            <div class="checklist-check"></div>
+            <div class="checklist-number">14</div>
+            <div class="checklist-text">Print and securely store backup/recovery codes for all services</div>
+            <span class="checklist-tag important">Important</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Important Notes -->
+    <div class="notes-card">
+      <h3>&#128161; Critical Reminders</h3>
+      <div class="note-item">
+        <span class="note-icon">&#9888;</span>
+        <div><strong>FIDO2 PIN retry limit:</strong> After 8 incorrect PIN attempts, the FIDO2 applet resets and ALL passkeys are lost. Write your PIN down and store securely.</div>
+      </div>
+      <div class="note-item">
+        <span class="note-icon">&#128274;</span>
+        <div><strong>Apple Account recovery:</strong> If you lose all security keys AND all trusted devices, your Apple Account is permanently inaccessible. Apple Support cannot help by design.</div>
+      </div>
+      <div class="note-item">
+        <span class="note-icon">&#128190;</span>
+        <div><strong>Backup key storage:</strong> Store your backup YubiKey in a different physical location than your primary key (fireproof safe, safety deposit box).</div>
+      </div>
+      <div class="note-item">
+        <span class="note-icon">&#128241;</span>
+        <div><strong>iPhone 16 Pro Max:</strong> Keep as a signed-in trusted device for Apple Account recovery purposes, or factory reset if no longer needed.</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // State management
+    const state = {
+      configured: {},
+      checklistCompleted: {}
+    };
+
+    // Load state from localStorage
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('yubikey-security-state');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state.configured = parsed.configured || {};
+          state.checklistCompleted = parsed.checklistCompleted || {};
+        }
+      } catch (e) {
+        console.warn('Failed to load state:', e);
+      }
+    }
+
+    // Save state to localStorage
+    function saveState() {
+      try {
+        localStorage.setItem('yubikey-security-state', JSON.stringify(state));
+      } catch (e) {
+        console.warn('Failed to save state:', e);
+      }
+    }
+
+    // Update UI based on state
+    function updateUI() {
+      // Update service checkboxes
+      document.querySelectorAll('.status-checkbox[data-key]').forEach(checkbox => {
+        const key = checkbox.dataset.key;
+        if (state.configured[key]) {
+          checkbox.classList.add('checked');
+        } else {
+          checkbox.classList.remove('checked');
+        }
+      });
+
+      // Update checklist items
+      document.querySelectorAll('.checklist-item[data-step]').forEach(item => {
+        const step = item.dataset.step;
+        if (state.checklistCompleted[step]) {
+          item.classList.add('completed');
+        } else {
+          item.classList.remove('completed');
+        }
+      });
+
+      // Update counts
+      const configuredCount = Object.values(state.configured).filter(v => v).length;
+      document.getElementById('configuredCount').textContent = configuredCount;
+
+      // Update progress
+      const completedSteps = Object.values(state.checklistCompleted).filter(v => v).length;
+      const totalSteps = 14;
+      const percent = Math.round((completedSteps / totalSteps) * 100);
+
+      document.getElementById('completedSteps').textContent = completedSteps;
+      document.getElementById('progressPercent').textContent = percent + '%';
+      document.getElementById('progressFill').setAttribute('stroke-dasharray', `${percent}, 100`);
+    }
+
+    // Initialize event listeners
+    function initEventListeners() {
+      // Service checkbox clicks
+      document.querySelectorAll('.status-checkbox[data-key]').forEach(checkbox => {
+        if (checkbox.classList.contains('disabled')) return;
+
+        checkbox.addEventListener('click', () => {
+          const key = checkbox.dataset.key;
+          state.configured[key] = !state.configured[key];
+          saveState();
+          updateUI();
+        });
+      });
+
+      // Checklist item clicks
+      document.querySelectorAll('.checklist-item[data-step]').forEach(item => {
+        item.addEventListener('click', () => {
+          const step = item.dataset.step;
+          state.checklistCompleted[step] = !state.checklistCompleted[step];
+          saveState();
+          updateUI();
+        });
+      });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      initEventListeners();
+      updateUI();
+    });
+  </script>
+</body>
+</html>
