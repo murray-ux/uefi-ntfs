@@ -131,6 +131,167 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
+       NEW RGB EFFECTS & ANIMATIONS
+       ═══════════════════════════════════════════════════════════════════════ */
+    @keyframes glitchText {
+      0%, 100% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+    }
+
+    @keyframes neonFlicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        opacity: 1;
+        text-shadow: 0 0 10px var(--rgb-cyan), 0 0 20px var(--rgb-cyan), 0 0 40px var(--rgb-cyan);
+      }
+      20%, 24%, 55% {
+        opacity: 0.8;
+        text-shadow: none;
+      }
+    }
+
+    @keyframes plasmaFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes rainbowTrail {
+      0% { filter: hue-rotate(0deg) brightness(1.2); }
+      100% { filter: hue-rotate(360deg) brightness(1.2); }
+    }
+
+    @keyframes matrixRain {
+      0% { transform: translateY(-100%) scaleY(1); opacity: 1; }
+      100% { transform: translateY(100vh) scaleY(2); opacity: 0; }
+    }
+
+    @keyframes typingCursor {
+      0%, 100% { border-color: var(--rgb-cyan); }
+      50% { border-color: transparent; }
+    }
+
+    @keyframes hologramShimmer {
+      0%, 100% { opacity: 0.3; transform: translateX(-100%); }
+      50% { opacity: 0.7; transform: translateX(100%); }
+    }
+
+    @keyframes energyPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    @keyframes orbitRing {
+      0% { transform: rotateX(60deg) rotateZ(0deg); }
+      100% { transform: rotateX(60deg) rotateZ(360deg); }
+    }
+
+    @keyframes waveform {
+      0%, 100% { height: 4px; }
+      50% { height: 20px; }
+    }
+
+    @keyframes spinnerRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spinnerDash {
+      0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+      50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+      100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+    }
+
+    @keyframes skeletonShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes progressGlow {
+      0%, 100% { box-shadow: 0 0 10px var(--rgb-cyan), 0 0 20px var(--rgb-cyan); }
+      50% { box-shadow: 0 0 20px var(--rgb-magenta), 0 0 40px var(--rgb-magenta); }
+    }
+
+    @keyframes dashboardPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.6), 0 0 60px rgba(255, 0, 255, 0.3); }
+    }
+
+    @keyframes statCounter {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes hexRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(60deg); }
+    }
+
+    @keyframes cyberLine {
+      0% { width: 0; left: 0; }
+      50% { width: 100%; left: 0; }
+      100% { width: 0; left: 100%; }
+    }
+
+    /* Enhanced hover effects */
+    .hover-glitch:hover {
+      animation: glitchText 0.3s ease infinite;
+    }
+
+    .hover-neon:hover {
+      animation: neonFlicker 1.5s ease infinite;
+    }
+
+    .hover-rainbow:hover {
+      animation: rainbowTrail 2s linear infinite;
+    }
+
+    /* Plasma background effect */
+    .plasma-bg {
+      background: linear-gradient(45deg,
+        var(--rgb-cyan), var(--rgb-magenta), var(--rgb-yellow),
+        var(--rgb-green), var(--rgb-purple), var(--rgb-cyan));
+      background-size: 400% 400%;
+      animation: plasmaFlow 8s ease infinite;
+    }
+
+    /* Hologram overlay */
+    .hologram-effect::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+      animation: hologramShimmer 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Energy ring effect */
+    .energy-ring {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 2px solid var(--rgb-cyan);
+      border-radius: 50%;
+      animation: energyPulse 2s ease-in-out infinite;
+    }
+
+    /* Matrix rain character */
+    .matrix-char {
+      position: absolute;
+      color: var(--rgb-green);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      text-shadow: 0 0 10px var(--rgb-green);
+      animation: matrixRain 2s linear infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
        Base Styles
        ═══════════════════════════════════════════════════════════════════════ */
     *, *::before, *::after {
@@ -1104,9 +1265,704 @@
       background: var(--rgb-cyan);
       color: var(--bg-void);
     }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Loading Spinners & Progress
+       ═══════════════════════════════════════════════════════════════════════ */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      backdrop-filter: blur(10px);
+    }
+
+    .loading-overlay.hidden { display: none; }
+
+    /* Cyber Spinner */
+    .spinner-cyber {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+
+    .spinner-cyber svg {
+      animation: spinnerRotate 2s linear infinite;
+    }
+
+    .spinner-cyber circle {
+      fill: none;
+      stroke-width: 4;
+      stroke-linecap: round;
+      animation: spinnerDash 1.5s ease-in-out infinite;
+    }
+
+    .spinner-cyber circle:nth-child(1) { stroke: var(--rgb-cyan); }
+    .spinner-cyber circle:nth-child(2) { stroke: var(--rgb-magenta); animation-delay: 0.2s; }
+    .spinner-cyber circle:nth-child(3) { stroke: var(--rgb-green); animation-delay: 0.4s; }
+
+    /* Hex Spinner */
+    .spinner-hex {
+      width: 60px;
+      height: 60px;
+      position: relative;
+    }
+
+    .spinner-hex::before,
+    .spinner-hex::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid transparent;
+      border-top-color: var(--rgb-cyan);
+      border-bottom-color: var(--rgb-magenta);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      animation: spinnerRotate 1.5s linear infinite;
+    }
+
+    .spinner-hex::after {
+      width: 70%;
+      height: 70%;
+      top: 15%;
+      left: 15%;
+      border-top-color: var(--rgb-magenta);
+      border-bottom-color: var(--rgb-cyan);
+      animation-direction: reverse;
+      animation-duration: 1s;
+    }
+
+    /* Dot Spinner */
+    .spinner-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .spinner-dots span {
+      width: 12px;
+      height: 12px;
+      background: var(--rgb-cyan);
+      border-radius: 50%;
+      animation: pulse 1.4s ease-in-out infinite;
+      box-shadow: 0 0 15px var(--rgb-cyan);
+    }
+
+    .spinner-dots span:nth-child(2) { animation-delay: 0.2s; background: var(--rgb-magenta); box-shadow: 0 0 15px var(--rgb-magenta); }
+    .spinner-dots span:nth-child(3) { animation-delay: 0.4s; background: var(--rgb-green); box-shadow: 0 0 15px var(--rgb-green); }
+
+    /* Waveform Loader */
+    .spinner-wave {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 30px;
+    }
+
+    .spinner-wave span {
+      width: 4px;
+      background: linear-gradient(to top, var(--rgb-cyan), var(--rgb-magenta));
+      border-radius: 2px;
+      animation: waveform 1s ease-in-out infinite;
+    }
+
+    .spinner-wave span:nth-child(1) { animation-delay: 0s; }
+    .spinner-wave span:nth-child(2) { animation-delay: 0.1s; }
+    .spinner-wave span:nth-child(3) { animation-delay: 0.2s; }
+    .spinner-wave span:nth-child(4) { animation-delay: 0.3s; }
+    .spinner-wave span:nth-child(5) { animation-delay: 0.4s; }
+
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--rgb-cyan), var(--rgb-magenta), var(--rgb-cyan));
+      background-size: 200% 100%;
+      border-radius: 3px;
+      animation: plasmaFlow 2s linear infinite, progressGlow 2s ease infinite;
+      transition: width 0.3s ease;
+    }
+
+    /* Skeleton Loader */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-surface) 50%, var(--bg-elevated) 75%);
+      background-size: 200% 100%;
+      animation: skeletonShimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    .skeleton-text { height: 16px; margin-bottom: 8px; }
+    .skeleton-text.short { width: 60%; }
+    .skeleton-avatar { width: 60px; height: 60px; border-radius: 50%; }
+    .skeleton-card { height: 120px; }
+
+    .loading-text {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      color: var(--rgb-cyan);
+      letter-spacing: 3px;
+      margin-top: var(--space-lg);
+      text-transform: uppercase;
+      animation: neonFlicker 2s ease infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       OAuth Buttons
+       ═══════════════════════════════════════════════════════════════════════ */
+    .oauth-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin: var(--space-xl) 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .oauth-divider::before,
+    .oauth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+    }
+
+    .oauth-divider span {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .oauth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-oauth {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-xl);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 500;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .btn-oauth::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-oauth:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-oauth:hover::before {
+      opacity: 0.1;
+    }
+
+    .btn-oauth svg {
+      width: 24px;
+      height: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-oauth span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Google */
+    .btn-google {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    .btn-google:hover {
+      border-color: #4285f4;
+      box-shadow: 0 0 30px rgba(66, 133, 244, 0.3);
+    }
+
+    .btn-google::before {
+      background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+    }
+
+    /* GitHub */
+    .btn-github {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    .btn-github:hover {
+      border-color: #6e5494;
+      box-shadow: 0 0 30px rgba(110, 84, 148, 0.3);
+    }
+
+    .btn-github::before {
+      background: linear-gradient(135deg, #6e5494, #24292e);
+    }
+
+    /* Discord */
+    .btn-discord {
+      background: rgba(88, 101, 242, 0.1);
+      color: #5865F2;
+    }
+
+    .btn-discord:hover {
+      border-color: #5865F2;
+      box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);
+    }
+
+    .btn-discord::before {
+      background: #5865F2;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       2FA / MFA Verification Page
+       ═══════════════════════════════════════════════════════════════════════ */
+    .mfa-code-container {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin: var(--space-xl) 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mfa-code-input {
+      width: 56px;
+      height: 72px;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--rgb-cyan);
+      background: rgba(10, 10, 30, 0.9);
+      border: 2px solid var(--border-glow);
+      border-radius: 12px;
+      outline: none;
+      transition: var(--transition-smooth);
+      caret-color: var(--rgb-cyan);
+    }
+
+    .mfa-code-input:focus {
+      border-color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1);
+      animation: typingCursor 1s ease infinite;
+    }
+
+    .mfa-code-input.filled {
+      border-color: var(--rgb-green);
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    }
+
+    .mfa-code-input.error {
+      border-color: var(--rgb-pink);
+      animation: glitchText 0.3s ease;
+    }
+
+    .mfa-timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .mfa-timer-ring {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-glow);
+      border-top-color: var(--rgb-cyan);
+      border-radius: 50%;
+      animation: spinnerRotate 1s linear infinite;
+    }
+
+    .mfa-method-switch {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+      position: relative;
+      z-index: 1;
+    }
+
+    .mfa-method {
+      padding: var(--space-sm) var(--space-md);
+      background: transparent;
+      border: 1px solid var(--border-dim);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .mfa-method:hover {
+      border-color: var(--border-glow);
+      color: var(--text-secondary);
+    }
+
+    .mfa-method.active {
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+    }
+
+    .mfa-icon {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: var(--space-lg);
+      filter: drop-shadow(0 0 20px var(--rgb-cyan));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Dashboard Page
+       ═══════════════════════════════════════════════════════════════════════ */
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-xl);
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2xl);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+
+    .dashboard-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dashboard-user {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    .dashboard-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--gradient-rgb);
+      background-size: 300% 300%;
+      animation: plasmaFlow 4s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--bg-void);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .dashboard-username {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+
+    .dashboard-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--rgb-green);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .dashboard-card {
+      position: relative;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: var(--space-lg);
+      animation: dashboardPulse 4s ease infinite;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 1px;
+      background: linear-gradient(135deg, var(--rgb-cyan), var(--rgb-magenta), var(--rgb-cyan));
+      background-size: 200% 200%;
+      animation: plasmaFlow 4s ease infinite;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .dashboard-card-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-md);
+      filter: drop-shadow(0 0 10px currentColor);
+    }
+
+    .dashboard-card-title {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-sm);
+    }
+
+    .dashboard-card-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--rgb-cyan);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+      animation: statCounter 0.6s ease-out;
+    }
+
+    .dashboard-card-change {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      margin-top: var(--space-sm);
+    }
+
+    .dashboard-card-change.positive { color: var(--rgb-green); }
+    .dashboard-card-change.negative { color: var(--rgb-pink); }
+
+    /* Stats mini chart */
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 40px;
+      margin-top: var(--space-md);
+    }
+
+    .mini-chart-bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--rgb-cyan), var(--rgb-magenta));
+      border-radius: 2px 2px 0 0;
+      transition: height 0.3s ease;
+      opacity: 0.8;
+    }
+
+    .mini-chart-bar:hover {
+      opacity: 1;
+      box-shadow: 0 0 10px var(--rgb-cyan);
+    }
+
+    /* Activity Feed */
+    .activity-feed {
+      position: relative;
+      z-index: 1;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 240, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xs);
+    }
+
+    .activity-time {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-lg);
+      background: rgba(0, 240, 255, 0.03);
+      border: 1px solid var(--border-dim);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      text-align: center;
+    }
+
+    .quick-action:hover {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: var(--rgb-cyan);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.2);
+    }
+
+    .quick-action-icon {
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 10px currentColor);
+    }
+
+    .quick-action-label {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* System Status Widget */
+    .system-status {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-item {
+      text-align: center;
+      padding: var(--space-md);
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin: 0 auto var(--space-sm);
+      animation: pulse 2s ease infinite;
+    }
+
+    .status-indicator.online {
+      background: var(--rgb-green);
+      box-shadow: 0 0 15px var(--rgb-green);
+    }
+
+    .status-indicator.warning {
+      background: var(--rgb-orange);
+      box-shadow: 0 0 15px var(--rgb-orange);
+    }
+
+    .status-indicator.offline {
+      background: var(--rgb-pink);
+      box-shadow: 0 0 15px var(--rgb-pink);
+    }
+
+    .status-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .status-value {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-xs);
+    }
   </style>
 </head>
 <body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="spinner-cyber">
+      <svg width="80" height="80" viewBox="0 0 50 50">
+        <circle cx="25" cy="25" r="20" stroke-dasharray="31.4 31.4" transform="rotate(-90 25 25)"/>
+        <circle cx="25" cy="25" r="15" stroke-dasharray="23.5 23.5" transform="rotate(-90 25 25)"/>
+        <circle cx="25" cy="25" r="10" stroke-dasharray="15.7 15.7" transform="rotate(-90 25 25)"/>
+      </svg>
+    </div>
+    <div class="loading-text" id="loading-text">Initializing...</div>
+    <div class="progress-bar" style="width: 200px; margin-top: 24px;">
+      <div class="progress-bar-fill" id="loading-progress" style="width: 0%;"></div>
+    </div>
+  </div>
+
   <!-- Floating Particles -->
   <div class="particles" id="particles"></div>
 
@@ -1196,6 +2052,38 @@
                 </button>
               </div>
             </form>
+
+            <!-- OAuth Divider -->
+            <div class="oauth-divider">
+              <span>Or Connect Via</span>
+            </div>
+
+            <!-- OAuth Buttons -->
+            <div class="oauth-buttons">
+              <button class="btn-oauth btn-google" onclick="handleOAuthLogin('google')">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+
+              <button class="btn-oauth btn-github" onclick="handleOAuthLogin('github')">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                <span>Continue with GitHub</span>
+              </button>
+
+              <button class="btn-oauth btn-discord" onclick="handleOAuthLogin('discord')">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+                </svg>
+                <span>Continue with Discord</span>
+              </button>
+            </div>
 
             <div class="links-section">
               <p><a href="#" class="link" onclick="showPage('reset-password'); return false;">Lost access credentials?</a></p>
@@ -1425,6 +2313,238 @@
           <div class="form-actions" style="max-width: 480px; margin: 0 auto;">
             <button class="btn btn-primary" onclick="saveSettings()"><span>Apply Changes</span></button>
             <button class="btn btn-secondary" onclick="showPage('login')">Return</button>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             2FA / MFA Verification Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-mfa" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <div class="mfa-icon">🔐</div>
+              <h1 class="card-title">Verify</h1>
+              <p class="card-subtitle">// TWO-FACTOR AUTHENTICATION</p>
+            </div>
+
+            <div id="mfa-message"></div>
+
+            <div class="mfa-method-switch">
+              <button class="mfa-method active" onclick="switchMFAMethod('app')" data-method="app">📱 Auth App</button>
+              <button class="mfa-method" onclick="switchMFAMethod('sms')" data-method="sms">💬 SMS</button>
+              <button class="mfa-method" onclick="switchMFAMethod('email')" data-method="email">📧 Email</button>
+            </div>
+
+            <form id="mfa-form" onsubmit="handleMFASubmit(event)">
+              <p class="text-center text-muted mt-md" style="position: relative; z-index: 1;">
+                Enter the 6-digit verification code from your authenticator app
+              </p>
+
+              <div class="mfa-code-container">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="0" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)" autofocus>
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="1" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="2" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="3" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="4" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="5" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+              </div>
+
+              <div class="mfa-timer">
+                <div class="mfa-timer-ring"></div>
+                <span id="mfa-countdown">Code expires in <strong>29</strong> seconds</span>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><span>Verify Identity</span></button>
+                <button type="button" class="btn btn-secondary" onclick="resendMFACode()">Resend Code</button>
+              </div>
+            </form>
+
+            <div class="links-section">
+              <p><a href="#" class="link" onclick="showPage('login'); return false;">← Return to login</a></p>
+              <p class="text-muted">Can't access your device? <a href="#" class="link">Use recovery code</a></p>
+            </div>
+          </div>
+
+          <div class="card help-card">
+            <details>
+              <summary>Having trouble?</summary>
+              <div>
+                <p><strong>Authenticator app not synced?</strong><br>
+                Ensure your device's time is synchronized. Check Settings → Date &amp; Time → Set Automatically.</p>
+                <p><strong>Lost your authenticator?</strong><br>
+                Use a recovery code or contact support to regain access.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Dashboard Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-dashboard" class="page hidden">
+          <div class="dashboard-container">
+            <div class="dashboard-header">
+              <div>
+                <h1 class="dashboard-title">Command Center</h1>
+                <p class="card-subtitle" style="margin-top: 8px;">// NEXUS CONTROL INTERFACE</p>
+              </div>
+              <div class="dashboard-user">
+                <div>
+                  <div class="dashboard-username">OPERATOR_7X</div>
+                  <div class="dashboard-status">
+                    <span class="status-dot"></span>
+                    <span>ONLINE // SECURE</span>
+                  </div>
+                </div>
+                <div class="dashboard-avatar">7X</div>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="dashboard-grid">
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-cyan);">⚡</div>
+                <div class="dashboard-card-title">Active Sessions</div>
+                <div class="dashboard-card-value">12</div>
+                <div class="dashboard-card-change positive">↑ 23% this week</div>
+                <div class="mini-chart">
+                  <div class="mini-chart-bar" style="height: 40%;"></div>
+                  <div class="mini-chart-bar" style="height: 65%;"></div>
+                  <div class="mini-chart-bar" style="height: 45%;"></div>
+                  <div class="mini-chart-bar" style="height: 80%;"></div>
+                  <div class="mini-chart-bar" style="height: 55%;"></div>
+                  <div class="mini-chart-bar" style="height: 90%;"></div>
+                  <div class="mini-chart-bar" style="height: 75%;"></div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-magenta);">🛡️</div>
+                <div class="dashboard-card-title">Security Score</div>
+                <div class="dashboard-card-value">94<span style="font-size: 1rem;">%</span></div>
+                <div class="dashboard-card-change positive">↑ Excellent rating</div>
+                <div class="progress-bar" style="margin-top: 16px;">
+                  <div class="progress-bar-fill" style="width: 94%;"></div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-green);">📊</div>
+                <div class="dashboard-card-title">Data Transfers</div>
+                <div class="dashboard-card-value">2.4<span style="font-size: 1rem;">TB</span></div>
+                <div class="dashboard-card-change negative">↓ 5% vs last month</div>
+                <div class="mini-chart">
+                  <div class="mini-chart-bar" style="height: 90%;"></div>
+                  <div class="mini-chart-bar" style="height: 75%;"></div>
+                  <div class="mini-chart-bar" style="height: 85%;"></div>
+                  <div class="mini-chart-bar" style="height: 60%;"></div>
+                  <div class="mini-chart-bar" style="height: 70%;"></div>
+                  <div class="mini-chart-bar" style="height: 55%;"></div>
+                  <div class="mini-chart-bar" style="height: 65%;"></div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-purple);">🔔</div>
+                <div class="dashboard-card-title">Alerts</div>
+                <div class="dashboard-card-value">3</div>
+                <div class="dashboard-card-change" style="color: var(--rgb-orange);">⚠ Action required</div>
+              </div>
+            </div>
+
+            <!-- System Status & Quick Actions -->
+            <div class="dashboard-grid" style="margin-top: var(--space-lg);">
+              <div class="dashboard-card">
+                <div class="dashboard-card-title" style="margin-bottom: var(--space-lg);">System Status</div>
+                <div class="system-status">
+                  <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-label">API</div>
+                    <div class="status-value">99.9%</div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-label">DATABASE</div>
+                    <div class="status-value">OPTIMAL</div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-indicator warning"></div>
+                    <div class="status-label">STORAGE</div>
+                    <div class="status-value">78%</div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-label">CDN</div>
+                    <div class="status-value">ACTIVE</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-title" style="margin-bottom: var(--space-lg);">Quick Actions</div>
+                <div class="quick-actions">
+                  <div class="quick-action" onclick="playSound('click')">
+                    <div class="quick-action-icon">🔄</div>
+                    <div class="quick-action-label">Sync</div>
+                  </div>
+                  <div class="quick-action" onclick="playSound('click')">
+                    <div class="quick-action-icon">📤</div>
+                    <div class="quick-action-label">Export</div>
+                  </div>
+                  <div class="quick-action" onclick="playSound('click')">
+                    <div class="quick-action-icon">🔒</div>
+                    <div class="quick-action-label">Lock</div>
+                  </div>
+                  <div class="quick-action" onclick="showPage('settings'); playSound('click')">
+                    <div class="quick-action-icon">⚙️</div>
+                    <div class="quick-action-label">Config</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="dashboard-grid" style="margin-top: var(--space-lg);">
+              <div class="dashboard-card" style="grid-column: span 2;">
+                <div class="dashboard-card-title" style="margin-bottom: var(--space-lg);">Recent Activity</div>
+                <div class="activity-feed">
+                  <div class="activity-item">
+                    <div class="activity-icon">🔓</div>
+                    <div class="activity-content">
+                      <div class="activity-text">Successful authentication from <strong>192.168.1.42</strong></div>
+                      <div class="activity-time">2 minutes ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">🛡️</div>
+                    <div class="activity-content">
+                      <div class="activity-text">Two-factor authentication enabled</div>
+                      <div class="activity-time">1 hour ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">📧</div>
+                    <div class="activity-content">
+                      <div class="activity-text">Email address verified: <strong>user@nexus.io</strong></div>
+                      <div class="activity-time">3 hours ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">🔑</div>
+                    <div class="activity-content">
+                      <div class="activity-text">API key generated for <strong>Production Environment</strong></div>
+                      <div class="activity-time">Yesterday</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logout Button -->
+            <div class="form-actions" style="max-width: 480px; margin: var(--space-2xl) auto 0;">
+              <button class="btn btn-secondary" onclick="handleLogout()">🚪 Terminate Session</button>
+            </div>
           </div>
         </div>
 
@@ -1696,6 +2816,451 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+    // Sound Effects System
+    // ═══════════════════════════════════════════════════════════════════════
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      const now = audioContext.currentTime;
+
+      switch(type) {
+        case 'click':
+          oscillator.frequency.setValueAtTime(800, now);
+          oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+          gainNode.gain.setValueAtTime(0.1, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+          oscillator.type = 'sine';
+          oscillator.start(now);
+          oscillator.stop(now + 0.1);
+          break;
+
+        case 'success':
+          oscillator.frequency.setValueAtTime(523.25, now); // C5
+          oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
+          oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
+          gainNode.gain.setValueAtTime(0.15, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          oscillator.type = 'sine';
+          oscillator.start(now);
+          oscillator.stop(now + 0.4);
+          break;
+
+        case 'error':
+          oscillator.frequency.setValueAtTime(200, now);
+          oscillator.frequency.setValueAtTime(150, now + 0.1);
+          gainNode.gain.setValueAtTime(0.15, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          oscillator.type = 'sawtooth';
+          oscillator.start(now);
+          oscillator.stop(now + 0.3);
+          break;
+
+        case 'hover':
+          oscillator.frequency.setValueAtTime(1200, now);
+          gainNode.gain.setValueAtTime(0.03, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+          oscillator.type = 'sine';
+          oscillator.start(now);
+          oscillator.stop(now + 0.05);
+          break;
+
+        case 'type':
+          oscillator.frequency.setValueAtTime(600 + Math.random() * 200, now);
+          gainNode.gain.setValueAtTime(0.05, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+          oscillator.type = 'square';
+          oscillator.start(now);
+          oscillator.stop(now + 0.03);
+          break;
+
+        case 'whoosh':
+          const noise = audioContext.createBufferSource();
+          const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < buffer.length; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          noise.buffer = buffer;
+          const noiseGain = audioContext.createGain();
+          noise.connect(noiseGain);
+          noiseGain.connect(audioContext.destination);
+          noiseGain.gain.setValueAtTime(0.1, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          noise.start(now);
+          noise.stop(now + 0.2);
+          return;
+
+        case 'boot':
+          // Cyber boot sound
+          for (let i = 0; i < 5; i++) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(200 + i * 150, now + i * 0.1);
+            gain.gain.setValueAtTime(0.08, now + i * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
+            osc.type = 'sine';
+            osc.start(now + i * 0.1);
+            osc.stop(now + i * 0.1 + 0.15);
+          }
+          return;
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('soundEnabled', soundEnabled);
+      if (soundEnabled) playSound('success');
+    }
+
+    // Add sound effects to buttons and inputs
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('button, .btn, .settings-option, .quick-action, .tab, .link')) {
+        playSound('click');
+      }
+    });
+
+    document.addEventListener('input', (e) => {
+      if (e.target.matches('input')) {
+        playSound('type');
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Loading System
+    // ═══════════════════════════════════════════════════════════════════════
+    function showLoading(text = 'Processing...') {
+      const overlay = document.getElementById('loading-overlay');
+      const loadingText = document.getElementById('loading-text');
+      const progress = document.getElementById('loading-progress');
+
+      loadingText.textContent = text;
+      progress.style.width = '0%';
+      overlay.classList.remove('hidden');
+
+      // Animate progress
+      let width = 0;
+      const interval = setInterval(() => {
+        width += Math.random() * 15;
+        if (width >= 90) {
+          clearInterval(interval);
+          width = 90;
+        }
+        progress.style.width = width + '%';
+      }, 200);
+
+      return interval;
+    }
+
+    function hideLoading(interval) {
+      const overlay = document.getElementById('loading-overlay');
+      const progress = document.getElementById('loading-progress');
+
+      if (interval) clearInterval(interval);
+      progress.style.width = '100%';
+
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // OAuth Handlers
+    // ═══════════════════════════════════════════════════════════════════════
+    function handleOAuthLogin(provider) {
+      playSound('whoosh');
+      const loadingInterval = showLoading(`Connecting to ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`);
+
+      // Simulate OAuth flow
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+
+        // Show MFA verification for demo
+        showPage('mfa');
+        showMessage('mfa-message', `Connected via ${provider.toUpperCase()} // Verify identity`, 'info');
+      }, 2000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // MFA / 2FA System
+    // ═══════════════════════════════════════════════════════════════════════
+    let mfaTimer;
+    let mfaCountdown = 30;
+
+    function startMFATimer() {
+      if (mfaTimer) clearInterval(mfaTimer);
+      mfaCountdown = 30;
+      updateMFACountdown();
+
+      mfaTimer = setInterval(() => {
+        mfaCountdown--;
+        updateMFACountdown();
+
+        if (mfaCountdown <= 0) {
+          clearInterval(mfaTimer);
+          showMessage('mfa-message', 'Code expired. Request a new one.', 'warning');
+        }
+      }, 1000);
+    }
+
+    function updateMFACountdown() {
+      document.getElementById('mfa-countdown').innerHTML =
+        `Code expires in <strong>${mfaCountdown}</strong> seconds`;
+    }
+
+    function handleMFAInput(input) {
+      const value = input.value.replace(/[^0-9]/g, '');
+      input.value = value;
+
+      if (value) {
+        input.classList.add('filled');
+        playSound('type');
+
+        // Move to next input
+        const index = parseInt(input.dataset.index);
+        const nextInput = document.querySelector(`.mfa-code-input[data-index="${index + 1}"]`);
+        if (nextInput) {
+          nextInput.focus();
+        }
+      } else {
+        input.classList.remove('filled');
+      }
+
+      // Check if all inputs are filled
+      const inputs = document.querySelectorAll('.mfa-code-input');
+      const code = Array.from(inputs).map(i => i.value).join('');
+      if (code.length === 6) {
+        verifyMFACode(code);
+      }
+    }
+
+    function handleMFAKeydown(e, input) {
+      if (e.key === 'Backspace' && !input.value) {
+        const index = parseInt(input.dataset.index);
+        const prevInput = document.querySelector(`.mfa-code-input[data-index="${index - 1}"]`);
+        if (prevInput) {
+          prevInput.focus();
+          prevInput.value = '';
+          prevInput.classList.remove('filled');
+        }
+      }
+    }
+
+    function verifyMFACode(code) {
+      const inputs = document.querySelectorAll('.mfa-code-input');
+      const loadingInterval = showLoading('Verifying code...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+
+        // Demo: accept any 6-digit code
+        if (code.length === 6) {
+          playSound('success');
+          inputs.forEach(i => i.classList.add('filled'));
+          showMessage('mfa-message', 'VERIFICATION COMPLETE // Access granted', 'success');
+
+          setTimeout(() => {
+            showPage('dashboard');
+          }, 1000);
+        } else {
+          playSound('error');
+          inputs.forEach(i => {
+            i.classList.add('error');
+            i.value = '';
+            i.classList.remove('filled');
+          });
+          setTimeout(() => inputs.forEach(i => i.classList.remove('error')), 500);
+          showMessage('mfa-message', 'INVALID CODE // Try again', 'error');
+          inputs[0].focus();
+        }
+      }, 1500);
+    }
+
+    function handleMFASubmit(e) {
+      e.preventDefault();
+      const inputs = document.querySelectorAll('.mfa-code-input');
+      const code = Array.from(inputs).map(i => i.value).join('');
+      verifyMFACode(code);
+    }
+
+    function switchMFAMethod(method) {
+      document.querySelectorAll('.mfa-method').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.method === method);
+      });
+
+      const messages = {
+        app: 'Enter the 6-digit verification code from your authenticator app',
+        sms: 'Enter the 6-digit code sent to your phone ending in ****7842',
+        email: 'Enter the 6-digit code sent to your email address'
+      };
+
+      const hints = document.querySelector('#page-mfa .text-center.text-muted');
+      if (hints) hints.textContent = messages[method];
+
+      // Clear and refocus inputs
+      document.querySelectorAll('.mfa-code-input').forEach(i => {
+        i.value = '';
+        i.classList.remove('filled');
+      });
+      document.querySelector('.mfa-code-input[data-index="0"]')?.focus();
+
+      playSound('click');
+    }
+
+    function resendMFACode() {
+      playSound('whoosh');
+      showMessage('mfa-message', 'New code transmitted to your device', 'info');
+      startMFATimer();
+
+      // Clear inputs
+      document.querySelectorAll('.mfa-code-input').forEach(i => {
+        i.value = '';
+        i.classList.remove('filled');
+      });
+      document.querySelector('.mfa-code-input[data-index="0"]')?.focus();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Dashboard Functions
+    // ═══════════════════════════════════════════════════════════════════════
+    function handleLogout() {
+      playSound('whoosh');
+      const loadingInterval = showLoading('Terminating session...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+        showPage('login');
+        showMessage('login-message', 'Session terminated successfully', 'info');
+      }, 1500);
+    }
+
+    // Animate dashboard stats on page show
+    function animateDashboardStats() {
+      const values = document.querySelectorAll('.dashboard-card-value');
+      values.forEach(el => {
+        el.style.animation = 'none';
+        el.offsetHeight; // Trigger reflow
+        el.style.animation = 'statCounter 0.6s ease-out';
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Enhanced Page Navigation
+    // ═══════════════════════════════════════════════════════════════════════
+    const originalShowPage = showPage;
+    showPage = function(pageId) {
+      playSound('whoosh');
+      originalShowPage(pageId);
+
+      // Special page initializations
+      if (pageId === 'mfa') {
+        startMFATimer();
+        setTimeout(() => {
+          document.querySelector('.mfa-code-input[data-index="0"]')?.focus();
+        }, 100);
+      }
+
+      if (pageId === 'dashboard') {
+        animateDashboardStats();
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Enhanced Form Handlers with Loading & Sound
+    // ═══════════════════════════════════════════════════════════════════════
+    const originalHandleLogin = handleLogin;
+    handleLogin = function(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      if (!username || !password) {
+        playSound('error');
+        showMessage('login-message', 'ERROR: All fields required', 'error');
+        return;
+      }
+
+      const loadingInterval = showLoading('Authenticating...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+
+        // Show MFA page for demo
+        showPage('mfa');
+        showMessage('mfa-message', `Welcome, ${username} // Complete verification`, 'info');
+      }, 1500);
+    };
+
+    const originalHandleCreateAccount = handleCreateAccount;
+    handleCreateAccount = function(e) {
+      e.preventDefault();
+      const password = document.getElementById('create-password').value;
+      const confirm = document.getElementById('create-password-confirm').value;
+
+      if (password !== confirm) {
+        playSound('error');
+        showMessage('create-message', 'ERROR: Access keys do not match', 'error');
+        return;
+      }
+
+      const loadingInterval = showLoading('Creating identity...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+        showMessage('create-message', 'IDENTITY CREATED // Verification sequence initiated', 'success');
+
+        setTimeout(() => showPage('login'), 2000);
+      }, 2000);
+    };
+
+    const originalHandlePasswordReset = handlePasswordReset;
+    handlePasswordReset = function(e) {
+      e.preventDefault();
+      const loadingInterval = showLoading('Initiating recovery...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+        showMessage('reset-message',
+          'RECOVERY INITIATED // If account exists, instructions transmitted to recovery channel',
+          'success'
+        );
+      }, 1500);
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Matrix Rain Effect (Optional Enhancement)
+    // ═══════════════════════════════════════════════════════════════════════
+    function createMatrixRain() {
+      const container = document.getElementById('particles');
+      const chars = '01アイウエオカキクケコサシスセソタチツテト';
+
+      for (let i = 0; i < 20; i++) {
+        const char = document.createElement('div');
+        char.className = 'matrix-char';
+        char.textContent = chars[Math.floor(Math.random() * chars.length)];
+        char.style.left = Math.random() * 100 + '%';
+        char.style.animationDelay = Math.random() * 5 + 's';
+        char.style.animationDuration = (2 + Math.random() * 3) + 's';
+        container.appendChild(char);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // Initialize
     // ═══════════════════════════════════════════════════════════════════════
     function init() {
@@ -1717,6 +3282,12 @@
       if (state.expandSections) {
         document.querySelectorAll('details').forEach(d => d.open = true);
       }
+
+      // Play boot sound
+      setTimeout(() => playSound('boot'), 500);
+
+      // Optional: Add matrix rain effect
+      // createMatrixRain();
     }
 
     init();
