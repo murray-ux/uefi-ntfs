@@ -1,51 +1,57 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auth Portal - Login</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+  <title>NEXUS // Authentication Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     /* ═══════════════════════════════════════════════════════════════════════
-       CSS Variables - Wikimedia-inspired theming
+       NEXUS FUTURISTIC RGB THEME
+       Cyberpunk / Neon / Glass Morphism Design System
        ═══════════════════════════════════════════════════════════════════════ */
+
     :root {
-      /* Light theme (default) */
-      --bg-page: #f8f9fa;
-      --bg-content: #ffffff;
-      --bg-input: #ffffff;
-      --bg-header: #ffffff;
-      --bg-footer: #f8f9fa;
-      --bg-hover: #eaecf0;
-      --bg-selected: #eaf3ff;
+      /* Core RGB Colors */
+      --rgb-cyan: #00f0ff;
+      --rgb-magenta: #ff00ff;
+      --rgb-yellow: #ffff00;
+      --rgb-green: #00ff88;
+      --rgb-orange: #ff6600;
+      --rgb-purple: #bf00ff;
+      --rgb-pink: #ff0080;
+      --rgb-blue: #0080ff;
 
-      --text-primary: #202122;
-      --text-secondary: #54595d;
-      --text-muted: #72777d;
-      --text-link: #3366cc;
-      --text-link-hover: #447ff5;
-      --text-link-visited: #795cb2;
+      /* Background layers */
+      --bg-void: #000000;
+      --bg-deep: #050510;
+      --bg-base: #0a0a1a;
+      --bg-elevated: #0f0f25;
+      --bg-surface: #141430;
+      --bg-card: rgba(20, 20, 50, 0.7);
+      --bg-glass: rgba(10, 10, 30, 0.85);
 
-      --border-color: #a2a9b1;
-      --border-light: #c8ccd1;
-      --border-input: #a2a9b1;
+      /* Text */
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0c0;
+      --text-muted: #606080;
+      --text-glow: #00f0ff;
 
-      --accent-primary: #3366cc;
-      --accent-success: #14866d;
-      --accent-warning: #fc3;
-      --accent-error: #d33;
+      /* Borders */
+      --border-dim: rgba(0, 240, 255, 0.1);
+      --border-glow: rgba(0, 240, 255, 0.3);
+      --border-bright: rgba(0, 240, 255, 0.6);
 
-      --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
-      --shadow-md: 0 2px 4px rgba(0,0,0,0.1);
+      /* Gradients */
+      --gradient-rgb: linear-gradient(135deg, var(--rgb-cyan), var(--rgb-magenta), var(--rgb-yellow), var(--rgb-cyan));
+      --gradient-neon: linear-gradient(135deg, var(--rgb-cyan) 0%, var(--rgb-purple) 50%, var(--rgb-pink) 100%);
+      --gradient-card: linear-gradient(180deg, rgba(0, 240, 255, 0.05) 0%, transparent 100%);
 
       /* Typography */
-      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Lato, Helvetica, Arial, sans-serif;
-      --font-size-base: 14px;
-      --font-size-sm: 13px;
-      --font-size-lg: 16px;
-      --font-size-xl: 20px;
-      --font-size-xxl: 24px;
-      --line-height: 1.6;
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'Rajdhani', sans-serif;
+      --font-mono: 'Share Tech Mono', monospace;
 
       /* Spacing */
       --space-xs: 4px;
@@ -53,97 +59,255 @@
       --space-md: 16px;
       --space-lg: 24px;
       --space-xl: 32px;
+      --space-2xl: 48px;
 
-      /* Layout */
-      --max-width-content: 600px;
-      --max-width-page: 1200px;
-      --border-radius: 2px;
+      /* Animation */
+      --transition-fast: 0.15s ease;
+      --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-glow: 0.5s ease;
     }
 
-    /* Dark theme */
-    [data-theme="dark"] {
-      --bg-page: #101418;
-      --bg-content: #1a1d21;
-      --bg-input: #27292d;
-      --bg-header: #1a1d21;
-      --bg-footer: #101418;
-      --bg-hover: #27292d;
-      --bg-selected: #2a4b77;
-
-      --text-primary: #eaecf0;
-      --text-secondary: #a2a9b1;
-      --text-muted: #72777d;
-      --text-link: #6b9aff;
-      --text-link-hover: #8fb1ff;
-      --text-link-visited: #b197fc;
-
-      --border-color: #54595d;
-      --border-light: #3a3f44;
-      --border-input: #54595d;
+    /* ═══════════════════════════════════════════════════════════════════════
+       Animations
+       ═══════════════════════════════════════════════════════════════════════ */
+    @keyframes rgbShift {
+      0%, 100% { filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(180deg); }
     }
 
-    /* Text size variants */
-    [data-text-size="medium"] { --font-size-base: 16px; --font-size-sm: 14px; }
-    [data-text-size="large"] { --font-size-base: 18px; --font-size-sm: 16px; }
+    @keyframes rgbBorder {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px var(--rgb-cyan), 0 0 40px rgba(0, 240, 255, 0.3); }
+      50% { box-shadow: 0 0 30px var(--rgb-magenta), 0 0 60px rgba(255, 0, 255, 0.3); }
+    }
+
+    @keyframes textGlow {
+      0%, 100% { text-shadow: 0 0 10px var(--rgb-cyan), 0 0 20px var(--rgb-cyan), 0 0 30px var(--rgb-cyan); }
+      33% { text-shadow: 0 0 10px var(--rgb-magenta), 0 0 20px var(--rgb-magenta), 0 0 30px var(--rgb-magenta); }
+      66% { text-shadow: 0 0 10px var(--rgb-green), 0 0 20px var(--rgb-green), 0 0 30px var(--rgb-green); }
+    }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes gridMove {
+      0% { background-position: 0 0; }
+      100% { background-position: 50px 50px; }
+    }
+
+    @keyframes dataStream {
+      0% { transform: translateY(-100%); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    @keyframes borderRotate {
+      0% { --angle: 0deg; }
+      100% { --angle: 360deg; }
+    }
+
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
 
     /* ═══════════════════════════════════════════════════════════════════════
        Base Styles
        ═══════════════════════════════════════════════════════════════════════ */
-    *, *::before, *::after { box-sizing: border-box; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     html {
-      font-size: var(--font-size-base);
+      font-size: 16px;
       scroll-behavior: smooth;
     }
 
     body {
-      margin: 0;
-      padding: 0;
-      font-family: var(--font-family);
-      font-size: var(--font-size-base);
-      line-height: var(--line-height);
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.6;
       color: var(--text-primary);
-      background: var(--bg-page);
+      background: var(--bg-void);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    a {
-      color: var(--text-link);
-      text-decoration: none;
+    /* Animated Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        /* Radial gradient overlay */
+        radial-gradient(ellipse at 50% 0%, rgba(0, 240, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 0% 100%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+        /* Grid pattern */
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        /* Base */
+        var(--bg-deep);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 50px 50px, 50px 50px, 100% 100%;
+      animation: gridMove 20s linear infinite;
+      z-index: -2;
     }
-    a:hover { color: var(--text-link-hover); text-decoration: underline; }
-    a:visited { color: var(--text-link-visited); }
+
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--rgb-cyan), transparent);
+      opacity: 0.1;
+      animation: scanline 8s linear infinite;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Floating Particles
+       ═══════════════════════════════════════════════════════════════════════ */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--rgb-cyan);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 6s ease-in-out infinite;
+      box-shadow: 0 0 10px var(--rgb-cyan);
+    }
+
+    .data-stream {
+      position: absolute;
+      width: 1px;
+      height: 100px;
+      background: linear-gradient(to bottom, transparent, var(--rgb-cyan), transparent);
+      opacity: 0.3;
+      animation: dataStream 3s linear infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Layout Container
+       ═══════════════════════════════════════════════════════════════════════ */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
     /* ═══════════════════════════════════════════════════════════════════════
        Header
        ═══════════════════════════════════════════════════════════════════════ */
     .header {
-      background: var(--bg-header);
-      border-bottom: 1px solid var(--border-light);
-      padding: var(--space-sm) var(--space-md);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-glow);
+      padding: var(--space-md) var(--space-xl);
     }
 
-    .header-logo {
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
       display: flex;
       align-items: center;
-      gap: var(--space-sm);
-      font-size: var(--font-size-lg);
-      font-weight: 600;
+      gap: var(--space-md);
+      text-decoration: none;
       color: var(--text-primary);
     }
-    .header-logo:hover { text-decoration: none; color: var(--text-primary); }
 
-    .header-logo svg {
-      width: 28px;
-      height: 28px;
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      position: relative;
+    }
+
+    .logo-icon svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 10px var(--rgb-cyan));
+    }
+
+    .logo-icon::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      background: var(--gradient-rgb);
+      background-size: 300% 300%;
+      border-radius: 12px;
+      animation: rgbBorder 4s ease infinite;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: textGlow 4s ease infinite;
+    }
+
+    .logo-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
     }
 
     .header-actions {
@@ -152,38 +316,46 @@
       gap: var(--space-md);
     }
 
-    /* Language selector */
+    /* Language Selector */
     .language-selector {
       position: relative;
     }
 
     .language-btn {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      padding: var(--space-xs) var(--space-sm);
-      font-size: var(--font-size-sm);
-      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      padding: var(--space-sm) var(--space-md);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: var(--space-xs);
+      gap: var(--space-sm);
+      transition: var(--transition-smooth);
     }
-    .language-btn:hover { background: var(--bg-hover); }
+
+    .language-btn:hover {
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    }
 
     .language-dropdown {
       position: absolute;
-      top: 100%;
+      top: calc(100% + 8px);
       right: 0;
-      background: var(--bg-content);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow-md);
-      min-width: 200px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      min-width: 220px;
       max-height: 300px;
       overflow-y: auto;
       display: none;
       z-index: 200;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
     .language-dropdown.open { display: block; }
 
@@ -192,171 +364,335 @@
       cursor: pointer;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      transition: var(--transition-fast);
+      font-family: var(--font-body);
     }
-    .language-option:hover { background: var(--bg-hover); }
-    .language-option.selected { background: var(--bg-selected); }
-    .language-native { color: var(--text-muted); font-size: var(--font-size-sm); }
+    .language-option:hover {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--rgb-cyan);
+    }
+    .language-option.selected {
+      background: rgba(0, 240, 255, 0.15);
+      border-left: 3px solid var(--rgb-cyan);
+    }
+    .language-native {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+    }
 
-    /* Theme toggle */
-    .theme-toggle {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      padding: var(--space-xs) var(--space-sm);
+    /* Theme/Settings Buttons */
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glow);
+      border-radius: 10px;
+      color: var(--text-secondary);
       cursor: pointer;
-      font-size: var(--font-size-lg);
-      line-height: 1;
+      font-size: 1.2rem;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
     }
-    .theme-toggle:hover { background: var(--bg-hover); }
+
+    .icon-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-rgb);
+      background-size: 300% 300%;
+      opacity: 0;
+      transition: var(--transition-smooth);
+      animation: rgbBorder 3s ease infinite;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--rgb-cyan);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 240, 255, 0.3);
+    }
+
+    .icon-btn:hover::before {
+      opacity: 0.15;
+    }
 
     /* ═══════════════════════════════════════════════════════════════════════
        Main Content
        ═══════════════════════════════════════════════════════════════════════ */
     .main {
       flex: 1;
-      padding: var(--space-xl) var(--space-md);
       display: flex;
+      align-items: center;
       justify-content: center;
+      padding: var(--space-2xl) var(--space-md);
     }
 
     .container {
       width: 100%;
-      max-width: var(--max-width-content);
+      max-width: 480px;
     }
 
+    /* ═══════════════════════════════════════════════════════════════════════
+       Cards - Glass Morphism
+       ═══════════════════════════════════════════════════════════════════════ */
     .card {
-      background: var(--bg-content);
-      border: 1px solid var(--border-light);
-      border-radius: var(--border-radius);
-      padding: var(--space-lg);
+      position: relative;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: var(--space-xl);
       margin-bottom: var(--space-lg);
+      overflow: hidden;
+      animation: borderRotate 8s linear infinite;
+    }
+
+    /* RGB animated border */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 2px;
+      background: conic-gradient(from var(--angle), var(--rgb-cyan), var(--rgb-magenta), var(--rgb-yellow), var(--rgb-green), var(--rgb-cyan));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* Inner glow */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 150px;
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.08) 0%, transparent 100%);
+      pointer-events: none;
     }
 
     .card-header {
-      margin-bottom: var(--space-lg);
-      padding-bottom: var(--space-md);
-      border-bottom: 1px solid var(--border-light);
+      text-align: center;
+      margin-bottom: var(--space-xl);
+      position: relative;
+      z-index: 1;
     }
 
     .card-title {
-      margin: 0;
-      font-size: var(--font-size-xxl);
-      font-weight: 400;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: var(--space-sm);
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--rgb-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .card-subtitle {
-      margin: var(--space-sm) 0 0;
-      color: var(--text-secondary);
-      font-size: var(--font-size-sm);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
        Forms
        ═══════════════════════════════════════════════════════════════════════ */
     .form-group {
-      margin-bottom: var(--space-md);
+      margin-bottom: var(--space-lg);
+      position: relative;
+      z-index: 1;
     }
 
     .form-label {
       display: block;
-      margin-bottom: var(--space-xs);
+      margin-bottom: var(--space-sm);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
       font-weight: 600;
-      font-size: var(--font-size-sm);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
     }
 
     .form-input {
       width: 100%;
-      padding: var(--space-sm) var(--space-md);
-      font-size: var(--font-size-base);
-      font-family: inherit;
-      border: 1px solid var(--border-input);
-      border-radius: var(--border-radius);
-      background: var(--bg-input);
+      padding: var(--space-md);
+      font-family: var(--font-body);
+      font-size: 1rem;
       color: var(--text-primary);
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .form-input:focus {
+      background: rgba(10, 10, 30, 0.8);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
       outline: none;
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2);
+      transition: var(--transition-smooth);
     }
 
     .form-input::placeholder {
       color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .form-input:focus {
+      border-color: var(--rgb-cyan);
+      box-shadow:
+        0 0 0 3px rgba(0, 240, 255, 0.1),
+        0 0 20px rgba(0, 240, 255, 0.2),
+        inset 0 0 20px rgba(0, 240, 255, 0.05);
+    }
+
+    .form-input:hover:not(:focus) {
+      border-color: rgba(0, 240, 255, 0.5);
     }
 
     .form-hint {
       margin-top: var(--space-xs);
-      font-size: var(--font-size-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
       color: var(--text-muted);
     }
 
     .form-error {
-      color: var(--accent-error);
+      color: var(--rgb-pink);
     }
 
+    /* Checkbox */
     .form-checkbox {
       display: flex;
-      align-items: flex-start;
-      gap: var(--space-sm);
-      cursor: pointer;
-    }
-
-    .form-checkbox input {
-      margin-top: 3px;
-      accent-color: var(--accent-primary);
-    }
-
-    .form-actions {
-      margin-top: var(--space-lg);
-      display: flex;
+      align-items: center;
       gap: var(--space-md);
-      flex-wrap: wrap;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
     }
 
-    /* Buttons */
+    .form-checkbox input[type="checkbox"] {
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      background: rgba(10, 10, 30, 0.8);
+      border: 2px solid var(--border-glow);
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+
+    .form-checkbox input[type="checkbox"]:checked {
+      background: var(--rgb-cyan);
+      border-color: var(--rgb-cyan);
+      box-shadow: 0 0 15px var(--rgb-cyan);
+    }
+
+    .form-checkbox input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--bg-void);
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .form-checkbox span {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Buttons
+       ═══════════════════════════════════════════════════════════════════════ */
+    .form-actions {
+      margin-top: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
     .btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: var(--space-sm);
-      padding: var(--space-sm) var(--space-lg);
-      font-size: var(--font-size-base);
-      font-family: inherit;
+      padding: var(--space-md) var(--space-xl);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
       font-weight: 600;
-      border: 1px solid transparent;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: all 0.15s;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       text-decoration: none;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
     }
 
     .btn-primary {
-      background: var(--accent-primary);
-      color: #fff;
-      border-color: var(--accent-primary);
+      background: linear-gradient(135deg, var(--rgb-cyan) 0%, var(--rgb-blue) 100%);
+      color: var(--bg-void);
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
     }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--rgb-magenta) 0%, var(--rgb-purple) 100%);
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
     .btn-primary:hover {
-      background: #2a4b8d;
-      border-color: #2a4b8d;
-      color: #fff;
-      text-decoration: none;
+      transform: translateY(-3px);
+      box-shadow:
+        0 8px 30px rgba(0, 240, 255, 0.5),
+        0 0 50px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-primary:hover::before {
+      opacity: 1;
+    }
+
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
     }
 
     .btn-secondary {
       background: transparent;
-      color: var(--accent-primary);
-      border-color: var(--border-color);
+      color: var(--rgb-cyan);
+      border: 1px solid var(--border-glow);
     }
+
     .btn-secondary:hover {
-      background: var(--bg-hover);
-      text-decoration: none;
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--rgb-cyan);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+      transform: translateY(-2px);
     }
 
     .btn:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
+      transform: none !important;
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
@@ -364,187 +700,245 @@
        ═══════════════════════════════════════════════════════════════════════ */
     .message {
       padding: var(--space-md);
-      border-radius: var(--border-radius);
+      border-radius: 12px;
       margin-bottom: var(--space-md);
-      border-left: 4px solid;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 1;
+      border: 1px solid;
     }
 
     .message-success {
-      background: #d5fdd5;
-      border-color: var(--accent-success);
-      color: #14532d;
-    }
-    [data-theme="dark"] .message-success {
-      background: #14532d;
-      color: #d5fdd5;
+      background: rgba(0, 255, 136, 0.1);
+      border-color: var(--rgb-green);
+      color: var(--rgb-green);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
     }
 
     .message-error {
-      background: #fee;
-      border-color: var(--accent-error);
-      color: #7f1d1d;
-    }
-    [data-theme="dark"] .message-error {
-      background: #7f1d1d;
-      color: #fee;
+      background: rgba(255, 0, 128, 0.1);
+      border-color: var(--rgb-pink);
+      color: var(--rgb-pink);
+      box-shadow: 0 0 20px rgba(255, 0, 128, 0.1);
     }
 
     .message-info {
-      background: #eaf3ff;
-      border-color: var(--accent-primary);
-      color: #1e3a5f;
-    }
-    [data-theme="dark"] .message-info {
-      background: #1e3a5f;
-      color: #eaf3ff;
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
     }
 
     .message-warning {
-      background: #fef3cd;
-      border-color: var(--accent-warning);
-      color: #664d03;
-    }
-    [data-theme="dark"] .message-warning {
-      background: #664d03;
-      color: #fef3cd;
+      background: rgba(255, 102, 0, 0.1);
+      border-color: var(--rgb-orange);
+      color: var(--rgb-orange);
+      box-shadow: 0 0 20px rgba(255, 102, 0, 0.1);
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       Tabs / Navigation
+       Links
+       ═══════════════════════════════════════════════════════════════════════ */
+    .link {
+      color: var(--rgb-cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+
+    .link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--rgb-cyan);
+      box-shadow: 0 0 10px var(--rgb-cyan);
+      transition: var(--transition-smooth);
+    }
+
+    .link:hover {
+      color: var(--rgb-magenta);
+      text-shadow: 0 0 10px var(--rgb-magenta);
+    }
+
+    .link:hover::after {
+      width: 100%;
+      background: var(--rgb-magenta);
+      box-shadow: 0 0 10px var(--rgb-magenta);
+    }
+
+    .links-section {
+      text-align: center;
+      margin-top: var(--space-xl);
+      position: relative;
+      z-index: 1;
+    }
+
+    .links-section p {
+      margin: var(--space-sm) 0;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Tabs
        ═══════════════════════════════════════════════════════════════════════ */
     .tabs {
       display: flex;
-      border-bottom: 1px solid var(--border-light);
-      margin-bottom: var(--space-lg);
       gap: var(--space-xs);
+      margin-bottom: var(--space-xl);
+      background: rgba(10, 10, 30, 0.5);
+      padding: var(--space-xs);
+      border-radius: 12px;
+      border: 1px solid var(--border-dim);
+      position: relative;
+      z-index: 1;
     }
 
     .tab {
+      flex: 1;
       padding: var(--space-sm) var(--space-md);
       background: transparent;
       border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--text-secondary);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
       cursor: pointer;
-      font-size: var(--font-size-base);
-      font-family: inherit;
-      transition: all 0.15s;
+      transition: var(--transition-smooth);
     }
 
     .tab:hover {
-      color: var(--text-primary);
-      background: var(--bg-hover);
+      color: var(--text-secondary);
+      background: rgba(0, 240, 255, 0.05);
     }
 
     .tab.active {
-      color: var(--accent-primary);
-      border-bottom-color: var(--accent-primary);
+      background: var(--rgb-cyan);
+      color: var(--bg-void);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
     }
 
     .tab-panel {
       display: none;
+      position: relative;
+      z-index: 1;
     }
-    .tab-panel.active {
-      display: block;
-    }
+    .tab-panel.active { display: block; }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       Help Section
+       Help Section / Collapsibles
        ═══════════════════════════════════════════════════════════════════════ */
-    .help-section {
-      margin-top: var(--space-lg);
+    .help-card {
+      background: rgba(10, 10, 30, 0.5);
+      border: 1px solid var(--border-dim);
     }
 
-    .help-title {
-      font-size: var(--font-size-lg);
-      font-weight: 600;
-      margin-bottom: var(--space-md);
+    .help-card::before {
+      background: conic-gradient(from var(--angle), var(--border-dim), var(--border-glow), var(--border-dim));
     }
 
-    .help-item {
-      margin-bottom: var(--space-md);
-    }
-
-    .help-question {
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: var(--space-xs);
-    }
-
-    .help-answer {
-      color: var(--text-secondary);
-      font-size: var(--font-size-sm);
-    }
-
-    /* Collapsible sections */
     details {
       margin-bottom: var(--space-md);
+      position: relative;
+      z-index: 1;
     }
 
     summary {
       cursor: pointer;
-      font-weight: 600;
-      padding: var(--space-sm);
-      background: var(--bg-hover);
-      border-radius: var(--border-radius);
+      padding: var(--space-md);
+      background: rgba(0, 240, 255, 0.03);
+      border: 1px solid var(--border-dim);
+      border-radius: 10px;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
       list-style: none;
       display: flex;
       align-items: center;
-      gap: var(--space-sm);
+      gap: var(--space-md);
+      transition: var(--transition-smooth);
     }
 
+    summary::-webkit-details-marker { display: none; }
+
     summary::before {
-      content: '▶';
-      font-size: 0.7em;
-      transition: transform 0.2s;
+      content: '▸';
+      color: var(--rgb-cyan);
+      transition: var(--transition-fast);
+      font-size: 0.8em;
     }
 
     details[open] summary::before {
       transform: rotate(90deg);
     }
 
-    summary::-webkit-details-marker { display: none; }
+    summary:hover {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: var(--border-glow);
+      color: var(--rgb-cyan);
+    }
 
     details > div {
       padding: var(--space-md);
-      border-left: 2px solid var(--border-light);
-      margin-left: var(--space-md);
       margin-top: var(--space-sm);
-    }
-
-    /* ═══════════════════════════════════════════════════════════════════════
-       Footer
-       ═══════════════════════════════════════════════════════════════════════ */
-    .footer {
-      background: var(--bg-footer);
-      border-top: 1px solid var(--border-light);
-      padding: var(--space-md);
-      text-align: center;
-      font-size: var(--font-size-sm);
       color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      border-left: 2px solid var(--border-glow);
+      margin-left: var(--space-md);
     }
 
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: var(--space-md);
-      flex-wrap: wrap;
+    details > div p {
       margin-bottom: var(--space-sm);
     }
 
+    details > div ul {
+      margin-left: var(--space-lg);
+      margin-bottom: var(--space-sm);
+    }
+
+    details > div li {
+      margin-bottom: var(--space-xs);
+    }
+
     /* ═══════════════════════════════════════════════════════════════════════
-       Settings Panel
+       Settings
        ═══════════════════════════════════════════════════════════════════════ */
     .settings-group {
-      margin-bottom: var(--space-lg);
+      margin-bottom: var(--space-xl);
+      position: relative;
+      z-index: 1;
     }
 
     .settings-group-title {
-      font-size: var(--font-size-sm);
-      font-weight: 600;
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 3px;
       text-transform: uppercase;
       color: var(--text-muted);
-      margin-bottom: var(--space-sm);
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .settings-group-title::before {
+      content: '';
+      width: 12px;
+      height: 2px;
+      background: var(--rgb-cyan);
+      box-shadow: 0 0 10px var(--rgb-cyan);
     }
 
     .settings-options {
@@ -554,43 +948,68 @@
     }
 
     .settings-option {
-      padding: var(--space-sm) var(--space-md);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      background: var(--bg-input);
+      padding: var(--space-sm) var(--space-lg);
+      background: rgba(10, 10, 30, 0.8);
+      border: 1px solid var(--border-dim);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: var(--transition-smooth);
     }
 
     .settings-option:hover {
-      background: var(--bg-hover);
+      border-color: var(--border-glow);
+      color: var(--text-secondary);
+      background: rgba(0, 240, 255, 0.05);
     }
 
     .settings-option.selected {
-      border-color: var(--accent-primary);
-      background: var(--bg-selected);
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       Responsive
+       Footer
        ═══════════════════════════════════════════════════════════════════════ */
-    @media (max-width: 600px) {
-      .header {
-        flex-direction: column;
-        gap: var(--space-sm);
-      }
+    .footer {
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border-dim);
+      padding: var(--space-lg) var(--space-md);
+      text-align: center;
+    }
 
-      .form-actions {
-        flex-direction: column;
-      }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-md);
+    }
 
-      .btn {
-        width: 100%;
-      }
+    .footer-link {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: var(--transition-fast);
+    }
 
-      .tabs {
-        overflow-x: auto;
-      }
+    .footer-link:hover {
+      color: var(--rgb-cyan);
+      text-shadow: 0 0 10px var(--rgb-cyan);
+    }
+
+    .footer-text {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      opacity: 0.6;
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
@@ -601,340 +1020,430 @@
     .text-muted { color: var(--text-muted); }
     .mt-md { margin-top: var(--space-md); }
     .mb-md { margin-bottom: var(--space-md); }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Status Indicator
+       ═══════════════════════════════════════════════════════════════════════ */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--rgb-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--rgb-green);
+      animation: pulse 2s ease infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Responsive
+       ═══════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .header-inner {
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+
+      .logo-text {
+        font-size: 1.2rem;
+      }
+
+      .card {
+        padding: var(--space-lg);
+        border-radius: 16px;
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+      }
+
+      .tabs {
+        flex-direction: column;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Scrollbar
+       ═══════════════════════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-glow);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--rgb-cyan);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Selection
+       ═══════════════════════════════════════════════════════════════════════ */
+    ::selection {
+      background: var(--rgb-cyan);
+      color: var(--bg-void);
+    }
   </style>
 </head>
 <body>
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       Header
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <header class="header">
-    <a href="#" class="header-logo" onclick="showPage('login')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      Auth Portal
-    </a>
+  <!-- Floating Particles -->
+  <div class="particles" id="particles"></div>
 
-    <div class="header-actions">
-      <!-- Language Selector -->
-      <div class="language-selector">
-        <button class="language-btn" onclick="toggleLanguageDropdown()">
-          <span id="current-language">English</span>
-          <span>▼</span>
-        </button>
-        <div class="language-dropdown" id="language-dropdown"></div>
-      </div>
+  <div class="app-container">
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Header
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <header class="header">
+      <div class="header-inner">
+        <a href="#" class="logo" onclick="showPage('login'); return false;">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" fill="rgba(0,240,255,0.1)"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+              <circle cx="12" cy="12" r="3" fill="rgba(0,240,255,0.3)"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text">NEXUS</div>
+            <div class="logo-subtitle">Authentication Portal</div>
+          </div>
+        </a>
 
-      <!-- Theme Toggle -->
-      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
-        <span id="theme-icon">🌙</span>
-      </button>
-
-      <!-- Settings -->
-      <button class="btn btn-secondary" onclick="showPage('settings')">⚙️ Settings</button>
-    </div>
-  </header>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       Main Content
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <main class="main">
-    <div class="container">
-
-      <!-- ═══════════════════════════════════════════════════════════════════
-           Login Page
-           ═══════════════════════════════════════════════════════════════════ -->
-      <div id="page-login" class="page">
-        <div class="card">
-          <div class="card-header">
-            <h1 class="card-title">Log in</h1>
+        <div class="header-actions">
+          <!-- Language Selector -->
+          <div class="language-selector">
+            <button class="language-btn" onclick="toggleLanguageDropdown()">
+              <span id="current-language">EN</span>
+              <span style="font-size: 0.7em;">▼</span>
+            </button>
+            <div class="language-dropdown" id="language-dropdown"></div>
           </div>
 
-          <div id="login-message"></div>
+          <!-- Theme Toggle -->
+          <button class="icon-btn" onclick="cycleRGB()" title="Cycle RGB Effect">
+            <span id="rgb-icon">🌈</span>
+          </button>
 
-          <form id="login-form" onsubmit="handleLogin(event)">
-            <div class="form-group">
-              <label class="form-label" for="login-username">Username</label>
-              <input type="text" id="login-username" class="form-input" required autocomplete="username">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="login-password">Password</label>
-              <input type="password" id="login-password" class="form-input" required autocomplete="current-password">
-            </div>
-
-            <div class="form-group">
-              <label class="form-checkbox">
-                <input type="checkbox" id="login-remember">
-                <span>Keep me logged in</span>
-              </label>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Log in</button>
-            </div>
-          </form>
-
-          <div class="mt-md">
-            <p><a href="#" onclick="showPage('reset-password')">Forgot your password?</a></p>
-            <p>Don't have an account? <a href="#" onclick="showPage('create-account')">Create one</a></p>
-          </div>
+          <!-- Settings -->
+          <button class="icon-btn" onclick="showPage('settings')" title="Settings">
+            ⚙️
+          </button>
         </div>
+      </div>
+    </header>
 
-        <div class="card">
-          <div class="help-section">
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Main Content
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <main class="main">
+      <div class="container">
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Login Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-login" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Initialize</h1>
+              <p class="card-subtitle">// SECURE AUTHENTICATION REQUIRED</p>
+            </div>
+
+            <div id="login-message"></div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+              <div class="form-group">
+                <label class="form-label" for="login-username">User Identifier</label>
+                <input type="text" id="login-username" class="form-input" placeholder="Enter username" required autocomplete="username">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="login-password">Access Key</label>
+                <input type="password" id="login-password" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+              </div>
+
+              <div class="form-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="login-remember">
+                  <span>Maintain session persistence</span>
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                  <span>Access System</span>
+                </button>
+              </div>
+            </form>
+
+            <div class="links-section">
+              <p><a href="#" class="link" onclick="showPage('reset-password'); return false;">Lost access credentials?</a></p>
+              <p>No account? <a href="#" class="link" onclick="showPage('create-account'); return false;">Register new identity</a></p>
+            </div>
+          </div>
+
+          <div class="card help-card">
             <details>
-              <summary>Help with logging in</summary>
+              <summary>Authentication Protocol</summary>
               <div>
-                <p>Enter your username and password to log in. If you've forgotten your password, use the password reset link above.</p>
-                <p>Your session will expire after 24 hours of inactivity.</p>
+                <p>Enter your unique identifier and access key to authenticate. Sessions expire after 24 hours of inactivity.</p>
+                <p>Enable session persistence to remain authenticated across browser sessions.</p>
               </div>
             </details>
           </div>
-        </div>
-      </div>
 
-      <!-- ═══════════════════════════════════════════════════════════════════
-           Create Account Page
-           ═══════════════════════════════════════════════════════════════════ -->
-      <div id="page-create-account" class="page hidden">
-        <div class="card">
-          <div class="card-header">
-            <h1 class="card-title">Create account</h1>
-            <p class="card-subtitle">Join to access all features</p>
+          <div class="status-bar">
+            <span class="status-dot"></span>
+            <span>SYSTEM ONLINE // SECURE CONNECTION ESTABLISHED</span>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Create Account Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-create-account" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Register</h1>
+              <p class="card-subtitle">// CREATE NEW IDENTITY</p>
+            </div>
+
+            <div id="create-message"></div>
+
+            <form id="create-form" onsubmit="handleCreateAccount(event)">
+              <div class="form-group">
+                <label class="form-label" for="create-username">User Identifier *</label>
+                <input type="text" id="create-username" class="form-input" placeholder="Choose username" required autocomplete="username" pattern="[a-zA-Z0-9_-]{3,30}">
+                <p class="form-hint">3-30 chars // Alphanumeric + underscore/hyphen</p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="create-password">Access Key *</label>
+                <input type="password" id="create-password" class="form-input" placeholder="Create password" required autocomplete="new-password" minlength="8">
+                <p class="form-hint">Min 8 characters // Strong encryption recommended</p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="create-password-confirm">Confirm Access Key *</label>
+                <input type="password" id="create-password-confirm" class="form-input" placeholder="Re-enter password" required autocomplete="new-password">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="create-email">Recovery Channel (Optional)</label>
+                <input type="email" id="create-email" class="form-input" placeholder="email@domain.com" autocomplete="email">
+                <p class="form-hint">Required for credential recovery</p>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><span>Initialize Account</span></button>
+                <button type="button" class="btn btn-secondary" onclick="showPage('login')">Abort</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Password Reset Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-reset-password" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Recovery</h1>
+              <p class="card-subtitle">// CREDENTIAL RESET PROTOCOL</p>
+            </div>
+
+            <div id="reset-message"></div>
+
+            <form id="reset-form" onsubmit="handlePasswordReset(event)">
+              <div class="form-group">
+                <label class="form-label" for="reset-username">User Identifier</label>
+                <input type="text" id="reset-username" class="form-input" placeholder="Enter username" autocomplete="username">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="reset-email">Recovery Channel</label>
+                <input type="email" id="reset-email" class="form-input" placeholder="email@domain.com" autocomplete="email">
+              </div>
+
+              <p class="form-hint mb-md">
+                Provide identifier and/or recovery channel. Reset instructions will be transmitted if account exists.
+              </p>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><span>Initiate Recovery</span></button>
+                <button type="button" class="btn btn-secondary" onclick="showPage('login')">Cancel</button>
+              </div>
+            </form>
           </div>
 
-          <div id="create-message"></div>
-
-          <form id="create-form" onsubmit="handleCreateAccount(event)">
-            <div class="form-group">
-              <label class="form-label" for="create-username">Username *</label>
-              <input type="text" id="create-username" class="form-input" required autocomplete="username" pattern="[a-zA-Z0-9_-]{3,30}">
-              <p class="form-hint">3-30 characters. Letters, numbers, underscores, and hyphens only.</p>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="create-password">Password *</label>
-              <input type="password" id="create-password" class="form-input" required autocomplete="new-password" minlength="8">
-              <p class="form-hint">At least 8 characters.</p>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="create-password-confirm">Confirm password *</label>
-              <input type="password" id="create-password-confirm" class="form-input" required autocomplete="new-password">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="create-email">Email address (optional)</label>
-              <input type="email" id="create-email" class="form-input" autocomplete="email">
-              <p class="form-hint">Required for password recovery. We recommend confirming your email address.</p>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Create account</button>
-              <button type="button" class="btn btn-secondary" onclick="showPage('login')">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════════
-           Password Reset Page
-           ═══════════════════════════════════════════════════════════════════ -->
-      <div id="page-reset-password" class="page hidden">
-        <div class="card">
-          <div class="card-header">
-            <h1 class="card-title">Reset password</h1>
-          </div>
-
-          <div id="reset-message"></div>
-
-          <form id="reset-form" onsubmit="handlePasswordReset(event)">
-            <div class="form-group">
-              <label class="form-label" for="reset-username">Username</label>
-              <input type="text" id="reset-username" class="form-input" autocomplete="username">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="reset-email">Email address</label>
-              <input type="email" id="reset-email" class="form-input" autocomplete="email">
-            </div>
-
-            <p class="form-hint mb-md">
-              Enter your username or email address (or both). If an account exists with that information, a password reset email will be sent.
-            </p>
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Request password reset</button>
-              <button type="button" class="btn btn-secondary" onclick="showPage('login')">Cancel</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <div class="help-section">
-            <h3 class="help-title">Password Reset Help</h3>
-
+          <div class="card help-card">
             <details>
-              <summary>When should I reset my password?</summary>
+              <summary>Recovery Protocol FAQ</summary>
               <div>
-                <p>Reset your password if you've forgotten it, suspect unauthorized access, or want to update it for security reasons.</p>
+                <p><strong>When to initiate recovery?</strong><br>
+                Use when access credentials are lost or suspected compromise.</p>
               </div>
             </details>
 
             <details>
-              <summary>How do I make sure I can reset my password?</summary>
+              <summary>Email Not Received?</summary>
               <div>
-                <p>To enable password resets, you must associate an email address with your account:</p>
                 <ul>
-                  <li>When creating your account, provide an email address</li>
-                  <li>After creating an account, add an email in Settings → Email options</li>
+                  <li>Check spam/junk filters</li>
+                  <li>Verify account has linked email</li>
+                  <li>EPR enabled accounts require both fields</li>
+                  <li>Rate limiting may apply</li>
                 </ul>
               </div>
             </details>
 
             <details>
-              <summary>I have multiple accounts with the same email</summary>
+              <summary>Enhanced Protection (EPR)</summary>
               <div>
-                <p>If you enter only your email address, you'll receive separate reset emails for all accounts associated with that address.</p>
-                <p>To reset just one account, enter only the username.</p>
-              </div>
-            </details>
-
-            <details>
-              <summary>I'm getting password reset emails I didn't request</summary>
-              <div>
-                <p>Enable <strong>Enhanced Password Reset (EPR)</strong> in Settings. This requires both username AND email to trigger a reset, preventing unwanted emails from people who know just one piece of information.</p>
-              </div>
-            </details>
-
-            <details>
-              <summary>I didn't receive a reset email</summary>
-              <div>
-                <p>Possible reasons:</p>
-                <ul>
-                  <li>No email address on your account</li>
-                  <li>Misspelled username or email</li>
-                  <li>EPR is enabled but you only entered one field</li>
-                  <li>Email went to spam/junk folder</li>
-                  <li>Too many reset requests (wait and try again)</li>
-                </ul>
+                <p>EPR requires BOTH username AND email for recovery. Enable in Settings for additional security.</p>
               </div>
             </details>
           </div>
         </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Settings Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-settings" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Config</h1>
+              <p class="card-subtitle">// SYSTEM PREFERENCES</p>
+            </div>
+
+            <div class="tabs">
+              <button class="tab active" onclick="showSettingsTab('display')">Display</button>
+              <button class="tab" onclick="showSettingsTab('email')">Comms</button>
+              <button class="tab" onclick="showSettingsTab('security')">Security</button>
+            </div>
+
+            <!-- Display Settings -->
+            <div id="settings-display" class="tab-panel active">
+              <div class="settings-group">
+                <div class="settings-group-title">Interface Scale</div>
+                <p class="form-hint mb-md">Adjust visual density</p>
+                <div class="settings-options">
+                  <button class="settings-option selected" onclick="setTextSize('standard')" data-size="standard">Standard</button>
+                  <button class="settings-option" onclick="setTextSize('medium')" data-size="medium">Medium</button>
+                  <button class="settings-option" onclick="setTextSize('large')" data-size="large">Large</button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <div class="settings-group-title">RGB Mode</div>
+                <p class="form-hint mb-md">Color cycling speed</p>
+                <div class="settings-options">
+                  <button class="settings-option" onclick="setRGBSpeed('off')" data-rgb="off">Off</button>
+                  <button class="settings-option" onclick="setRGBSpeed('slow')" data-rgb="slow">Slow</button>
+                  <button class="settings-option selected" onclick="setRGBSpeed('normal')" data-rgb="normal">Normal</button>
+                  <button class="settings-option" onclick="setRGBSpeed('fast')" data-rgb="fast">Fast</button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-particles" checked onchange="toggleParticles()">
+                  <span>Enable particle effects</span>
+                </label>
+              </div>
+
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-expand-sections" onchange="toggleExpandSections()">
+                  <span>Auto-expand all sections</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Email Settings -->
+            <div id="settings-email" class="tab-panel">
+              <div class="form-group">
+                <label class="form-label" for="settings-email-input">Communication Channel</label>
+                <input type="email" id="settings-email-input" class="form-input" placeholder="email@domain.com">
+                <p class="form-hint">Primary channel for notifications and recovery</p>
+              </div>
+
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-email-notifications">
+                  <span>Enable system notifications</span>
+                </label>
+              </div>
+
+              <div class="message message-info mt-md">
+                <strong>PENDING:</strong> Channel verification required. Check inbox for confirmation sequence.
+              </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div id="settings-security" class="tab-panel">
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-epr" onchange="toggleEPR()">
+                  <span><strong>Enhanced Protection (EPR)</strong><br>
+                  <span class="text-muted">Require both identifier AND recovery channel for reset operations</span></span>
+                </label>
+              </div>
+
+              <div class="message message-warning mt-md">
+                <strong>NOTICE:</strong> EPR activation requires both credentials for any recovery attempt. System will not indicate which field is missing.
+              </div>
+
+              <div class="settings-group mt-md">
+                <div class="settings-group-title">Access Key</div>
+                <button class="btn btn-secondary" onclick="showPage('reset-password')">Rotate Credentials</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions" style="max-width: 480px; margin: 0 auto;">
+            <button class="btn btn-primary" onclick="saveSettings()"><span>Apply Changes</span></button>
+            <button class="btn btn-secondary" onclick="showPage('login')">Return</button>
+          </div>
+        </div>
+
       </div>
+    </main>
 
-      <!-- ═══════════════════════════════════════════════════════════════════
-           Settings Page
-           ═══════════════════════════════════════════════════════════════════ -->
-      <div id="page-settings" class="page hidden">
-        <div class="card">
-          <div class="card-header">
-            <h1 class="card-title">Settings</h1>
-          </div>
-
-          <div class="tabs">
-            <button class="tab active" onclick="showSettingsTab('display')">Display</button>
-            <button class="tab" onclick="showSettingsTab('email')">Email</button>
-            <button class="tab" onclick="showSettingsTab('security')">Security</button>
-          </div>
-
-          <!-- Display Settings -->
-          <div id="settings-display" class="tab-panel active">
-            <div class="settings-group">
-              <div class="settings-group-title">Text Size</div>
-              <p class="form-hint mb-md">Adjust text for better readability.</p>
-              <div class="settings-options">
-                <button class="settings-option selected" onclick="setTextSize('standard')" data-size="standard">Standard</button>
-                <button class="settings-option" onclick="setTextSize('medium')" data-size="medium">Medium</button>
-                <button class="settings-option" onclick="setTextSize('large')" data-size="large">Large</button>
-              </div>
-            </div>
-
-            <div class="settings-group">
-              <div class="settings-group-title">Color Theme</div>
-              <p class="form-hint mb-md">Choose your preferred color scheme.</p>
-              <div class="settings-options">
-                <button class="settings-option selected" onclick="setTheme('light')" data-theme="light">☀️ Light</button>
-                <button class="settings-option" onclick="setTheme('dark')" data-theme="dark">🌙 Dark</button>
-                <button class="settings-option" onclick="setTheme('auto')" data-theme="auto">🔄 Automatic</button>
-              </div>
-            </div>
-
-            <div class="settings-group">
-              <label class="form-checkbox">
-                <input type="checkbox" id="setting-expand-sections" onchange="toggleExpandSections()">
-                <span><strong>Expand all sections</strong><br>
-                <span class="text-muted">Always expand collapsible sections by default.</span></span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Email Settings -->
-          <div id="settings-email" class="tab-panel">
-            <div class="form-group">
-              <label class="form-label" for="settings-email-input">Email address</label>
-              <input type="email" id="settings-email-input" class="form-input">
-              <p class="form-hint">Used for password recovery and notifications.</p>
-            </div>
-
-            <div class="form-group">
-              <label class="form-checkbox">
-                <input type="checkbox" id="setting-email-notifications">
-                <span><strong>Email notifications</strong><br>
-                <span class="text-muted">Receive email notifications for important account activity.</span></span>
-              </label>
-            </div>
-
-            <div class="message message-info" style="margin-top: var(--space-md)">
-              <strong>Email confirmation:</strong> Please confirm your email address to enable all features. Check your inbox for a confirmation link.
-            </div>
-          </div>
-
-          <!-- Security Settings -->
-          <div id="settings-security" class="tab-panel">
-            <div class="settings-group">
-              <label class="form-checkbox">
-                <input type="checkbox" id="setting-epr" onchange="toggleEPR()">
-                <span><strong>Enhanced Password Reset (EPR)</strong><br>
-                <span class="text-muted">Require BOTH username AND email address to request a password reset. This prevents unwanted reset emails from people who know only your username or email.</span></span>
-              </label>
-            </div>
-
-            <div class="message message-warning mt-md">
-              <strong>Important:</strong> If you enable EPR, you must provide both your username AND email address when resetting your password. The system will not indicate that both are required (for security reasons).
-            </div>
-
-            <div class="settings-group mt-md">
-              <div class="settings-group-title">Password</div>
-              <button class="btn btn-secondary" onclick="showPage('reset-password')">Change password</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveSettings()">Save settings</button>
-          <button class="btn btn-secondary" onclick="showPage('login')">Back to login</button>
-        </div>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Footer
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="#" class="footer-link" onclick="showPage('reset-password'); return false;">SUPPORT</a>
+        <a href="#" class="footer-link">PRIVACY</a>
+        <a href="#" class="footer-link">TERMS</a>
+        <a href="#" class="footer-link">CONTACT</a>
       </div>
-
-    </div>
-  </main>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       Footer
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <footer class="footer">
-    <div class="footer-links">
-      <a href="#" onclick="showPage('reset-password')">Help</a>
-      <a href="#">Privacy policy</a>
-      <a href="#">Terms of use</a>
-      <a href="#">Contact</a>
-    </div>
-    <p>Text is available under the Creative Commons Attribution-ShareAlike License.</p>
-  </footer>
+      <p class="footer-text">NEXUS AUTH v2.0 // SECURE SYSTEMS DIVISION</p>
+    </footer>
+  </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
        JavaScript
@@ -945,29 +1454,111 @@
     // ═══════════════════════════════════════════════════════════════════════
     const state = {
       currentPage: 'login',
-      theme: localStorage.getItem('theme') || 'light',
       textSize: localStorage.getItem('textSize') || 'standard',
       language: localStorage.getItem('language') || 'en',
       expandSections: localStorage.getItem('expandSections') === 'true',
       epr: localStorage.getItem('epr') === 'true',
+      particles: localStorage.getItem('particles') !== 'false',
+      rgbSpeed: localStorage.getItem('rgbSpeed') || 'normal',
+      rgbHue: 0
     };
 
     const languages = [
-      { code: 'en', name: 'English', native: 'English' },
-      { code: 'es', name: 'Spanish', native: 'español' },
-      { code: 'fr', name: 'French', native: 'français' },
-      { code: 'de', name: 'German', native: 'Deutsch' },
-      { code: 'zh', name: 'Chinese', native: '中文' },
-      { code: 'ja', name: 'Japanese', native: '日本語' },
-      { code: 'pt', name: 'Portuguese', native: 'português' },
-      { code: 'ru', name: 'Russian', native: 'русский' },
-      { code: 'ar', name: 'Arabic', native: 'العربية' },
-      { code: 'it', name: 'Italian', native: 'italiano' },
-      { code: 'ko', name: 'Korean', native: '한국어' },
-      { code: 'vi', name: 'Vietnamese', native: 'Tiếng Việt' },
-      { code: 'tr', name: 'Turkish', native: 'Türkçe' },
-      { code: 'id', name: 'Indonesian', native: 'Bahasa Indonesia' },
+      { code: 'en', name: 'English', native: 'EN' },
+      { code: 'es', name: 'Español', native: 'ES' },
+      { code: 'fr', name: 'Français', native: 'FR' },
+      { code: 'de', name: 'Deutsch', native: 'DE' },
+      { code: 'zh', name: '中文', native: 'ZH' },
+      { code: 'ja', name: '日本語', native: 'JA' },
+      { code: 'pt', name: 'Português', native: 'PT' },
+      { code: 'ru', name: 'Русский', native: 'RU' },
+      { code: 'ar', name: 'العربية', native: 'AR' },
+      { code: 'ko', name: '한국어', native: 'KO' },
     ];
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Particles System
+    // ═══════════════════════════════════════════════════════════════════════
+    function createParticles() {
+      const container = document.getElementById('particles');
+      container.innerHTML = '';
+
+      if (!state.particles) return;
+
+      // Floating particles
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+
+        const colors = ['var(--rgb-cyan)', 'var(--rgb-magenta)', 'var(--rgb-green)', 'var(--rgb-purple)'];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.boxShadow = `0 0 10px ${particle.style.background}`;
+
+        container.appendChild(particle);
+      }
+
+      // Data streams
+      for (let i = 0; i < 8; i++) {
+        const stream = document.createElement('div');
+        stream.className = 'data-stream';
+        stream.style.left = Math.random() * 100 + '%';
+        stream.style.animationDelay = Math.random() * 5 + 's';
+        stream.style.animationDuration = (2 + Math.random() * 3) + 's';
+        stream.style.height = (50 + Math.random() * 100) + 'px';
+        container.appendChild(stream);
+      }
+    }
+
+    function toggleParticles() {
+      state.particles = document.getElementById('setting-particles').checked;
+      localStorage.setItem('particles', state.particles);
+      createParticles();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // RGB Effects
+    // ═══════════════════════════════════════════════════════════════════════
+    let rgbInterval;
+
+    function setRGBSpeed(speed) {
+      state.rgbSpeed = speed;
+      localStorage.setItem('rgbSpeed', speed);
+
+      document.querySelectorAll('[data-rgb]').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.rgb === speed);
+      });
+
+      startRGBCycle();
+    }
+
+    function startRGBCycle() {
+      if (rgbInterval) clearInterval(rgbInterval);
+
+      const speeds = { off: 0, slow: 100, normal: 50, fast: 20 };
+      const interval = speeds[state.rgbSpeed];
+
+      if (interval === 0) {
+        document.documentElement.style.filter = '';
+        return;
+      }
+
+      rgbInterval = setInterval(() => {
+        state.rgbHue = (state.rgbHue + 1) % 360;
+        // Subtle hue shift on entire page
+        // document.documentElement.style.filter = `hue-rotate(${state.rgbHue}deg)`;
+      }, interval);
+    }
+
+    function cycleRGB() {
+      const speeds = ['off', 'slow', 'normal', 'fast'];
+      const currentIndex = speeds.indexOf(state.rgbSpeed);
+      const nextIndex = (currentIndex + 1) % speeds.length;
+      setRGBSpeed(speeds[nextIndex]);
+    }
 
     // ═══════════════════════════════════════════════════════════════════════
     // Page Navigation
@@ -976,36 +1567,7 @@
       document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
       document.getElementById('page-' + pageId)?.classList.remove('hidden');
       state.currentPage = pageId;
-      window.scrollTo(0, 0);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // Theme
-    // ═══════════════════════════════════════════════════════════════════════
-    function setTheme(theme) {
-      state.theme = theme;
-      localStorage.setItem('theme', theme);
-      applyTheme();
-      updateThemeButtons();
-    }
-
-    function toggleTheme() {
-      setTheme(state.theme === 'dark' ? 'light' : 'dark');
-    }
-
-    function applyTheme() {
-      let effectiveTheme = state.theme;
-      if (state.theme === 'auto') {
-        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-      document.documentElement.setAttribute('data-theme', effectiveTheme);
-      document.getElementById('theme-icon').textContent = effectiveTheme === 'dark' ? '☀️' : '🌙';
-    }
-
-    function updateThemeButtons() {
-      document.querySelectorAll('[data-theme]').forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.theme === state.theme);
-      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -1014,7 +1576,10 @@
     function setTextSize(size) {
       state.textSize = size;
       localStorage.setItem('textSize', size);
-      document.documentElement.setAttribute('data-text-size', size);
+
+      const scales = { standard: '16px', medium: '18px', large: '20px' };
+      document.documentElement.style.fontSize = scales[size];
+
       document.querySelectorAll('[data-size]').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.size === size);
       });
@@ -1044,18 +1609,17 @@
       localStorage.setItem('language', code);
       updateCurrentLanguage();
       document.getElementById('language-dropdown').classList.remove('open');
-      // In production: trigger translation reload
     }
 
     function updateCurrentLanguage() {
       const lang = languages.find(l => l.code === state.language);
-      document.getElementById('current-language').textContent = lang?.name || 'English';
+      document.getElementById('current-language').textContent = lang?.native || 'EN';
       document.querySelectorAll('.language-option').forEach(opt => {
-        opt.classList.toggle('selected', opt.textContent.includes(lang?.name));
+        const isSelected = opt.textContent.includes(lang?.name);
+        opt.classList.toggle('selected', isSelected);
       });
     }
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.language-selector')) {
         document.getElementById('language-dropdown').classList.remove('open');
@@ -1086,7 +1650,7 @@
     }
 
     function saveSettings() {
-      showMessage('login-message', 'Settings saved successfully.', 'success');
+      showMessage('login-message', 'Configuration saved successfully', 'success');
       showPage('login');
     }
 
@@ -1103,12 +1667,10 @@
       const username = document.getElementById('login-username').value;
       const password = document.getElementById('login-password').value;
 
-      // Simulate login (replace with actual API call)
       if (username && password) {
-        showMessage('login-message', 'Login successful! Redirecting...', 'success');
-        // In production: redirect to dashboard
+        showMessage('login-message', 'AUTHENTICATION SUCCESSFUL // Initializing session...', 'success');
       } else {
-        showMessage('login-message', 'Invalid username or password.', 'error');
+        showMessage('login-message', 'ERROR: Invalid credentials', 'error');
       }
     }
 
@@ -1118,18 +1680,17 @@
       const confirm = document.getElementById('create-password-confirm').value;
 
       if (password !== confirm) {
-        showMessage('create-message', 'Passwords do not match.', 'error');
+        showMessage('create-message', 'ERROR: Access keys do not match', 'error');
         return;
       }
 
-      showMessage('create-message', 'Account created successfully! Please check your email to confirm your address.', 'success');
+      showMessage('create-message', 'IDENTITY CREATED // Verification sequence initiated', 'success');
     }
 
     function handlePasswordReset(e) {
       e.preventDefault();
-      // Privacy-first: always show success message
       showMessage('reset-message',
-        'If an account with that information exists, a password reset email has been sent. Please check your inbox.',
+        'RECOVERY INITIATED // If account exists, instructions transmitted to recovery channel',
         'success'
       );
     }
@@ -1138,22 +1699,24 @@
     // Initialize
     // ═══════════════════════════════════════════════════════════════════════
     function init() {
-      applyTheme();
       setTextSize(state.textSize);
       initLanguageDropdown();
+      createParticles();
+      startRGBCycle();
 
       // Apply stored settings
       document.getElementById('setting-expand-sections').checked = state.expandSections;
       document.getElementById('setting-epr').checked = state.epr;
+      document.getElementById('setting-particles').checked = state.particles;
+
+      // Update RGB speed buttons
+      document.querySelectorAll('[data-rgb]').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.rgb === state.rgbSpeed);
+      });
 
       if (state.expandSections) {
         document.querySelectorAll('details').forEach(d => d.open = true);
       }
-
-      // Listen for system theme changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (state.theme === 'auto') applyTheme();
-      });
     }
 
     init();
