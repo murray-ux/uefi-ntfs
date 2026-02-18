@@ -17,9 +17,13 @@
 // Copyright (c) 2025 MuzzL3d Dictionary Contributors — Apache-2.0
 
 import { readFileSync, readdirSync, existsSync, mkdirSync, copyFileSync, writeFileSync, statSync } from "fs";
-import { join, basename, extname } from "path";
+import { join, basename, extname, dirname } from "path";
 import { execSync } from "child_process";
 import { createHash } from "crypto";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // ---------------------------------------------------------------------------
 // Config types
@@ -95,7 +99,10 @@ function loadConfig(configDir: string): SuiteConfig {
     ? JSON.parse(readFileSync(rtPath, "utf-8"))
     : { version: "0.0.0", vaultRoot: "./vault", rules: [], folderStructure: {} };
 
-  const vaultRoot = process.env.VAULT_ROOT || routes.vaultRoot || "./vault";
+  const defaultVault = process.platform === "darwin"
+    ? join(process.env.HOME || "~", "Library/Mobile Documents/com~apple~CloudDocs/Shortcuts/Vault")
+    : join(process.env.HOME || "~", ".sovereign-vault");
+  const vaultRoot = process.env.VAULT_ROOT || routes.vaultRoot || defaultVault;
 
   return {
     vaultRoot,
@@ -397,7 +404,7 @@ function buildPack(config: SuiteConfig, name: string, folders: string[], filterD
   return {
     name,
     fileCount: files.length,
-    files: files.map(basename),
+    files: files.map((f) => basename(f)),
     outputPath: tocPath,
     generatedAt: new Date().toISOString(),
   };

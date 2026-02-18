@@ -65,7 +65,17 @@
     "boot": "node src/lib/genesis-init.js",
     "boot:sentinel": "node src/lib/genesis-init.js --watch-level active",
     "test:modules": "node --test test/genesis-modules.test.js",
-    "test:all": "node --import tsx --test test/*.test.ts && node --test test/*.test.js"
+    "test:all": "node --import tsx --test test/*.test.ts && node --test test/*.test.js",
+    "sovereign": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts",
+    "sovereign:setup": "./sovereign-suite/bin/setup-vault-folders.sh",
+    "sovereign:run": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts run",
+    "sovereign:intake": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts intake",
+    "sovereign:classify": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts classify",
+    "sovereign:legal": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts legal-pack",
+    "sovereign:finance": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts finance-pack",
+    "sovereign:ato": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts ato-pack",
+    "sovereign:trust": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts trust-pack",
+    "sovereign:health": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts health-pack"
   },
   "dependencies": {
     "tsx": "^4.7.0"

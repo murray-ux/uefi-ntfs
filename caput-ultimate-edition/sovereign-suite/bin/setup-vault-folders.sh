@@ -15,7 +15,16 @@
 
 set -euo pipefail
 
-VAULT="${VAULT_ROOT:-${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Shortcuts/Vault}"
+# Default to iCloud Drive on macOS, ~/.sovereign-vault on Linux
+if [[ -z "${VAULT_ROOT:-}" ]]; then
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    VAULT="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Shortcuts/Vault"
+  else
+    VAULT="${HOME}/.sovereign-vault"
+  fi
+else
+  VAULT="${VAULT_ROOT}"
+fi
 
 echo "=== Sovereign Suite — Vault Folder Setup ==="
 echo "  Root: ${VAULT}"
@@ -66,7 +75,7 @@ for folder in "${TOPLEVEL[@]}"; do
   if [[ ! -d "${target}" ]]; then
     mkdir -p "${target}"
     echo "  [+] ${folder}"
-    ((created++))
+    created=$((created + 1))
   else
     echo "  [=] ${folder} (exists)"
   fi
@@ -77,18 +86,22 @@ for sub in "${CASE_SUBS[@]}"; do
   if [[ ! -d "${target}" ]]; then
     mkdir -p "${target}"
     echo "  [+] Legal/${CASE_FOLDER}/${sub}"
-    ((created++))
+    created=$((created + 1))
   else
     echo "  [=] Legal/${CASE_FOLDER}/${sub} (exists)"
   fi
 done
 
 # ── Config directory ────────────────────────────────────────────────────
-CONFIG_DIR="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Shortcuts/Config"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  CONFIG_DIR="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Shortcuts/Config"
+else
+  CONFIG_DIR="${VAULT}/.config"
+fi
 if [[ ! -d "${CONFIG_DIR}" ]]; then
   mkdir -p "${CONFIG_DIR}"
-  echo "  [+] Shortcuts/Config"
-  ((created++))
+  echo "  [+] Config: ${CONFIG_DIR}"
+  created=$((created + 1))
 fi
 
 echo

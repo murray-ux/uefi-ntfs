@@ -349,6 +349,77 @@ cmd_charter() {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+#  COMMAND: sovereign — Sovereign Suite document automation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+cmd_sovereign() {
+	local subcmd="${1:-}"
+
+	[ -d "$GENESIS_DIR" ] || die "GENESIS directory not found: $GENESIS_DIR"
+
+	local suite_dir="$GENESIS_DIR/sovereign-suite"
+	[ -d "$suite_dir" ] || die "Sovereign Suite not found: $suite_dir"
+
+	case "$subcmd" in
+		setup)
+			log "Initialising Sovereign vault folders"
+			exec "$suite_dir/bin/setup-vault-folders.sh"
+			;;
+		run)
+			shift
+			local source_dir="${1:-}"
+			[ -n "$source_dir" ] || die "Usage: ./master.sh sovereign run <source-dir>"
+			log "Running full pipeline: Finish the Job"
+			exec npx tsx "$suite_dir/shortcuts/sovereign-orchestrator.ts" run "$source_dir"
+			;;
+		intake)
+			shift
+			local source_dir="${1:-}"
+			[ -n "$source_dir" ] || die "Usage: ./master.sh sovereign intake <source-dir>"
+			log "Collecting files from $source_dir"
+			exec npx tsx "$suite_dir/shortcuts/sovereign-orchestrator.ts" intake "$source_dir"
+			;;
+		classify)
+			shift
+			[ "$#" -gt 0 ] || die "Usage: ./master.sh sovereign classify <file...>"
+			log "Classifying ${#} file(s)"
+			exec npx tsx "$suite_dir/shortcuts/sovereign-orchestrator.ts" classify "$@"
+			;;
+		legal-pack|finance-pack|ato-pack|trust-pack|health-pack)
+			log "Generating $subcmd"
+			exec npx tsx "$suite_dir/shortcuts/sovereign-orchestrator.ts" "$subcmd"
+			;;
+		booster)
+			shift
+			log "Running AI booster classifier"
+			exec "$suite_dir/bin/booster.sh" "$@"
+			;;
+		*)
+			printf "${BOLD}Sovereign Suite — Document Automation${NC}\n\n"
+			printf "Usage:\n"
+			printf "  ./master.sh sovereign setup                    Initialise vault folders\n"
+			printf "  ./master.sh sovereign run <source-dir>          Full pipeline (Finish the Job)\n"
+			printf "  ./master.sh sovereign intake <source-dir>       Collect + date-stamp files\n"
+			printf "  ./master.sh sovereign classify <file...>        Classify and route files\n"
+			printf "  ./master.sh sovereign legal-pack                Generate legal case binder\n"
+			printf "  ./master.sh sovereign finance-pack              Finance archive (90 days)\n"
+			printf "  ./master.sh sovereign ato-pack                  ATO archive\n"
+			printf "  ./master.sh sovereign trust-pack                Trust archive\n"
+			printf "  ./master.sh sovereign health-pack               Health archive\n"
+			printf "  ./master.sh sovereign booster                   AI classifier (stdin)\n"
+			printf "\nEnvironment:\n"
+			printf "  VAULT_ROOT              Vault folder root\n"
+			printf "  GENESIS_CASE_NUMBER     Court case number\n"
+			printf "  GENESIS_CASE_FOLDER     Legal case folder (default: Family-Case)\n"
+			printf "  GENESIS_BUSINESS_NAME   Business name\n"
+			printf "  GENESIS_TRUST_NAME      Trust name\n"
+			printf "  ANTHROPIC_API_KEY       For AI classification booster\n"
+			return 1
+			;;
+	esac
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 #  COMMAND: deploy — Bootstrap production deployment
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -456,7 +527,7 @@ cmd_test() {
 cmd_help() {
 	banner
 
-	cat <<'USAGE'
+	cat <<'HELPTEXT'
 USAGE
   ./master.sh <command> [options]
 
@@ -465,6 +536,7 @@ COMMANDS
   verify                          Run all verification gates (fail-closed)
   build [ARCH]                    Build UEFI:NTFS bootloader (x64,ia32,arm,aa64,riscv64,loongarch64)
   genesis <subcmd> [args...]      Dispatch to GENESIS 2.0 subsystem
+  sovereign <subcmd> [args...]    Sovereign Suite document automation
   charter [mode] [args...]        Run charter governance verification
   deploy [--docker]               Bootstrap production deployment (requires sudo)
   start                           Start GENESIS 2.0 server on :8080
@@ -479,6 +551,18 @@ GENESIS SUBCOMMANDS
   genesis rust <args>             Run Rust integrity boundary
   genesis policy <args>           Run policy engine
   genesis health                  Quick health check
+
+SOVEREIGN SUBCOMMANDS
+  sovereign setup                 Initialise vault folder structure
+  sovereign run <source-dir>      Full pipeline (Finish the Job)
+  sovereign intake <source-dir>   Collect + date-stamp files
+  sovereign classify <file...>    Classify and route files
+  sovereign legal-pack            Generate legal case binder
+  sovereign finance-pack          Finance archive (90 days)
+  sovereign ato-pack              ATO archive
+  sovereign trust-pack            Trust archive
+  sovereign health-pack           Health archive
+  sovereign booster               AI classifier via Anthropic API (stdin)
 
 CHARTER MODES
   charter quick                   Quick charter integrity check
@@ -497,11 +581,14 @@ EXAMPLES
   ./master.sh verify                    # Full cross-tier verification
   ./master.sh build x64                 # Build bootloader for x86_64
   ./master.sh genesis health            # GENESIS health check
+  ./master.sh sovereign setup            # Create vault folder structure
+  ./master.sh sovereign run ~/Documents # Full document pipeline
+  ./master.sh sovereign classify f.pdf  # Classify a single file
   ./master.sh charter full              # Full charter governance audit
   ./master.sh start                     # Launch GENESIS server
   ./master.sh test                      # Run all tests
 
-USAGE
+HELPTEXT
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -522,6 +609,10 @@ case "${1:-status}" in
 	genesis)
 		shift
 		cmd_genesis "$@"
+		;;
+	sovereign)
+		shift
+		cmd_sovereign "$@"
 		;;
 	charter)
 		shift
