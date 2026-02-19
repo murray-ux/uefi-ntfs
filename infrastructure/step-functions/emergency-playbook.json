@@ -1,0 +1,286 @@
+{
+  "Comment": "GENESIS Emergency Playbook - Critical incident automated response",
+  "StartAt": "AssessImpact",
+  "States": {
+    "AssessImpact": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-assess-impact",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "classification.$": "$.classification"
+      },
+      "ResultPath": "$.impact",
+      "Next": "DetermineScope"
+    },
+
+    "DetermineScope": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.impact.scope",
+          "StringEquals": "ORGANIZATION_WIDE",
+          "Next": "OrganizationWideResponse"
+        },
+        {
+          "Variable": "$.impact.scope",
+          "StringEquals": "DEPARTMENT",
+          "Next": "DepartmentResponse"
+        },
+        {
+          "Variable": "$.impact.scope",
+          "StringEquals": "INDIVIDUAL",
+          "Next": "IndividualResponse"
+        }
+      ],
+      "Default": "IndividualResponse"
+    },
+
+    "OrganizationWideResponse": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "EnableEmergencyMode",
+          "States": {
+            "EnableEmergencyMode": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-emergency-mode",
+              "Parameters": {
+                "action": "ENABLE",
+                "scope": "ORGANIZATION"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifyExecutives",
+          "States": {
+            "NotifyExecutives": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-executive-notify",
+              "Parameters": {
+                "severity": "CRITICAL",
+                "summary.$": "$.classification.summary",
+                "impact.$": "$.impact"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "SuspendExternalAccess",
+          "States": {
+            "SuspendExternalAccess": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-firewall",
+              "Parameters": {
+                "action": "LOCKDOWN",
+                "preserveInternal": true
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "BackupCriticalSystems",
+          "States": {
+            "BackupCriticalSystems": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-emergency-backup",
+              "Parameters": {
+                "scope": "CRITICAL_SYSTEMS",
+                "type": "SNAPSHOT"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.emergencyResponse",
+      "Next": "ExecuteContainment"
+    },
+
+    "DepartmentResponse": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "IsolateDepartment",
+          "States": {
+            "IsolateDepartment": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-network-isolate",
+              "Parameters": {
+                "scope": "DEPARTMENT",
+                "departmentId.$": "$.impact.departmentId"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifyDepartmentHead",
+          "States": {
+            "NotifyDepartmentHead": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-manager",
+              "Parameters": {
+                "departmentId.$": "$.impact.departmentId",
+                "priority": "URGENT"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.deptResponse",
+      "Next": "ExecuteContainment"
+    },
+
+    "IndividualResponse": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "SuspendUserAccess",
+          "States": {
+            "SuspendUserAccess": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-account-action",
+              "Parameters": {
+                "userId.$": "$.impact.userId",
+                "action": "SUSPEND",
+                "preserveSession": false
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "RevokeAllSessions",
+          "States": {
+            "RevokeAllSessions": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-revoke-sessions",
+              "Parameters": {
+                "userId.$": "$.impact.userId",
+                "scope": "ALL"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.individualResponse",
+      "Next": "ExecuteContainment"
+    },
+
+    "ExecuteContainment": {
+      "Type": "Map",
+      "ItemsPath": "$.impact.affectedSystems",
+      "Parameters": {
+        "system.$": "$$.Map.Item.Value",
+        "eventId.$": "$.eventId"
+      },
+      "Iterator": {
+        "StartAt": "ContainSystem",
+        "States": {
+          "ContainSystem": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-contain-system",
+            "Parameters": {
+              "systemId.$": "$.system.id",
+              "containmentType.$": "$.system.recommendedAction"
+            },
+            "End": true
+          }
+        }
+      },
+      "ResultPath": "$.containment",
+      "Next": "CollectEvidence"
+    },
+
+    "CollectEvidence": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "CaptureNetworkLogs",
+          "States": {
+            "CaptureNetworkLogs": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-capture-logs",
+              "Parameters": {
+                "logType": "NETWORK",
+                "timeRange": {
+                  "start.$": "$.classification.firstSeen",
+                  "end.$": "$$.State.EnteredTime"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CaptureSystemLogs",
+          "States": {
+            "CaptureSystemLogs": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-capture-logs",
+              "Parameters": {
+                "logType": "SYSTEM",
+                "systems.$": "$.impact.affectedSystems"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CaptureMemoryDump",
+          "States": {
+            "CaptureMemoryDump": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-memory-forensics",
+              "Parameters": {
+                "systems.$": "$.impact.affectedSystems",
+                "captureType": "FULL"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.evidence",
+      "Next": "GenerateIncidentReport"
+    },
+
+    "GenerateIncidentReport": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-incident-report",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "classification.$": "$.classification",
+        "impact.$": "$.impact",
+        "containment.$": "$.containment",
+        "evidence.$": "$.evidence"
+      },
+      "ResultPath": "$.report",
+      "Next": "StoreInS3"
+    },
+
+    "StoreInS3": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::s3:putObject",
+      "Parameters": {
+        "Bucket": "genesis-incident-reports",
+        "Key.$": "States.Format('incidents/{}/report.json', $.eventId)",
+        "Body.$": "$.report",
+        "ContentType": "application/json",
+        "ServerSideEncryption": "aws:kms"
+      },
+      "ResultPath": "$.storage",
+      "Next": "Complete"
+    },
+
+    "Complete": {
+      "Type": "Succeed"
+    }
+  }
+}

@@ -1,0 +1,632 @@
+{
+  "Comment": "GENESIS Security Orchestrator - Main entry point for security event processing",
+  "StartAt": "ClassifySecurityEvent",
+  "States": {
+    "ClassifySecurityEvent": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-classify-event",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "eventType.$": "$.eventType",
+        "source.$": "$.source",
+        "payload.$": "$.payload",
+        "timestamp.$": "$.timestamp"
+      },
+      "ResultPath": "$.classification",
+      "Next": "RouteByEventType",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleClassificationError"
+        }
+      ]
+    },
+
+    "RouteByEventType": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.classification.category",
+          "StringEquals": "THREAT_DETECTED",
+          "Next": "ThreatResponseWorkflow"
+        },
+        {
+          "Variable": "$.classification.category",
+          "StringEquals": "AUTH_ANOMALY",
+          "Next": "AuthenticationAnomalyWorkflow"
+        },
+        {
+          "Variable": "$.classification.category",
+          "StringEquals": "COMPLIANCE_VIOLATION",
+          "Next": "ComplianceWorkflow"
+        },
+        {
+          "Variable": "$.classification.category",
+          "StringEquals": "DEVICE_COMPROMISE",
+          "Next": "DeviceCompromiseWorkflow"
+        },
+        {
+          "Variable": "$.classification.severity",
+          "StringEquals": "CRITICAL",
+          "Next": "CriticalIncidentResponse"
+        }
+      ],
+      "Default": "StandardEventProcessing"
+    },
+
+    "ThreatResponseWorkflow": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "IsolateAffectedSystems",
+          "States": {
+            "IsolateAffectedSystems": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-isolate-systems",
+              "Parameters": {
+                "affectedResources.$": "$.classification.affectedResources",
+                "isolationType": "NETWORK_QUARANTINE"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CaptureForensicData",
+          "States": {
+            "CaptureForensicData": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-forensics",
+              "Parameters": {
+                "eventId.$": "$.eventId",
+                "captureType": "FULL_SNAPSHOT"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifySecurityTeam",
+          "States": {
+            "NotifySecurityTeam": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:genesis-security-alerts",
+                "Message.$": "States.Format('THREAT DETECTED: {} - Severity: {} - Affected: {}', $.classification.threatType, $.classification.severity, $.classification.affectedResources)",
+                "Subject": "GENESIS Security Alert - Threat Detected"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.threatResponse",
+      "Next": "AnalyzeThreatIndicators"
+    },
+
+    "AnalyzeThreatIndicators": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-threat-intelligence",
+      "Parameters": {
+        "indicators.$": "$.classification.indicators",
+        "context.$": "$.threatResponse"
+      },
+      "ResultPath": "$.analysis",
+      "Next": "DetermineRemediationAction"
+    },
+
+    "DetermineRemediationAction": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.analysis.autoRemediate",
+          "BooleanEquals": true,
+          "Next": "AutomatedRemediation"
+        },
+        {
+          "Variable": "$.analysis.requiresHuman",
+          "BooleanEquals": true,
+          "Next": "CreateIncidentTicket"
+        }
+      ],
+      "Default": "MonitorAndWait"
+    },
+
+    "AutomatedRemediation": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-remediate",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "remediationActions.$": "$.analysis.recommendedActions"
+      },
+      "ResultPath": "$.remediation",
+      "Next": "VerifyRemediation"
+    },
+
+    "VerifyRemediation": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-verify-remediation",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "remediationId.$": "$.remediation.id"
+      },
+      "ResultPath": "$.verification",
+      "Next": "IsRemediationSuccessful"
+    },
+
+    "IsRemediationSuccessful": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.verification.success",
+          "BooleanEquals": true,
+          "Next": "CloseIncident"
+        }
+      ],
+      "Default": "EscalateToHuman"
+    },
+
+    "AuthenticationAnomalyWorkflow": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "AnalyzeLoginPattern",
+          "States": {
+            "AnalyzeLoginPattern": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-analyze-auth",
+              "Parameters": {
+                "userId.$": "$.payload.userId",
+                "ipAddress.$": "$.payload.ipAddress",
+                "userAgent.$": "$.payload.userAgent",
+                "timestamp.$": "$.timestamp"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CheckGeoLocation",
+          "States": {
+            "CheckGeoLocation": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-geoip",
+              "Parameters": {
+                "ipAddress.$": "$.payload.ipAddress"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.authAnalysis",
+      "Next": "EvaluateRisk"
+    },
+
+    "EvaluateRisk": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-risk-score",
+      "Parameters": {
+        "userId.$": "$.payload.userId",
+        "authAnalysis.$": "$.authAnalysis"
+      },
+      "ResultPath": "$.riskScore",
+      "Next": "RiskBasedAction"
+    },
+
+    "RiskBasedAction": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.riskScore.level",
+          "StringEquals": "CRITICAL",
+          "Next": "BlockAndNotify"
+        },
+        {
+          "Variable": "$.riskScore.level",
+          "StringEquals": "HIGH",
+          "Next": "RequireMFA"
+        },
+        {
+          "Variable": "$.riskScore.level",
+          "StringEquals": "MEDIUM",
+          "Next": "SendUserVerification"
+        }
+      ],
+      "Default": "LogAndAllow"
+    },
+
+    "BlockAndNotify": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "BlockAccount",
+          "States": {
+            "BlockAccount": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-account-action",
+              "Parameters": {
+                "userId.$": "$.payload.userId",
+                "action": "TEMPORARY_LOCK",
+                "reason.$": "$.riskScore.reason"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifyUser",
+          "States": {
+            "NotifyUser": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:genesis-user-notifications",
+                "Message.$": "States.Format('Suspicious login attempt blocked. If this was you, please verify your identity at genesis.app/verify', $.payload.userId)"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "CreateIncidentTicket"
+    },
+
+    "RequireMFA": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-mfa-challenge",
+      "Parameters": {
+        "userId.$": "$.payload.userId",
+        "challengeType": "PUSH_NOTIFICATION",
+        "context.$": "$.riskScore"
+      },
+      "ResultPath": "$.mfaChallenge",
+      "Next": "WaitForMFAResponse"
+    },
+
+    "WaitForMFAResponse": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+      "Parameters": {
+        "QueueUrl": "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/genesis-mfa-responses",
+        "MessageBody": {
+          "challengeId.$": "$.mfaChallenge.id",
+          "userId.$": "$.payload.userId",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "TimeoutSeconds": 300,
+      "ResultPath": "$.mfaResult",
+      "Next": "ValidateMFAResponse",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.Timeout"],
+          "ResultPath": "$.error",
+          "Next": "MFATimeout"
+        }
+      ]
+    },
+
+    "ValidateMFAResponse": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.mfaResult.verified",
+          "BooleanEquals": true,
+          "Next": "AllowWithAudit"
+        }
+      ],
+      "Default": "BlockAndNotify"
+    },
+
+    "MFATimeout": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-audit-log",
+      "Parameters": {
+        "eventType": "MFA_TIMEOUT",
+        "userId.$": "$.payload.userId",
+        "context": "MFA challenge timed out"
+      },
+      "Next": "BlockAndNotify"
+    },
+
+    "SendUserVerification": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-send-verification",
+      "Parameters": {
+        "userId.$": "$.payload.userId",
+        "verificationType": "EMAIL",
+        "context.$": "$.riskScore"
+      },
+      "Next": "AllowWithMonitoring"
+    },
+
+    "LogAndAllow": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-audit-log",
+      "Parameters": {
+        "eventType": "AUTH_ALLOWED",
+        "userId.$": "$.payload.userId",
+        "riskScore.$": "$.riskScore.score"
+      },
+      "Next": "SuccessState"
+    },
+
+    "AllowWithAudit": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-audit-log",
+      "Parameters": {
+        "eventType": "AUTH_ALLOWED_WITH_MFA",
+        "userId.$": "$.payload.userId",
+        "mfaMethod.$": "$.mfaResult.method"
+      },
+      "Next": "SuccessState"
+    },
+
+    "AllowWithMonitoring": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-enable-monitoring",
+      "Parameters": {
+        "userId.$": "$.payload.userId",
+        "monitoringLevel": "ENHANCED",
+        "duration": 3600
+      },
+      "Next": "SuccessState"
+    },
+
+    "ComplianceWorkflow": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:genesis-compliance-processor",
+        "Input.$": "$"
+      },
+      "Next": "SuccessState"
+    },
+
+    "DeviceCompromiseWorkflow": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "RevokeDeviceTokens",
+          "States": {
+            "RevokeDeviceTokens": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-revoke-tokens",
+              "Parameters": {
+                "deviceId.$": "$.payload.deviceId",
+                "scope": "ALL"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifyDeviceOwner",
+          "States": {
+            "NotifyDeviceOwner": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-owner",
+              "Parameters": {
+                "deviceId.$": "$.payload.deviceId",
+                "notificationType": "DEVICE_COMPROMISED"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "QuarantineDevice",
+          "States": {
+            "QuarantineDevice": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-mdm-action",
+              "Parameters": {
+                "deviceId.$": "$.payload.deviceId",
+                "action": "QUARANTINE"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.deviceResponse",
+      "Next": "CreateIncidentTicket"
+    },
+
+    "CriticalIncidentResponse": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "PageOnCall",
+          "States": {
+            "PageOnCall": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-pagerduty",
+              "Parameters": {
+                "severity": "CRITICAL",
+                "summary.$": "$.classification.summary",
+                "eventId.$": "$.eventId"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "InitiateWarRoom",
+          "States": {
+            "InitiateWarRoom": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-create-warroom",
+              "Parameters": {
+                "incidentType.$": "$.classification.category",
+                "severity": "CRITICAL"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "ExecuteEmergencyPlaybook",
+          "States": {
+            "ExecuteEmergencyPlaybook": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:genesis-emergency-playbook",
+                "Input.$": "$"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.criticalResponse",
+      "Next": "MonitorAndWait"
+    },
+
+    "StandardEventProcessing": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-process-event",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "classification.$": "$.classification"
+      },
+      "Next": "SuccessState"
+    },
+
+    "CreateIncidentTicket": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-create-ticket",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "classification.$": "$.classification",
+        "priority.$": "$.classification.severity"
+      },
+      "ResultPath": "$.ticket",
+      "Next": "MonitorAndWait"
+    },
+
+    "MonitorAndWait": {
+      "Type": "Wait",
+      "Seconds": 300,
+      "Next": "CheckIncidentStatus"
+    },
+
+    "CheckIncidentStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-check-incident",
+      "Parameters": {
+        "eventId.$": "$.eventId"
+      },
+      "ResultPath": "$.incidentStatus",
+      "Next": "IsIncidentResolved"
+    },
+
+    "IsIncidentResolved": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.incidentStatus.resolved",
+          "BooleanEquals": true,
+          "Next": "CloseIncident"
+        },
+        {
+          "Variable": "$.incidentStatus.escalate",
+          "BooleanEquals": true,
+          "Next": "EscalateToHuman"
+        }
+      ],
+      "Default": "MonitorAndWait"
+    },
+
+    "EscalateToHuman": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-escalate",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "escalationLevel": "L2",
+        "context.$": "$"
+      },
+      "Next": "WaitForHumanResolution"
+    },
+
+    "WaitForHumanResolution": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+      "Parameters": {
+        "QueueUrl": "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/genesis-human-tasks",
+        "MessageBody": {
+          "eventId.$": "$.eventId",
+          "taskToken.$": "$$.Task.Token",
+          "context.$": "$"
+        }
+      },
+      "TimeoutSeconds": 86400,
+      "ResultPath": "$.humanResolution",
+      "Next": "CloseIncident",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.Timeout"],
+          "ResultPath": "$.error",
+          "Next": "AutoEscalate"
+        }
+      ]
+    },
+
+    "AutoEscalate": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-escalate",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "escalationLevel": "L3",
+        "reason": "Human resolution timeout"
+      },
+      "Next": "WaitForHumanResolution"
+    },
+
+    "CloseIncident": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-close-incident",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "resolution.$": "$.humanResolution",
+        "metrics": {
+          "startTime.$": "$.timestamp",
+          "endTime.$": "$$.State.EnteredTime"
+        }
+      },
+      "Next": "SuccessState"
+    },
+
+    "HandleClassificationError": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-handle-error",
+      "Parameters": {
+        "error.$": "$.error",
+        "originalEvent.$": "$"
+      },
+      "Next": "FailState"
+    },
+
+    "SuccessState": {
+      "Type": "Succeed"
+    },
+
+    "FailState": {
+      "Type": "Fail",
+      "Error": "SecurityOrchestrationFailed",
+      "Cause": "Unable to process security event"
+    }
+  }
+}
