@@ -57,12 +57,14 @@ runs:
     - name: Install dependencies
       shell: bash
       working-directory: ${{ github.action_path }}
-      run: npm ci --production
+      run: npm ci
 
     - name: Build scanner
       shell: bash
       working-directory: ${{ github.action_path }}
       run: npm run build
+      env:
+        NODE_ENV: production
 
     - name: Run Workflow Guardian
       id: scan
@@ -71,31 +73,41 @@ runs:
         GUARDIAN_CONFIDENCE: ${{ inputs.confidence-threshold }}
         GUARDIAN_BLOCK_THRESHOLD: ${{ inputs.block-threshold }}
         GUARDIAN_WARN_THRESHOLD: ${{ inputs.warn-threshold }}
+        GUARDIAN_PATH: ${{ inputs.path }}
+        GUARDIAN_FORMAT: ${{ inputs.output-format }}
+        GUARDIAN_STRICT: ${{ inputs.strict }}
+        GUARDIAN_ACTION_PATH: ${{ github.action_path }}
       run: |
         set +e
 
-        ARGS="${{ inputs.path }}"
-        if [ "${{ inputs.output-format }}" = "json" ]; then
+        # Build arguments safely using environment variables (not shell interpolation)
+        ARGS="$GUARDIAN_PATH"
+        if [ "$GUARDIAN_FORMAT" = "json" ]; then
           ARGS="$ARGS --json"
         fi
-        if [ "${{ inputs.strict }}" = "true" ]; then
+        if [ "$GUARDIAN_STRICT" = "true" ]; then
           ARGS="$ARGS --strict"
         fi
 
-        OUTPUT=$(node ${{ github.action_path }}/dist/index.js scan $ARGS)
+        # Quote paths properly to handle spaces
+        OUTPUT=$(node "$GUARDIAN_ACTION_PATH/dist/index.js" scan $ARGS 2>&1)
         EXIT_CODE=$?
 
         echo "$OUTPUT"
 
-        # Parse results for outputs
-        if [ "${{ inputs.output-format }}" = "json" ]; then
-          echo "report<<EOF" >> $GITHUB_OUTPUT
-          echo "$OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+        # Parse results for outputs using heredoc with unique delimiter
+        if [ "$GUARDIAN_FORMAT" = "json" ]; then
+          # Use unique EOF delimiter to prevent injection
+          DELIMITER="EOF_$(date +%s)_$$"
+          {
+            echo "report<<$DELIMITER"
+            echo "$OUTPUT"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
 
-          VERDICT=$(echo "$OUTPUT" | jq -r '.[0].verdict // "ALLOW"')
-          RISK_SCORE=$(echo "$OUTPUT" | jq -r '[.[].riskScore] | max // 0')
-          FINDINGS=$(echo "$OUTPUT" | jq -r '[.[].details | length] | add // 0')
+          VERDICT=$(echo "$OUTPUT" | jq -r '.[0].verdict // "ALLOW"' 2>/dev/null || echo "ALLOW")
+          RISK_SCORE=$(echo "$OUTPUT" | jq -r '[.[].riskScore] | max // 0' 2>/dev/null || echo "0")
+          FINDINGS=$(echo "$OUTPUT" | jq -r '[.[].details | length] | add // 0' 2>/dev/null || echo "0")
         else
           VERDICT="ALLOW"
           [ $EXIT_CODE -eq 1 ] && VERDICT="WARN"
@@ -104,9 +116,9 @@ runs:
           FINDINGS="N/A"
         fi
 
-        echo "verdict=$VERDICT" >> $GITHUB_OUTPUT
-        echo "risk_score=$RISK_SCORE" >> $GITHUB_OUTPUT
-        echo "findings_count=$FINDINGS" >> $GITHUB_OUTPUT
+        echo "verdict=$VERDICT" >> "$GITHUB_OUTPUT"
+        echo "risk_score=$RISK_SCORE" >> "$GITHUB_OUTPUT"
+        echo "findings_count=$FINDINGS" >> "$GITHUB_OUTPUT"
 
         exit $EXIT_CODE
 

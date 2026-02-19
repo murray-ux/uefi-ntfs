@@ -1,0 +1,17 @@
+# Sound Assets for GENESIS 2.0
+#
+# Required sounds:
+# - alert.wav - Security alert notification
+# - success.wav - Success confirmation
+# - error.wav - Error notification
+# - scan.wav - NFC scan feedback
+# - biometric.wav - Biometric authentication
+#
+# Format: WAV or MP3
+# Recommended: 16-bit, 44.1kHz, mono
+# Duration: 0.5-2 seconds
+#
+# Free sound resources:
+# - Freesound: https://freesound.org
+# - ZapSplat: https://zapsplat.com
+# - Mixkit: https://mixkit.co/free-sound-effects

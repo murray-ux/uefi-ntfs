@@ -11,6 +11,15 @@ import {
   PasswordResetResult,
   DEFAULT_PREFERENCES,
 } from './types';
+import {
+  hashPassword,
+  verifyPassword,
+  generateSecureToken,
+  generateSessionToken,
+  checkRateLimit,
+  auditLog,
+  AuditAction,
+} from './security';
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
@@ -23,28 +32,10 @@ const passwordResetRequests = new Map<string, PasswordResetRequest[]>();
 const sessions = new Map<string, { userId: string; expiresAt: Date }>();
 
 /**
- * Generate a cryptographically secure token
+ * Generate a cryptographically secure token (wrapper)
  */
 function generateToken(length: number = 32): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
-  const randomValues = new Uint8Array(length);
-  crypto.getRandomValues(randomValues);
-  for (let i = 0; i < length; i++) {
-    token += chars[randomValues[i] % chars.length];
-  }
-  return token;
-}
-
-/**
- * Simple hash function (use bcrypt/argon2 in production)
- */
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'auth-portal-salt');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return generateSecureToken(length);
 }
 
 /**
@@ -121,18 +112,26 @@ export async function login(
   username: string,
   password: string
 ): Promise<AuthResult> {
-  const passwordHash = await hashPassword(password);
+  // Rate limiting check
+  const rateLimit = checkRateLimit(`login:${username.toLowerCase()}`, 10, RATE_LIMIT_WINDOW_MS);
+  if (!rateLimit.allowed) {
+    auditLog(AuditAction.RATE_LIMITED, null, { username: username.substring(0, 3) + '***' });
+    return { success: false, message: 'Too many login attempts. Please try again later.' };
+  }
 
   for (const [, user] of users) {
     if (user.username.toLowerCase() === username.toLowerCase()) {
-      if (user.passwordHash === passwordHash) {
+      // Use constant-time password verification
+      const isValid = await verifyPassword(password, user.passwordHash);
+      if (isValid) {
         // Create session
-        const sessionToken = generateToken();
+        const sessionToken = generateSessionToken();
         sessions.set(sessionToken, {
           userId: user.id,
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         });
 
+        auditLog(AuditAction.LOGIN_SUCCESS, user.id);
         const { passwordHash: _, ...safeUser } = user;
         return {
           success: true,
@@ -141,6 +140,7 @@ export async function login(
           token: sessionToken,
         };
       }
+      auditLog(AuditAction.LOGIN_FAILURE, user.id);
       break;
     }
   }
@@ -227,8 +227,13 @@ export async function requestPasswordReset(
 
   passwordResetRequests.set(targetUser.id, [...recentRequests, resetRequest]);
 
-  // In production: Send email here
-  console.log(`[Auth] Password reset token for ${targetUser.username}: ${resetToken}`);
+  // Audit log (no sensitive data)
+  auditLog(AuditAction.PASSWORD_RESET_REQUEST, targetUser.id, {
+    emailPartial: targetUser.email.substring(0, 3) + '***',
+  });
+
+  // TODO: Send password reset email via secure email service
+  // EmailService.sendPasswordReset(targetUser.email, resetToken);
 
   return privacyResponse;
 }

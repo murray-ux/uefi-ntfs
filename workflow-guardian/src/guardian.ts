@@ -149,10 +149,12 @@ export class WorkflowGuardian {
           `Unpinned action ref: ${actionMatch[1]}@${actionMatch[2]} - use SHA`));
       }
 
+      // Detect floating version tags like @v2 (not @v2.1.0 or SHA)
       const versionMatch = line.match(/uses:\s*([^@\s]+)@(v\d+)\s*$/);
-      if (versionMatch && !line.includes('@v') === false) {
+      if (versionMatch) {
+        // This pattern catches @v2, @v3 etc. without full semver or SHA
         tokens.push(this.createToken('VERSION', versionMatch[0], lineNum, 'uses', 'HIGH',
-          `Floating version tag: ${versionMatch[2]} - pin to specific version or SHA`));
+          `Floating version tag: ${versionMatch[2]} - pin to specific version (e.g., v2.1.0) or SHA`));
       }
 
       if (RISK_PATTERNS.SUDO_USAGE.test(line)) {
@@ -307,7 +309,10 @@ export class WorkflowGuardian {
   }
 
   private isInPRContext(content: string): boolean {
-    return /on:\s*\n?\s*(pull_request|pull_request_target)/.test(content);
+    // Check for any trigger that runs in PR context
+    // pull_request, pull_request_target, and workflow_run (when triggered by PRs)
+    return /on:\s*\n?\s*(pull_request|pull_request_target|workflow_run)/.test(content) ||
+           /pull_request/.test(content);
   }
 
   private suggestFix(token: RiskToken): string | undefined {
