@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --genesis-dark: #0a0a0f;
+  --genesis-darker: #050508;
+  --cyan-glow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Rajdhani', sans-serif;
+  background-color: var(--genesis-dark);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--genesis-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5);
+}
+
+/* Typography */
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.font-rajdhani {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.font-mono {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* Glow effects */
+.glow-cyan {
+  box-shadow: var(--cyan-glow);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* Matrix rain effect */
+.matrix-rain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(0, 255, 0, 0.03) 50%,
+    transparent 100%
+  );
+  animation: matrix-scroll 20s linear infinite;
+}
+
+@keyframes matrix-scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 1000px;
+  }
+}
+
+/* Pulse animation */
+@keyframes pulse-cyan {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+  }
+}
+
+.animate-pulse-cyan {
+  animation: pulse-cyan 2s ease-in-out infinite;
+}
+
+/* Selection */
+::selection {
+  background: rgba(0, 255, 255, 0.3);
+  color: white;
+}
+
+/* Focus states */
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
