@@ -5,7 +5,7 @@
 // Tests all 13 GENESIS modules for basic functionality.
 // Run: node --test test/genesis-modules.test.js
 //
-// Copyright (c) 2025 Murray Bembrick — Founder & Lead Developer — Apache-2.0
+// Copyright (c) 2025 murray-ux — Founder & Lead Developer — Apache-2.0
 
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';

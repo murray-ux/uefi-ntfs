@@ -1,0 +1,306 @@
+{
+  "name": "Vegetation Tree Template",
+  "version": "1.0.0",
+  "contentType": "vegetation",
+  "subType": "tree",
+  "description": "Template for procedural tree and large plant generation",
+
+  "structure": {
+    "trunkSystem": {
+      "baseRadius": { "min": 0.1, "max": 2.0 },
+      "height": { "min": 3, "max": 30 },
+      "taper": { "min": 0.6, "max": 0.85 },
+      "segments": { "min": 8, "max": 24 },
+      "bendFactor": { "min": 0, "max": 0.3 },
+      "twistFactor": { "min": 0, "max": 15 }
+    },
+
+    "branchingRules": {
+      "L-system": {
+        "axiom": "F",
+        "rules": {
+          "F": "FF+[+F-F-F]-[-F+F+F]",
+          "X": "F+[[X]-X]-F[-FX]+X"
+        },
+        "angle": { "min": 20, "max": 45 },
+        "iterations": { "min": 3, "max": 6 },
+        "lengthRatio": { "min": 0.6, "max": 0.8 },
+        "radiusRatio": { "min": 0.5, "max": 0.7 }
+      },
+
+      "spaceColonization": {
+        "attractorCount": { "min": 100, "max": 2000 },
+        "attractorRadius": { "min": 0.1, "max": 0.5 },
+        "killDistance": 0.5,
+        "influenceDistance": 3.0,
+        "growthStep": 0.2
+      }
+    },
+
+    "hierarchy": {
+      "root": {
+        "type": "fixed",
+        "children": ["trunk_base"]
+      },
+      "trunk_base": {
+        "type": "pivot",
+        "limits": { "minAngle": -5, "maxAngle": 5 },
+        "children": ["trunk_lower"]
+      },
+      "trunk_lower": {
+        "type": "pivot",
+        "limits": { "minAngle": -10, "maxAngle": 10 },
+        "children": ["trunk_mid", "branch_L1_*", "branch_L2_*"]
+      },
+      "trunk_mid": {
+        "type": "pivot",
+        "limits": { "minAngle": -15, "maxAngle": 15 },
+        "children": ["trunk_upper", "branch_M1_*", "branch_M2_*"]
+      },
+      "trunk_upper": {
+        "type": "pivot",
+        "limits": { "minAngle": -20, "maxAngle": 20 },
+        "children": ["crown_base", "branch_U1_*"]
+      },
+      "crown_base": {
+        "type": "ball",
+        "limits": { "minPitch": -25, "maxPitch": 25 },
+        "children": ["crown_branches_*"]
+      }
+    },
+
+    "foliage": {
+      "leafClusters": {
+        "count": { "min": 50, "max": 500 },
+        "size": { "min": 0.1, "max": 0.5 },
+        "density": { "min": 0.3, "max": 0.9 }
+      },
+      "leafShapes": [
+        { "type": "broadleaf", "aspect": 1.2, "serration": 0.1 },
+        { "type": "needle", "aspect": 15, "cluster": 5 },
+        { "type": "palm", "aspect": 8, "segments": 7 },
+        { "type": "compound", "leaflets": 7, "arrangement": "pinnate" }
+      ],
+      "distribution": {
+        "method": "volume_scatter",
+        "volumeShape": "ellipsoid",
+        "densityFalloff": "gaussian"
+      }
+    },
+
+    "rootSystem": {
+      "visible": true,
+      "depth": { "min": 0.5, "max": 3.0 },
+      "spread": { "min": 1.0, "max": 5.0 },
+      "branchCount": { "min": 3, "max": 8 },
+      "surfaceRoots": { "probability": 0.3, "height": 0.2 }
+    }
+  },
+
+  "variants": {
+    "oak": {
+      "height": [8, 20],
+      "spread": 1.2,
+      "branchAngle": [35, 55],
+      "foliageShape": "rounded",
+      "leafType": "broadleaf"
+    },
+    "pine": {
+      "height": [15, 40],
+      "spread": 0.4,
+      "branchAngle": [15, 35],
+      "foliageShape": "conical",
+      "leafType": "needle"
+    },
+    "willow": {
+      "height": [6, 15],
+      "spread": 1.5,
+      "branchAngle": [40, 80],
+      "foliageShape": "weeping",
+      "leafType": "narrow"
+    },
+    "palm": {
+      "height": [5, 25],
+      "spread": 0.15,
+      "branchAngle": [10, 40],
+      "foliageShape": "crown_only",
+      "leafType": "palm"
+    },
+    "baobab": {
+      "height": [8, 25],
+      "spread": 2.0,
+      "branchAngle": [60, 90],
+      "foliageShape": "sparse_canopy",
+      "leafType": "broadleaf",
+      "trunkBulge": 1.8
+    },
+    "bamboo": {
+      "height": [5, 30],
+      "spread": 0.1,
+      "branchAngle": [20, 45],
+      "foliageShape": "segments",
+      "leafType": "narrow",
+      "clusterCount": [5, 20]
+    }
+  },
+
+  "animations": {
+    "wind_idle": {
+      "duration": 4.0,
+      "loop": true,
+      "windStrength": 0.3,
+      "tracks": [
+        {
+          "target": "trunk_upper",
+          "property": "rotation",
+          "noise": { "type": "perlin", "frequency": 0.5, "amplitude": 3 }
+        },
+        {
+          "target": "branch_*",
+          "property": "rotation",
+          "noise": { "type": "perlin", "frequency": 1.2, "amplitude": 8 }
+        },
+        {
+          "target": "foliage_*",
+          "property": "rotation",
+          "noise": { "type": "perlin", "frequency": 2.0, "amplitude": 15 }
+        }
+      ]
+    },
+    "wind_strong": {
+      "duration": 2.0,
+      "loop": true,
+      "windStrength": 0.8,
+      "tracks": [
+        {
+          "target": "trunk_mid",
+          "property": "rotation",
+          "noise": { "type": "perlin", "frequency": 1.0, "amplitude": 8 }
+        },
+        {
+          "target": "trunk_upper",
+          "property": "rotation",
+          "noise": { "type": "perlin", "frequency": 1.5, "amplitude": 15 }
+        },
+        {
+          "target": "branch_*",
+          "property": "rotation",
+          "noise": { "type": "perlin", "frequency": 2.5, "amplitude": 25 }
+        }
+      ]
+    },
+    "growth": {
+      "duration": 10.0,
+      "loop": false,
+      "tracks": [
+        {
+          "target": "trunk_*",
+          "property": "scale",
+          "keyframes": [
+            { "time": 0, "value": { "x": 0.1, "y": 0.1, "z": 0.1 } },
+            { "time": 10.0, "value": { "x": 1.0, "y": 1.0, "z": 1.0 } }
+          ],
+          "easing": "easeOutQuad"
+        }
+      ]
+    }
+  },
+
+  "texturing": {
+    "bark": {
+      "baseColors": [
+        { "name": "bark_light", "hue": [25, 40], "saturation": [0.2, 0.4], "lightness": [0.3, 0.5] },
+        { "name": "bark_dark", "hue": [20, 35], "saturation": [0.15, 0.35], "lightness": [0.15, 0.3] }
+      ],
+      "patterns": [
+        { "type": "ridged", "frequency": 0.4, "depth": 0.8 },
+        { "type": "plated", "frequency": 0.2, "depth": 0.6 },
+        { "type": "smooth", "frequency": 0.3, "depth": 0.2 },
+        { "type": "peeling", "frequency": 0.1, "depth": 0.5 }
+      ],
+      "normalStrength": 3.0,
+      "roughnessRange": [0.6, 0.95],
+      "aoStrength": 0.8
+    },
+    "foliage": {
+      "baseColors": [
+        { "name": "leaf_light", "hue": [80, 140], "saturation": [0.4, 0.7], "lightness": [0.3, 0.5] },
+        { "name": "leaf_dark", "hue": [85, 130], "saturation": [0.3, 0.6], "lightness": [0.15, 0.35] },
+        { "name": "leaf_autumn", "hue": [0, 60], "saturation": [0.5, 0.9], "lightness": [0.3, 0.6] }
+      ],
+      "subsurfaceScatter": 0.5,
+      "translucency": 0.3,
+      "roughnessRange": [0.3, 0.5]
+    }
+  },
+
+  "audio": {
+    "wind_rustle": {
+      "type": "ambient",
+      "frequency": [200, 2000],
+      "volume_curve": "wind_speed",
+      "randomization": 0.3
+    },
+    "branch_creak": {
+      "type": "stress",
+      "frequency": [50, 200],
+      "trigger": "wind_threshold",
+      "probability": 0.1
+    },
+    "leaf_drop": {
+      "type": "event",
+      "frequency": [1000, 4000],
+      "duration": 0.3
+    }
+  },
+
+  "lod": {
+    "levels": [
+      { "distance": 0, "triangles": 1.0, "foliageDetail": 1.0 },
+      { "distance": 20, "triangles": 0.5, "foliageDetail": 0.7 },
+      { "distance": 50, "triangles": 0.25, "foliageDetail": 0.4 },
+      { "distance": 100, "triangles": 0.1, "foliageDetail": 0.1, "billboard": false },
+      { "distance": 200, "triangles": 0, "billboard": true }
+    ],
+    "impostorViews": 8,
+    "foliageCards": true
+  },
+
+  "physics": {
+    "collision": {
+      "trunk": { "type": "capsule", "simplify": false },
+      "branches": { "type": "capsule", "minRadius": 0.05 },
+      "foliage": { "type": "none" }
+    },
+    "destruction": {
+      "breakForce": 10000,
+      "splinterCount": [3, 8],
+      "fallBehavior": "physics_ragdoll"
+    }
+  },
+
+  "seasons": {
+    "spring": {
+      "foliageDensity": 0.6,
+      "foliageColor": "leaf_light",
+      "flowers": true,
+      "flowerDensity": 0.3
+    },
+    "summer": {
+      "foliageDensity": 1.0,
+      "foliageColor": "leaf_dark",
+      "flowers": false
+    },
+    "autumn": {
+      "foliageDensity": 0.7,
+      "foliageColor": "leaf_autumn",
+      "fallingLeaves": true,
+      "fallRate": 0.1
+    },
+    "winter": {
+      "foliageDensity": 0.0,
+      "snow": true,
+      "snowAccumulation": 0.8
+    }
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "name": "Biped Creature Template",
+  "version": "1.0.0",
+  "contentType": "creature",
+  "description": "Template for humanoid/biped creature generation",
+
+  "skeleton": {
+    "hierarchy": {
+      "root": {
+        "type": "fixed",
+        "children": ["spine_base"]
+      },
+      "spine_base": {
+        "type": "ball",
+        "limits": { "minPitch": -20, "maxPitch": 20, "minYaw": -30, "maxYaw": 30 },
+        "children": ["spine_mid", "hip_L", "hip_R"]
+      },
+      "spine_mid": {
+        "type": "ball",
+        "limits": { "minPitch": -15, "maxPitch": 15, "minYaw": -20, "maxYaw": 20 },
+        "children": ["spine_top"]
+      },
+      "spine_top": {
+        "type": "ball",
+        "limits": { "minPitch": -15, "maxPitch": 15, "minYaw": -25, "maxYaw": 25 },
+        "children": ["neck", "shoulder_L", "shoulder_R"]
+      },
+      "neck": {
+        "type": "ball",
+        "limits": { "minPitch": -40, "maxPitch": 40, "minYaw": -60, "maxYaw": 60 },
+        "children": ["head"]
+      },
+      "head": {
+        "type": "ball",
+        "limits": { "minPitch": -20, "maxPitch": 20, "minYaw": -30, "maxYaw": 30 },
+        "children": []
+      },
+      "shoulder_L": {
+        "type": "ball",
+        "limits": { "minPitch": -90, "maxPitch": 180, "minYaw": -45, "maxYaw": 90 },
+        "children": ["elbow_L"]
+      },
+      "elbow_L": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 145 },
+        "children": ["wrist_L"]
+      },
+      "wrist_L": {
+        "type": "saddle",
+        "limits": { "minAngle1": -70, "maxAngle1": 70, "minAngle2": -20, "maxAngle2": 20 },
+        "children": ["hand_L"]
+      },
+      "hand_L": {
+        "type": "fixed",
+        "children": []
+      },
+      "shoulder_R": {
+        "type": "ball",
+        "limits": { "minPitch": -90, "maxPitch": 180, "minYaw": -45, "maxYaw": 90 },
+        "children": ["elbow_R"],
+        "mirror": "shoulder_L"
+      },
+      "elbow_R": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 145 },
+        "children": ["wrist_R"],
+        "mirror": "elbow_L"
+      },
+      "wrist_R": {
+        "type": "saddle",
+        "limits": { "minAngle1": -70, "maxAngle1": 70, "minAngle2": -20, "maxAngle2": 20 },
+        "children": ["hand_R"],
+        "mirror": "wrist_L"
+      },
+      "hand_R": {
+        "type": "fixed",
+        "children": [],
+        "mirror": "hand_L"
+      },
+      "hip_L": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 120, "minYaw": -45, "maxYaw": 45 },
+        "children": ["knee_L"]
+      },
+      "knee_L": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 140 },
+        "children": ["ankle_L"]
+      },
+      "ankle_L": {
+        "type": "hinge",
+        "limits": { "minAngle": -30, "maxAngle": 45 },
+        "children": ["foot_L"]
+      },
+      "foot_L": {
+        "type": "fixed",
+        "children": []
+      },
+      "hip_R": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 120, "minYaw": -45, "maxYaw": 45 },
+        "children": ["knee_R"],
+        "mirror": "hip_L"
+      },
+      "knee_R": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 140 },
+        "children": ["ankle_R"],
+        "mirror": "knee_L"
+      },
+      "ankle_R": {
+        "type": "hinge",
+        "limits": { "minAngle": -30, "maxAngle": 45 },
+        "children": ["foot_R"],
+        "mirror": "ankle_L"
+      },
+      "foot_R": {
+        "type": "fixed",
+        "children": [],
+        "mirror": "foot_L"
+      }
+    },
+
+    "proportions": {
+      "head_to_body": 0.125,
+      "arm_to_body": 0.4,
+      "leg_to_body": 0.5,
+      "torso_to_body": 0.35,
+      "shoulder_width": 0.25,
+      "hip_width": 0.2
+    }
+  },
+
+  "animations": {
+    "idle": {
+      "duration": 2.0,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "spine_mid",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 0, "y": 0, "z": 0 }, "easing": "easeInOut" },
+            { "time": 1.0, "value": { "x": 2, "y": 0, "z": 0 }, "easing": "easeInOut" },
+            { "time": 2.0, "value": { "x": 0, "y": 0, "z": 0 }, "easing": "easeInOut" }
+          ]
+        }
+      ]
+    },
+    "walk": {
+      "duration": 1.0,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "hip_L",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": -30, "y": 0, "z": 0 } },
+            { "time": 0.5, "value": { "x": 30, "y": 0, "z": 0 } },
+            { "time": 1.0, "value": { "x": -30, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "hip_R",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 30, "y": 0, "z": 0 } },
+            { "time": 0.5, "value": { "x": -30, "y": 0, "z": 0 } },
+            { "time": 1.0, "value": { "x": 30, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "shoulder_L",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 30, "y": 0, "z": 0 } },
+            { "time": 0.5, "value": { "x": -30, "y": 0, "z": 0 } },
+            { "time": 1.0, "value": { "x": 30, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "shoulder_R",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": -30, "y": 0, "z": 0 } },
+            { "time": 0.5, "value": { "x": 30, "y": 0, "z": 0 } },
+            { "time": 1.0, "value": { "x": -30, "y": 0, "z": 0 } }
+          ]
+        }
+      ]
+    }
+  },
+
+  "texturing": {
+    "baseColors": [
+      { "name": "skin", "hue": [20, 40], "saturation": [0.3, 0.5], "lightness": [0.4, 0.7] },
+      { "name": "detail", "hue": [0, 360], "saturation": [0.2, 0.4], "lightness": [0.3, 0.5] }
+    ],
+    "noiseTypes": ["organic", "cellular"],
+    "normalStrength": 1.5,
+    "roughnessRange": [0.4, 0.7]
+  },
+
+  "audio": {
+    "footstep": {
+      "type": "impact",
+      "frequency": [80, 120],
+      "duration": 0.15
+    },
+    "breathe": {
+      "type": "ambient",
+      "frequency": [100, 150],
+      "duration": 2.0
+    }
+  }
+}
