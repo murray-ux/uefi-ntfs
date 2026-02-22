@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # GENESIS API Backend (Port 8080)
+  genesis-api:
+    build:
+      context: ./genesis-api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET:-genesis-secret-change-in-production}
+      - DB_PATH=/data/genesis.db
+    volumes:
+      - genesis-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Auth Portal (Port 3000)
+  auth-portal:
+    build:
+      context: ./auth-portal
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - SESSION_SECRET=${SESSION_SECRET:-genesis-session-secret-change-in-production}
+      - API_URL=http://genesis-api:8080
+    depends_on:
+      genesis-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Web Dashboard (Port 3001) - Static frontend
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3001:80"
+    depends_on:
+      - genesis-api
+    restart: unless-stopped
+
+volumes:
+  genesis-data:
+
+networks:
+  default:
+    name: genesis-network

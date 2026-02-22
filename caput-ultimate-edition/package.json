@@ -2,7 +2,7 @@
   "name": "genesis-sovereign-security",
   "version": "2.0.0",
   "description": "GENESIS 2.0 — Forbidden Ninja City Sovereign Security Platform",
-  "author": "murray-ux <Founder & Lead Developer>",
+  "author": "Murray Bembrick <Founder & Lead Developer>",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",
@@ -15,8 +15,7 @@
     "genesis-mabul": "./src/cli/mabul.js",
     "mabul": "./src/cli/mabul.js",
     "genesis-boot": "./src/lib/genesis-init.js",
-    "genesis-control": "./src/cli/genesis-control.js",
-    "genesis-generate": "./orchestration/generation_master.js"
+    "genesis-control": "./src/cli/genesis-control.js"
   },
   "scripts": {
     "genesis": "node src/cli/genesis.js",
@@ -66,12 +65,17 @@
     "boot": "node src/lib/genesis-init.js",
     "boot:sentinel": "node src/lib/genesis-init.js --watch-level active",
     "test:modules": "node --test test/genesis-modules.test.js",
-    "test:orchestration": "node --test test/orchestration.test.js",
     "test:all": "node --import tsx --test test/*.test.ts && node --test test/*.test.js",
-    "generate": "node orchestration/generation_master.js",
-    "generate:creature": "node orchestration/generation_master.js --content_type creature",
-    "generate:structure": "node orchestration/generation_master.js --content_type structure",
-    "generate:help": "node orchestration/generation_master.js --help"
+    "sovereign": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts",
+    "sovereign:setup": "./sovereign-suite/bin/setup-vault-folders.sh",
+    "sovereign:run": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts run",
+    "sovereign:intake": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts intake",
+    "sovereign:classify": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts classify",
+    "sovereign:legal": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts legal-pack",
+    "sovereign:finance": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts finance-pack",
+    "sovereign:ato": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts ato-pack",
+    "sovereign:trust": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts trust-pack",
+    "sovereign:health": "npx tsx sovereign-suite/shortcuts/sovereign-orchestrator.ts health-pack"
   },
   "dependencies": {
     "tsx": "^4.7.0"

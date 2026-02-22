@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GENESIS 2.0 | Sovereign Security Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #030712;
+      --bg-surface: #0a0f1c;
+      --bg-elevated: rgba(15, 23, 42, 0.9);
+      --bg-card: rgba(20, 30, 50, 0.8);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-light: rgba(255, 255, 255, 0.15);
+      --text: #f1f5f9;
+      --text-muted: #64748b;
+      --text-dim: #475569;
+
+      /* GENESIS Brand Colors */
+      --genesis-primary: #667eea;
+      --genesis-secondary: #764ba2;
+      --genesis-accent: #00f5ff;
+      --genesis-gold: #fbbf24;
+      --genesis-emerald: #10b981;
+      --genesis-rose: #f43f5e;
+      --genesis-amber: #f59e0b;
+
+      /* Module Colors */
+      --merkava-color: #8b5cf6;
+      --tzofeh-color: #06b6d4;
+      --herev-color: #ef4444;
+      --keruv-color: #22c55e;
+      --hadaat-color: #f59e0b;
+      --malakh-color: #ec4899;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       ANIMATED BACKGROUND
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(102, 126, 234, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(118, 75, 162, 0.1), transparent),
+        radial-gradient(ellipse 50% 30% at 20% 80%, rgba(0, 245, 255, 0.05), transparent),
+        linear-gradient(180deg, var(--bg-deep) 0%, #0a0f1c 50%, #0f0a1a 100%);
+    }
+
+    .grid-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background-image:
+        linear-gradient(rgba(102, 126, 234, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(50px, 50px); }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       HERO SECTION
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--genesis-accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--genesis-emerald);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.2); }
+    }
+
+    .hero-title {
+      font-size: clamp(48px, 10vw, 120px);
+      font-weight: 900;
+      letter-spacing: -4px;
+      line-height: 0.95;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 0%, #667eea 50%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeInUp 0.8s ease-out 0.1s backwards;
+    }
+
+    .hero-version {
+      font-size: 24px;
+      font-weight: 300;
+      color: var(--genesis-accent);
+      letter-spacing: 8px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.8s ease-out 0.2s backwards;
+    }
+
+    .hero-tagline {
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-weight: 400;
+      color: var(--text-muted);
+      max-width: 700px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+      animation: fadeInUp 0.8s ease-out 0.3s backwards;
+    }
+
+    .hero-tagline strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CTA Buttons */
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeInUp 0.8s ease-out 0.4s backwards;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 36px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--genesis-primary), var(--genesis-secondary));
+      color: white;
+      box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--border-light);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--genesis-primary);
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-dim);
+      font-size: 12px;
+      letter-spacing: 2px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    .scroll-indicator svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--genesis-primary);
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       FEATURES SECTION
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .features {
+      position: relative;
+      z-index: 10;
+      padding: 80px 24px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--genesis-accent);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Feature Stats */
+    .feature-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 64px;
+    }
+
+    @media (max-width: 900px) {
+      .feature-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 500px) {
+      .feature-stats { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      border-color: var(--genesis-primary);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-value {
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--genesis-accent), var(--genesis-primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       MODULES GRID
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .modules {
+      position: relative;
+      z-index: 10;
+      padding: 40px 24px 100px;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 1100px) {
+      .modules-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      .modules-grid { grid-template-columns: 1fr; }
+    }
+
+    .module-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--module-color, var(--genesis-primary));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .module-card:hover {
+      border-color: var(--module-color, var(--genesis-primary));
+      transform: translateY(-8px);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .module-card:hover::before {
+      opacity: 1;
+    }
+
+    .module-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--module-color, var(--genesis-primary)), rgba(255,255,255,0.1));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .module-hebrew {
+      font-size: 12px;
+      color: var(--module-color, var(--genesis-accent));
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .module-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .module-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .module-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .module-feature {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .module-arrow {
+      position: absolute;
+      bottom: 32px;
+      right: 32px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .module-card:hover .module-arrow {
+      background: var(--module-color, var(--genesis-primary));
+      transform: translateX(4px);
+    }
+
+    .module-arrow svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--text-muted);
+      transition: stroke 0.3s ease;
+    }
+
+    .module-card:hover .module-arrow svg {
+      stroke: white;
+    }
+
+    /* Featured Module */
+    .module-card.featured {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    }
+
+    @media (max-width: 700px) {
+      .module-card.featured { grid-column: span 1; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       SECURITY PRINCIPLES
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .principles {
+      position: relative;
+      z-index: 10;
+      padding: 80px 24px;
+      background: linear-gradient(180deg, transparent 0%, rgba(102, 126, 234, 0.03) 50%, transparent 100%);
+    }
+
+    .principles-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+    }
+
+    @media (max-width: 1000px) {
+      .principles-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .principles-grid { grid-template-columns: 1fr; }
+    }
+
+    .principle {
+      text-align: center;
+      padding: 32px 24px;
+    }
+
+    .principle-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      transition: all 0.3s ease;
+    }
+
+    .principle:hover .principle-icon {
+      transform: scale(1.1);
+      border-color: var(--genesis-primary);
+      box-shadow: 0 0 40px rgba(102, 126, 234, 0.2);
+    }
+
+    .principle-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .principle-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .footer {
+      position: relative;
+      z-index: 10;
+      padding: 60px 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .footer-brand {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--genesis-primary), var(--genesis-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .footer-tagline {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .footer-link {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--genesis-accent);
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       QUICK ACCESS DOCK
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .dock {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(10, 15, 28, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .dock-item {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      position: relative;
+    }
+
+    .dock-item:hover {
+      transform: translateY(-8px) scale(1.1);
+      background: var(--module-color, var(--genesis-primary));
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .dock-item::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      margin-bottom: 8px;
+    }
+
+    .dock-item:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       AUTHENTICATION MODAL
+    ═══════════════════════════════════════════════════════════════════════════ */
+    .auth-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 2000;
+      background: rgba(3, 7, 18, 0.95);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .auth-modal.active {
+      display: flex;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+      animation: modalIn 0.4s ease-out;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .auth-icon {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, var(--genesis-primary), var(--genesis-secondary));
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .auth-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .auth-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .auth-methods {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .auth-method {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .auth-method:hover {
+      background: rgba(102, 126, 234, 0.1);
+      border-color: var(--genesis-primary);
+    }
+
+    .auth-method-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .auth-method-info {
+      flex: 1;
+    }
+
+    .auth-method-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .auth-method-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 24px 0;
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .auth-input-group {
+      margin-bottom: 16px;
+    }
+
+    .auth-label {
+      display: block;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      transition: all 0.2s ease;
+    }
+
+    .auth-input:focus {
+      outline: none;
+      border-color: var(--genesis-primary);
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 18px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, var(--genesis-primary), var(--genesis-secondary));
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .auth-close {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .auth-close:hover {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: var(--genesis-rose);
+      color: var(--genesis-rose);
+    }
+
+    /* Animations */
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-canvas"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span>Platform Active</span>
+    </div>
+
+    <h1 class="hero-title">GENESIS</h1>
+    <div class="hero-version">2.0</div>
+
+    <p class="hero-tagline">
+      <strong>Charter-governed. Audit-trailed. AI-assisted. YubiKey-secured.</strong><br>
+      The sovereign security platform for document generation, cryptographic verification,
+      and intelligent automation.
+    </p>
+
+    <div class="hero-cta">
+      <a href="genesis-control.html" class="btn btn-primary">
+        <span>Launch Control Panel</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <a href="genesis-marketplace.html" class="btn btn-secondary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span>View Marketplace</span>
+      </a>
+    </div>
+
+    <div class="scroll-indicator">
+      <span>EXPLORE MODULES</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+        <path d="M12 5v14M19 12l-7 7-7-7"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Feature Stats -->
+  <section class="features">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Platform Capabilities</div>
+        <h2 class="section-title">Enterprise-Grade Security Infrastructure</h2>
+        <p class="section-desc">Built for sovereign control with cryptographic audit trails and hardware security integration.</p>
+      </div>
+
+      <div class="feature-stats">
+        <div class="stat-card">
+          <div class="stat-value">20+</div>
+          <div class="stat-label">Core Modules</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">100+</div>
+          <div class="stat-label">Security Resources</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">40+</div>
+          <div class="stat-label">API Endpoints</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">6</div>
+          <div class="stat-label">Security Layers</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modules Grid -->
+  <section class="modules">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Core Modules</div>
+        <h2 class="section-title">Integrated Security Ecosystem</h2>
+        <p class="section-desc">Each module is purpose-built for sovereign security control with full audit capabilities.</p>
+      </div>
+
+      <div class="modules-grid">
+        <!-- Control Panel - Featured -->
+        <a href="genesis-control.html" class="module-card featured" style="--module-color: var(--genesis-primary)">
+          <div class="module-icon">&#9741;</div>
+          <div class="module-hebrew">MERKAVA</div>
+          <div class="module-name">Genesis Control Panel</div>
+          <div class="module-desc">Master Command Center for managing all GENESIS operations. Real-time status monitoring, module coordination, and system health dashboards.</div>
+          <div class="module-features">
+            <span class="module-feature">Real-time Status</span>
+            <span class="module-feature">Module Control</span>
+            <span class="module-feature">Command Center</span>
+            <span class="module-feature">Health Monitoring</span>
+          </div>
+          <div class="module-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+
+        <!-- HEREV Arsenal -->
+        <a href="herev-arsenal.html" class="module-card" style="--module-color: var(--herev-color)">
+          <div class="module-icon">&#9876;</div>
+          <div class="module-hebrew">HEREV &#x2022; &#x5D7;&#x5E8;&#x5D1;</div>
+          <div class="module-name">Security Arsenal</div>
+          <div class="module-desc">Curated collection of 100+ security resources, tools, and intelligence feeds organized across 15 categories.</div>
+          <div class="module-features">
+            <span class="module-feature">100+ Tools</span>
+            <span class="module-feature">15 Categories</span>
+            <span class="module-feature">Intel Feeds</span>
+          </div>
+          <div class="module-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+
+        <!-- YubiKey Dashboard -->
+        <a href="yubikey-security-dashboard.html" class="module-card" style="--module-color: var(--keruv-color)">
+          <div class="module-icon">&#128273;</div>
+          <div class="module-hebrew">KERUV &#x2022; GUARDIAN</div>
+          <div class="module-name">YubiKey Security</div>
+          <div class="module-desc">Hardware security key configuration dashboard. FIDO2 passkeys, TOTP allocation, and PIV smart card management.</div>
+          <div class="module-features">
+            <span class="module-feature">FIDO2 Passkeys</span>
+            <span class="module-feature">TOTP Config</span>
+            <span class="module-feature">PIV Cards</span>
+          </div>
+          <div class="module-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+
+        <!-- Developer Panel -->
+        <a href="index.html" class="module-card" style="--module-color: var(--hadaat-color)">
+          <div class="module-icon">&#128187;</div>
+          <div class="module-hebrew">HADAAT &#x2022; INTELLIGENCE</div>
+          <div class="module-name">Developer Pro</div>
+          <div class="module-desc">Professional developer dashboard with AI integration, panel management, and real-time system monitoring.</div>
+          <div class="module-features">
+            <span class="module-feature">AI Chat</span>
+            <span class="module-feature">Live Metrics</span>
+            <span class="module-feature">Panel Grid</span>
+          </div>
+          <div class="module-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+
+        <!-- Financial Relief Engine -->
+        <a href="#" class="module-card" style="--module-color: var(--malakh-color)" onclick="alert('Financial Relief Engine - Case 6183-2025\n\nAccess via CLI: npm run evidence'); return false;">
+          <div class="module-icon">&#128176;</div>
+          <div class="module-hebrew">EBEN &#x2022; EVIDENCE</div>
+          <div class="module-name">Financial Relief Engine</div>
+          <div class="module-desc">Secure document management and case evidence tracking with cryptographic integrity verification.</div>
+          <div class="module-features">
+            <span class="module-feature">Hash Anchored</span>
+            <span class="module-feature">Case Tracking</span>
+            <span class="module-feature">Audit Trail</span>
+          </div>
+          <div class="module-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+
+        <!-- Security Dashboard -->
+        <a href="../genesis-security-dashboard.html" class="module-card" style="--module-color: var(--tzofeh-color)">
+          <div class="module-icon">&#128737;</div>
+          <div class="module-hebrew">TZOFEH &#x2022; SENTINEL</div>
+          <div class="module-name">Security Checklist</div>
+          <div class="module-desc">Comprehensive security checklist and quick reference tool for device hardening and account protection.</div>
+          <div class="module-features">
+            <span class="module-feature">Checklists</span>
+            <span class="module-feature">Device Hardening</span>
+            <span class="module-feature">Quick Links</span>
+          </div>
+          <div class="module-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security Principles -->
+  <section class="principles">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Core Principles</div>
+        <h2 class="section-title">Built on Sovereign Security</h2>
+        <p class="section-desc">Every component follows our four pillars of trustworthy computing.</p>
+      </div>
+
+      <div class="principles-grid">
+        <div class="principle">
+          <div class="principle-icon">&#128220;</div>
+          <div class="principle-title">Charter-Governed</div>
+          <div class="principle-desc">All operations are governed by explicit charters that define permissions, boundaries, and accountability.</div>
+        </div>
+        <div class="principle">
+          <div class="principle-icon">&#128279;</div>
+          <div class="principle-title">Audit-Trailed</div>
+          <div class="principle-desc">Hash-chained event logging with Ed25519 signatures ensures complete verifiability and non-repudiation.</div>
+        </div>
+        <div class="principle">
+          <div class="principle-icon">&#129302;</div>
+          <div class="principle-title">AI-Assisted</div>
+          <div class="principle-desc">Neural engines and decision intelligence augment human judgment while maintaining full oversight.</div>
+        </div>
+        <div class="principle">
+          <div class="principle-icon">&#128272;</div>
+          <div class="principle-title">YubiKey-Secured</div>
+          <div class="principle-desc">Hardware security keys provide phishing-proof authentication and cryptographic attestation.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-brand">GENESIS 2.0</div>
+      <div class="footer-tagline">Sovereign Security Platform</div>
+      <div class="footer-links">
+        <a href="genesis-control.html" class="footer-link">Control Panel</a>
+        <a href="herev-arsenal.html" class="footer-link">Security Arsenal</a>
+        <a href="yubikey-security-dashboard.html" class="footer-link">YubiKey Config</a>
+        <a href="index.html" class="footer-link">Developer Panel</a>
+        <a href="genesis-marketplace.html" class="footer-link">Marketplace</a>
+      </div>
+      <div class="footer-copy">Founded by murray-ux &middot; Lead Developer</div>
+    </div>
+  </footer>
+
+  <!-- Quick Access Dock -->
+  <nav class="dock">
+    <a href="genesis-portal.html" class="dock-item" data-tooltip="Portal Home" style="--module-color: var(--genesis-primary)">
+      &#127968;
+    </a>
+    <a href="genesis-control.html" class="dock-item" data-tooltip="Control Panel" style="--module-color: var(--merkava-color)">
+      &#9741;
+    </a>
+    <a href="herev-arsenal.html" class="dock-item" data-tooltip="Security Arsenal" style="--module-color: var(--herev-color)">
+      &#9876;
+    </a>
+    <a href="yubikey-security-dashboard.html" class="dock-item" data-tooltip="YubiKey" style="--module-color: var(--keruv-color)">
+      &#128273;
+    </a>
+    <a href="index.html" class="dock-item" data-tooltip="Developer" style="--module-color: var(--hadaat-color)">
+      &#128187;
+    </a>
+    <button class="dock-item" data-tooltip="Authenticate" style="--module-color: var(--genesis-secondary)" onclick="showAuth()">
+      &#128274;
+    </button>
+  </nav>
+
+  <!-- Authentication Modal -->
+  <div class="auth-modal" id="authModal">
+    <button class="auth-close" onclick="hideAuth()">&times;</button>
+    <div class="auth-box">
+      <div class="auth-icon">&#128272;</div>
+      <h2 class="auth-title">Authenticate</h2>
+      <p class="auth-subtitle">Verify your identity to access protected modules</p>
+
+      <div class="auth-methods">
+        <div class="auth-method" onclick="authenticateYubiKey()">
+          <div class="auth-method-icon">&#128273;</div>
+          <div class="auth-method-info">
+            <div class="auth-method-name">YubiKey FIDO2</div>
+            <div class="auth-method-desc">Phishing-proof hardware authentication</div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+
+        <div class="auth-method" onclick="authenticatePIV()">
+          <div class="auth-method-icon">&#128179;</div>
+          <div class="auth-method-info">
+            <div class="auth-method-name">PIV Smart Card</div>
+            <div class="auth-method-desc">Certificate-based authentication</div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="auth-divider">or use passphrase</div>
+
+      <div class="auth-input-group">
+        <label class="auth-label">Charter Passphrase</label>
+        <input type="password" class="auth-input" id="authPassphrase" placeholder="Enter your passphrase">
+      </div>
+
+      <button class="auth-btn" onclick="authenticatePassphrase()">Verify Identity</button>
+    </div>
+  </div>
+
+  <script>
+    // Authentication Modal
+    function showAuth() {
+      document.getElementById('authModal').classList.add('active');
+    }
+
+    function hideAuth() {
+      document.getElementById('authModal').classList.remove('active');
+    }
+
+    function authenticateYubiKey() {
+      if (window.PublicKeyCredential) {
+        alert('YubiKey FIDO2 authentication initiated.\n\nPlease touch your YubiKey when prompted.');
+        // In production, this would trigger WebAuthn
+        setTimeout(() => {
+          alert('Authentication successful!\n\nWelcome to GENESIS 2.0');
+          hideAuth();
+        }, 2000);
+      } else {
+        alert('WebAuthn not supported in this browser.\nPlease use a modern browser with FIDO2 support.');
+      }
+    }
+
+    function authenticatePIV() {
+      alert('PIV Smart Card authentication requires certificate verification.\n\nPlease ensure your YubiKey is inserted and certificates are configured.');
+    }
+
+    function authenticatePassphrase() {
+      const passphrase = document.getElementById('authPassphrase').value;
+      if (passphrase.length >= 8) {
+        alert('Passphrase accepted.\n\nWelcome to GENESIS 2.0');
+        hideAuth();
+      } else {
+        alert('Invalid passphrase.\nMust be at least 8 characters.');
+      }
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hideAuth();
+    });
+
+    // Close modal on backdrop click
+    document.getElementById('authModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) hideAuth();
+    });
+
+    // Smooth scroll for explore button
+    document.querySelector('.scroll-indicator').addEventListener('click', () => {
+      document.querySelector('.features').scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

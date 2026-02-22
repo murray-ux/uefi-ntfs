@@ -1,0 +1,72 @@
+{
+  "login": {
+    "title": "Log in",
+    "username": "Username",
+    "password": "Password",
+    "rememberMe": "Keep me logged in",
+    "submit": "Log in",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "Don't have an account?",
+    "createOne": "Create one"
+  },
+  "passwordReset": {
+    "title": "Reset password",
+    "usernameLabel": "Username",
+    "emailLabel": "Email address",
+    "hint": "Enter your username or email address (or both).",
+    "submit": "Request password reset",
+    "successMessage": "If an account with that information exists, a password reset email has been sent."
+  },
+  "createAccount": {
+    "title": "Create account",
+    "subtitle": "Join to access all features",
+    "usernameLabel": "Username",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm password",
+    "emailLabel": "Email address (optional)",
+    "submit": "Create account"
+  },
+  "settings": {
+    "title": "Settings",
+    "display": "Display",
+    "email": "Email",
+    "security": "Security",
+    "textSize": "Text Size",
+    "colorTheme": "Color Theme",
+    "expandSections": "Expand all sections",
+    "epr": "Enhanced Password Reset",
+    "eprDescription": "Require both username and email for password reset requests",
+    "save": "Save settings"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Automatic"
+  },
+  "textSize": {
+    "standard": "Standard",
+    "medium": "Medium",
+    "large": "Large"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "back": "Back",
+    "help": "Help",
+    "privacyPolicy": "Privacy policy",
+    "termsOfUse": "Terms of use",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "errors": {
+    "invalidCredentials": "Invalid username or password",
+    "accountLocked": "This account has been locked",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "passwordMismatch": "Passwords do not match",
+    "usernameTooShort": "Username must be at least 3 characters",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "invalidEmail": "Please enter a valid email address",
+    "networkError": "Network error. Please try again."
+  }
+}

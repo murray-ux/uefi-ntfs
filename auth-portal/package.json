@@ -1,0 +1,71 @@
+{
+  "name": "nexus-auth-portal",
+  "version": "2.0.0",
+  "description": "NEXUS Authentication Portal - Futuristic full-stack auth application with OAuth, 2FA, and RGB theming",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "npm run build && node --watch dist/server.js",
+    "dev:frontend": "npx serve public -l 3001",
+    "dev:watch": "tsc --watch",
+    "serve": "node dist/server.js",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "db:init": "mkdir -p data && sqlite3 data/auth.db < src/db/schema.sql",
+    "db:reset": "rm -f data/auth.db && npm run db:init",
+    "maintenance": "node dist/cli/maintenance.js",
+    "test": "node --test dist/**/*.test.js",
+    "test:watch": "node --test --watch dist/**/*.test.js",
+    "docker:build": "docker build -t nexus-auth-portal .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env nexus-auth-portal",
+    "docker:compose": "docker-compose up -d",
+    "prestart": "npm run build"
+  },
+  "bin": {
+    "auth-portal": "dist/server.js",
+    "auth-cli": "dist/cli/index.js"
+  },
+  "keywords": [
+    "authentication",
+    "login",
+    "oauth",
+    "2fa",
+    "password-reset",
+    "mediawiki",
+    "wikimedia",
+    "epr",
+    "multi-language",
+    "futuristic",
+    "rgb",
+    "cyberpunk",
+    "full-stack"
+  ],
+  "author": "NEXUS Auth Portal",
+  "license": "CC-BY-SA-4.0",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "serve": "^14.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nexus/auth-portal.git"
+  },
+  "files": [
+    "dist",
+    "public",
+    "i18n",
+    ".env.example"
+  ]
+}

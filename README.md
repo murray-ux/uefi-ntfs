@@ -2,29 +2,29 @@
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/23361.svg?style=flat-square)](https://scan.coverity.com/projects/pbatard-uefi-ntfs)
 [![Licence](https://img.shields.io/badge/license-GPLv2-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-2.0.en.html)
 
-UEFI:NTFS - Boot NTFS or exFAT partitions from UEFI
+UEFI: NTFS - Boot NTFS or exFAT partitions from UEFI
 ===================================================
 
-UEFI:NTFS is a generic bootloader, that is designed to allow boot from NTFS or
+UEFI: NTFS is a generic bootloader that is designed to allow booting from NTFS or
 exFAT partitions, in pure UEFI mode, even if your system does not natively
 support it.
 This is primarily intended for use with [Rufus](https://rufus.ie), but can also
 be used independently.
 
-In other words, UEFI:NTFS is designed to remove the restriction, which most
-UEFI systems have, of only providing boot support from a FAT32 partition, and
-enable the ability to also boot from NTFS partitions.
+In other words, UEFI: NTFS is designed to remove the restriction, which most
+UEFI systems have only provided boot support from a FAT32 partition, and
+enable booting from NTFS partitions.
 
 This can be used, for instance, to UEFI-boot a Windows NTFS installation media,
 containing an `install.wim` that is larger than 4 GB (something FAT32 cannot
 support) or to allow dual BIOS + UEFI boot of 'Windows To Go' drives.
 
-As an aside, and because there appears to exist a lot of inaccurate information
-about this on the Internet, it needs to be stressed out that there is absolutely
+As an aside, and because there appears to be a lot of inaccurate information
+about this on the Internet, it needs to be stressed that there is absolutely
 nothing in the UEFI specifications that actually forces the use of FAT32 for
 UEFI boot. On the contrary, UEFI will happily boot from __ANY__ file system,
 as long as your firmware has a driver for it. As such, it is only the choice of
-system manufacturers, who tend to only include a driver for FAT32, that limits
+system manufacturers, who tend to only include a driver for FAT32, which limits
 the default boot capabilities of UEFI, and that leads many to __erroneously
 believe__ that only FAT32 can be used for UEFI boot.
 

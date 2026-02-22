@@ -1,0 +1,72 @@
+{
+  "login": {
+    "title": "Iniciar sesión",
+    "username": "Nombre de usuario",
+    "password": "Contraseña",
+    "rememberMe": "Mantener sesión iniciada",
+    "submit": "Iniciar sesión",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes una cuenta?",
+    "createOne": "Crear una"
+  },
+  "passwordReset": {
+    "title": "Restablecer contraseña",
+    "usernameLabel": "Nombre de usuario",
+    "emailLabel": "Dirección de correo electrónico",
+    "hint": "Introduce tu nombre de usuario o dirección de correo (o ambos).",
+    "submit": "Solicitar restablecimiento",
+    "successMessage": "Si existe una cuenta con esa información, se ha enviado un correo de restablecimiento."
+  },
+  "createAccount": {
+    "title": "Crear cuenta",
+    "subtitle": "Únete para acceder a todas las funciones",
+    "usernameLabel": "Nombre de usuario",
+    "passwordLabel": "Contraseña",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "emailLabel": "Correo electrónico (opcional)",
+    "submit": "Crear cuenta"
+  },
+  "settings": {
+    "title": "Configuración",
+    "display": "Pantalla",
+    "email": "Correo",
+    "security": "Seguridad",
+    "textSize": "Tamaño del texto",
+    "colorTheme": "Tema de color",
+    "expandSections": "Expandir todas las secciones",
+    "epr": "Restablecimiento de contraseña mejorado",
+    "eprDescription": "Requerir nombre de usuario y correo para restablecer contraseña",
+    "save": "Guardar configuración"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "auto": "Automático"
+  },
+  "textSize": {
+    "standard": "Estándar",
+    "medium": "Mediano",
+    "large": "Grande"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "back": "Volver",
+    "help": "Ayuda",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfUse": "Términos de uso",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "errors": {
+    "invalidCredentials": "Nombre de usuario o contraseña inválidos",
+    "accountLocked": "Esta cuenta ha sido bloqueada",
+    "usernameRequired": "El nombre de usuario es obligatorio",
+    "passwordRequired": "La contraseña es obligatoria",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "usernameTooShort": "El nombre de usuario debe tener al menos 3 caracteres",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+    "invalidEmail": "Introduce una dirección de correo válida",
+    "networkError": "Error de red. Inténtalo de nuevo."
+  }
+}

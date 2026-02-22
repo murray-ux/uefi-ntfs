@@ -1,0 +1,110 @@
+{
+  "expo": {
+    "name": "GENESIS",
+    "slug": "genesis-mobile",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/images/icon.png",
+    "scheme": "genesis",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./src/assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0f"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.genesis.sovereign",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "GENESIS uses Face ID for secure authentication",
+        "NSCameraUsageDescription": "GENESIS uses camera for document scanning and QR codes",
+        "NSPhotoLibraryUsageDescription": "GENESIS accesses photos for document uploads",
+        "NFCReaderUsageDescription": "GENESIS uses NFC to communicate with YubiKey for hardware authentication",
+        "NSLocationWhenInUseUsageDescription": "GENESIS uses location for security audit logs",
+        "UIBackgroundModes": ["remote-notification", "fetch"]
+      },
+      "config": {
+        "usesNonExemptEncryption": true
+      },
+      "entitlements": {
+        "com.apple.developer.nfc.readersession.formats": ["TAG"],
+        "aps-environment": "production"
+      },
+      "associatedDomains": ["applinks:genesis.local", "webcredentials:genesis.local"]
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/images/adaptive-icon.png",
+        "backgroundColor": "#0a0a0f"
+      },
+      "package": "com.genesis.sovereign",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "VIBRATE",
+        "NFC",
+        "ACCESS_FINE_LOCATION",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "RECEIVE_BOOT_COMPLETED",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./src/assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      "expo-local-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/images/notification-icon.png",
+          "color": "#00ffff",
+          "sounds": ["./src/assets/sounds/alert.wav"]
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "GENESIS requires camera access for document scanning"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "GENESIS accesses photos for evidence documentation"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "genesis-sovereign-2024"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/genesis-sovereign",
+      "enabled": true,
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}

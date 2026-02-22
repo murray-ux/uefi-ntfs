@@ -14,3 +14,11 @@ ia32
 x64
 image
 version.h
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build
+dist/
+*.db

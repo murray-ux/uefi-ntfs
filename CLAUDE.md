@@ -1,220 +1,159 @@
-# CLAUDE.md
+# CLAUDE.md — AI Assistant Guide for UEFI:NTFS
 
 ## Project Overview
 
-UEFI:NTFS is a generic UEFI chain loader that enables booting from NTFS or exFAT partitions in pure UEFI mode, even when the system firmware lacks native support for these filesystems. It is primarily used with [Rufus](https://rufus.ie) but can operate independently.
+**UEFI:NTFS** is a UEFI bootloader (chain loader) that enables booting from NTFS or exFAT partitions. Standard UEFI firmware only supports booting from FAT32, which has a 4 GB file size limit. UEFI:NTFS solves this by residing on a small FAT32 partition at the end of a USB drive and chain-loading the actual bootloader from an NTFS or exFAT data partition.
 
-The bootloader works by loading an NTFS/exFAT UEFI filesystem driver from a small FAT32 partition, then using that driver to access the target NTFS/exFAT partition on the same disk and chain-load its boot executable.
+- **Primary use case**: Rufus USB boot media creation for Windows installation
+- **Author**: Pete Batard (pete@akeo.ie), Copyright 2014-2025
+- **License**: GPLv2-or-later (SPDX: `GPL-2.0-or-later`)
+- **Upstream repository**: `pbatard/uefi-ntfs`
+- **Project URL**: https://un.akeo.ie
 
-**Author:** Pete Batard <pete@akeo.ie>
-**License:** GPLv2+
-**Language:** C (UEFI application)
+## Architecture Support
 
-## Repository Structure
+Six architectures are supported through unified C code with compile-time architecture selection:
+
+| Arch ID | Platform | EFI Binary | Cross-Compiler Tuple |
+|---------|----------|------------|---------------------|
+| `x64` | 64-bit x86 | `bootx64.efi` | `x86_64-w64-mingw32-` |
+| `ia32` | 32-bit x86 | `bootia32.efi` | `i686-w64-mingw32-` |
+| `arm` | 32-bit ARM | `bootarm.efi` | `arm-linux-gnueabihf-` |
+| `aa64` | 64-bit ARM | `bootaa64.efi` | `aarch64-linux-gnu-` |
+| `riscv64` | 64-bit RISC-V | `bootriscv64.efi` | `riscv64-linux-gnu-` |
+| `loongarch64` | 64-bit LoongArch | `bootloongarch64.efi` | `loongarch64-unknown-linux-gnu-` |
+
+## Source Code Structure
+
+The entire bootloader is ~800 lines of C across three source files plus two headers:
 
 ```
-uefi-ntfs/
-├── boot.c              # Main bootloader logic (entry point: efi_main)
-├── boot.h              # Shared header: macros, types, utility functions
-├── path.c              # Device path handling and filesystem path case correction
-├── system.c            # SMBIOS system info and Secure Boot status queries
-├── version.h           # Auto-generated version string (gitignored)
-├── Makefile            # GNU Make build for gnu-efi (Linux/MinGW)
-├── uefi-ntfs.sln       # Visual Studio 2022 solution (Windows/gnu-efi)
-├── uefi-ntfs.dsc       # EDK2 platform description file
-├── uefi-ntfs.inf       # EDK2 component information file
-├── uefi-ntfs.dec       # EDK2 package declaration file
-├── uefi-ntfs.uni       # EDK2 Unicode string resources
-├── uefi-ntfs-extra.uni # Additional Unicode string resources
-├── debug.vbs           # VBScript for QEMU debugging on Windows
-├── gnu-efi/            # git submodule: GNU-EFI library
-├── .github/workflows/  # CI: linux.yml, windows.yml, codeql.yml, coverity.yml
-└── .vs/                # Visual Studio project configuration
+boot.c      - Main entry point (efi_main) and core bootloader logic:
+              driver disconnection, NTFS/exFAT partition discovery,
+              filesystem driver loading, bootloader chain-loading.
+              Derived in part from rEFInd (BSD-3-Clause compatible).
+
+boot.h      - Shared header: macros, safe string functions (SafeStrLen,
+              SafeStrCpy, _StriCmp), console color helpers, assertion
+              macros, and function prototypes. Contains both gnu-efi
+              and EDK2 include paths behind #ifdef __MAKEWITH_GNUEFI.
+
+path.c      - Device path manipulation: GetParentDevice, CompareDevicePaths,
+              SetPathCase (case-insensitive path lookup on case-sensitive FS),
+              DevicePathToString/DevicePathToHex. Parts from GRUB (GPLv2+).
+
+system.c    - System info: SMBIOS table reading, UEFI firmware version
+              display, Secure Boot status query. Parts from EDK (Intel).
+
+version.h   - Auto-generated version string. Set to L"[DEV]" for local
+              builds; CI replaces it with git tag via `git describe --tags`.
 ```
 
-## Source Code Architecture
+## Build Systems
 
-### boot.c (entry point)
-- `efi_main()` — Application entry point. Flow:
-  1. Display banner and system info
-  2. Check Secure Boot status
-  3. Disconnect blocking drivers (HPQ EFI workaround)
-  4. Find NTFS/exFAT partition on the same disk as boot partition
-  5. Load filesystem driver from `\efi\rufus\ntfs_<arch>.efi` or `\efi\rufus\exfat_<arch>.efi`
-  6. Connect driver and mount the partition
-  7. Locate `\efi\boot\boot<arch>.efi` on the target partition
-  8. Chain-load the target bootloader
-- `DisconnectBlockingDrivers()` — Workaround for HP firmware DiskIo blocking
-- `UnloadDriver()` — Unload pre-existing filesystem drivers (AMI NTFS bug workaround)
-- `DisplayBanner()` — Centered ASCII art banner with version
+There are three ways to build this project:
 
-### boot.h (shared definitions)
-- Conditional compilation for gnu-efi vs EDK2 includes
-- Console color macros (`TEXT_WHITE`, `TEXT_YELLOW`, `TEXT_RED`, etc.)
-- Logging macros: `PrintInfo()`, `PrintWarning()`, `PrintError()`, `PrintErrorStatus()`
-- Safe string functions: `SafeStrLen()`, `_StriCmp()`, `SafeStrCpy()`
-- Custom `_tolower()` for broken UEFI Unicode collation implementations
-
-### path.c
-- `GetParentDevice()` — Extract parent device from a UEFI device path
-- `CompareDevicePaths()` — Byte-level device path comparison (derived from GRUB, GPLv2+)
-- `SetPathCase()` — Recursively fix filesystem path casing for case-sensitive NTFS/exFAT
-- `DevicePathToString()` / `DevicePathToHex()` — Device path rendering (hex fallback for old Dell firmware)
-
-### system.c
-- `PrintSystemInfo()` — Query SMBIOS for BIOS vendor/version and machine info
-- `GetSecureBootStatus()` — Returns tri-state: >0 enabled, 0 disabled, <0 setup mode
-- `GetSmbiosString()` — Extract strings from SMBIOS structures
-
-## Supported Architectures
-
-| Short | Architecture | Cross Compiler Tuple |
-|-------|-------------|---------------------|
-| `x64` | 64-bit x86 | `x86_64-w64-mingw32-` (Makefile) |
-| `ia32` | 32-bit x86 | `i686-w64-mingw32-` (Makefile) |
-| `arm` | 32-bit ARM | `arm-linux-gnueabihf-` |
-| `aa64` | 64-bit ARM | `aarch64-linux-gnu-` |
-| `riscv64` | 64-bit RISC-V | `riscv64-linux-gnu-` (EDK2 only) |
-| `loongarch64` | 64-bit LoongArch | `loongarch64-unknown-linux-gnu-` (EDK2 only) |
-
-## Build System
-
-There are two build paths:
-
-### 1. GNU Make with gnu-efi (primary for development)
+### 1. GNU-EFI with Make (Linux/MinGW) — `Makefile`
 
 ```bash
-# Initialize submodule first
-git submodule update --init
-
-# Build for default architecture (auto-detected)
+# Default (auto-detects host architecture)
 make
 
-# Build for a specific architecture
-make ARCH=aa64 CROSS_COMPILE=aarch64-linux-gnu-
+# Specific architecture
+make ARCH=x64
+make ARCH=ia32 CROSS_COMPILE=i686-w64-mingw32-
 
-# Build and test in QEMU (enables _DEBUG mode)
+# QEMU debug (adds -D_DEBUG, downloads OVMF + test NTFS image)
 make qemu
 
-# Clean build artifacts
-make clean
-
-# Full cleanup including gnu-efi and downloaded test files
-make superclean
+# Clean
+make clean       # Remove build artifacts
+make superclean  # Also clean gnu-efi and downloaded files
 ```
 
-**Requirements:** GCC 4.7+, GNU Make, git
+**Requirements**: GCC 4.7+, gnu-efi (git submodule in `gnu-efi/`)
 
-**Output:** `boot.efi`
+**Key details**:
+- Object files: `boot.o`, `path.o`, `system.o`
+- Output: `boot.efi`
+- The `gnu-efi/` submodule must be initialized (`git submodule update --init`)
+- ARM/AARCH64 builds produce ELF first, then convert to PE via `objcopy`
+- Compiler flags include `-Werror-implicit-function-declaration -Wall -Wshadow`
 
-**Important:** `make qemu` enables `_DEBUG` which relaxes the same-device check for QEMU testing. Always build without `qemu` target for release binaries.
-
-### 2. EDK2 (used in CI for all architectures)
+### 2. EDK2 with GCC (Linux) — `uefi-ntfs.dsc`/`uefi-ntfs.inf`
 
 ```bash
-export EDK2_PATH="/usr/src/edk2"
+export EDK2_PATH=/path/to/edk2
 export WORKSPACE=$PWD
 export PACKAGES_PATH=$WORKSPACE:$EDK2_PATH
-. $EDK2_PATH/edksetup.sh --reconfig
+source $EDK2_PATH/edksetup.sh --reconfig
 build -a X64 -b RELEASE -t GCC5 -p uefi-ntfs.dsc
 ```
 
-**Requirements:** EDK2, NASM, Python 3, uuid-dev
+**Requirements**: EDK2 source tree (stable tag: `edk2-stable202508.01`), architecture-specific cross-compilers
 
-### 3. Visual Studio 2022 (Windows)
+### 3. EDK2 with MSVC (Windows) — `uefi-ntfs.sln`
 
-Open `uefi-ntfs.sln` and build. Press F5 to compile and launch in QEMU.
-Supports x64, ia32, and aa64 platforms.
+Open `uefi-ntfs.sln` in Visual Studio 2022. Supports x64, ia32, aa64 platform targets.
 
-## CI/CD
+**Requirements**: Visual Studio 2022 with ARM/ARM64 build tools, NASM
 
-| Workflow | Platform | Build System | Architectures |
-|----------|----------|-------------|---------------|
-| `linux.yml` | Ubuntu 24.04 | GCC5 + EDK2 | x64, ia32, aa64, arm, riscv64, loongarch64 |
-| `windows.yml` | Windows latest | MSBuild + VS2022 | x64, ia32, aa64 |
-| `codeql.yml` | Windows | MSVC Debug | C++ static analysis |
-| `coverity.yml` | Windows | MSVC + Coverity | Static analysis (requires token) |
+## CI/CD Workflows
 
-Releases are created automatically when tags are pushed (via `linux.yml`).
+All workflows are in `.github/workflows/` and trigger on pushes/PRs to `master`:
 
-## version.h
-
-This file is auto-generated and gitignored. It defines `VERSION_STRING` as a wide string literal derived from `git describe --tags`. CI creates it before building:
-```c
-#define VERSION_STRING L"v1.x-nn-gHASH"
-```
-
-For local development, either create it manually or the Makefile/VS project handles it.
-
-## Key Conventions
-
-### Code Style
-- C99 with UEFI type system (`EFI_STATUS`, `UINTN`, `CHAR16*`, `BOOLEAN`, etc.)
-- Wide strings (`L"..."`) for all user-visible text
-- `STATIC` keyword for file-scope functions (UEFI convention, maps to `static`)
-- `CONST` instead of `const` (UEFI convention)
-- Tabs for indentation in C source files
-- K&R brace style with opening brace on same line for functions
-- Comments use `//` for inline and `/* */` for block/header comments
-
-### Naming
-- PascalCase for functions, types, and variables: `GetParentDevice`, `HandleCount`, `DevicePath`
-- UPPER_CASE for macros and constants: `PATH_MAX`, `ARRAY_SIZE`, `TEXT_WHITE`
-- Prefix `Safe` for security-hardened wrappers: `SafeStrLen`, `SafeStrCpy`, `SafeFree`
-
-### Error Handling
-- Functions return `EFI_STATUS`; check with `EFI_ERROR()` macro
-- Use `PrintErrorStatus()` for errors with status codes
-- `goto out` pattern for cleanup on error in `efi_main()`
-- Always free allocated memory with `FreePool()` or `SafeFree()` (which NULLs the pointer)
-
-### Conditional Compilation
-- `__MAKEWITH_GNUEFI` / `_GNU_EFI` — gnu-efi build path
-- No define — EDK2 build path
-- `_DEBUG` — Debug mode (enabled by `make qemu`, relaxes same-device partition check)
-- Architecture detection via `_M_X64`, `__x86_64__`, `_M_ARM`, `__arm__`, etc.
-
-### Firmware Compatibility
-The code contains workarounds for specific firmware bugs:
-- HP firmware: DiskIo blocking drivers (`DisconnectBlockingDrivers`)
-- HP firmware: Refuses non-Boot-System-Driver type images
-- AMI NTFS: Native driver bugs requiring driver unload
-- Dell firmware: Missing DevicePathToText protocol (hex fallback)
-- Intel NUC: Returns `EFI_ACCESS_DENIED` instead of `EFI_SECURITY_VIOLATION`
-- Broken Unicode collation: Custom `_StriCmp` implementation
-- Windows bootmgr: Unhelpful `EFI_NO_MAPPING` on BlackLotus lock errors
-
-## Security Considerations
-
-- Secure Boot compatible (Microsoft-signed binaries available for x64, ia32, aa64)
-- Only GPLv2 NTFS drivers work under Secure Boot (GPLv3 drivers cannot be Microsoft-signed)
-- 32-bit ARM is not Secure Boot signed due to Microsoft validation requirements
-- `LoadImage()` enforces Secure Boot signature validation; `EFI_ACCESS_DENIED` is mapped to `EFI_SECURITY_VIOLATION` when Secure Boot is enabled
-- Report vulnerabilities to: support@akeo.ie (48-hour response time)
+| Workflow | File | Platform | What it does |
+|----------|------|----------|-------------|
+| Linux build | `linux.yml` | ubuntu-24.04 | EDK2+GCC build for all 6 architectures; creates GitHub releases on tags |
+| Windows build | `windows.yml` | windows-latest | MSVC+gnu-efi build for x64, ia32, aa64 |
+| CodeQL | `codeql.yml` | windows-latest | Static analysis (C++ language, Debug x64) |
+| Coverity | `coverity.yml` | windows-latest | Coverity Scan (push to master only) |
 
 ## Testing
 
-### QEMU Testing
+There is no unit test suite. Testing is done via QEMU emulation:
+
 ```bash
-make qemu
+make qemu  # Builds with _DEBUG, downloads OVMF firmware + NTFS test VHD, runs in QEMU
 ```
-This downloads OVMF firmware, an NTFS test VHD, and the NTFS driver, then boots in QEMU. The test image contains stub `boot<arch>.efi` binaries that print "Hello from NTFS!".
 
-### Static Analysis
-- CodeQL (GitHub Actions, C++ analysis)
-- Coverity Scan (requires `COVERITY_SCAN_TOKEN` secret)
+The `_DEBUG` flag relaxes the same-device partition check, allowing testing with separate QEMU drives. The NTFS test image (`ntfs.vhd`) contains stub `boot*.efi` files that print "Hello from NTFS!".
 
-## Common Tasks
+## Code Conventions
 
-### Adding Support for a New Architecture
-1. Add arch block in `Makefile` (GNUEFI_ARCH, GCC_ARCH, QEMU_ARCH, CROSS_COMPILE, CFLAGS, LDFLAGS)
-2. Add entry to `Arch[]` array in `boot.c` with `EfiSuffix`, `CpuType`, `Description`
-3. Add `#elif` for `ArchIndex` preprocessor detection in `boot.c`
-4. Update `SUPPORTED_ARCHITECTURES` in `uefi-ntfs.dsc`
-5. Add matrix entry in `.github/workflows/linux.yml`
+### Style
+- **Indentation**: Tabs for indentation (not spaces)
+- **Braces**: Opening brace on same line for functions and control structures
+- **Naming**: PascalCase for functions, types, and variables (UEFI convention). UPPER_CASE for macros/constants
+- **Comments**: C-style `/* */` for block comments, `//` for inline. Comments above code, not to the right
+- **String types**: `CHAR16*` for UEFI strings (wide), `CHAR8*` for ASCII/byte buffers
+- **Return types**: Use UEFI types (`EFI_STATUS`, `UINTN`, `INTN`, `BOOLEAN`, `VOID`, etc.)
 
-### Modifying Boot Flow
-All boot logic is in `efi_main()` in `boot.c`. The function is linear with a single `goto out` cleanup path. Follow the existing pattern of `PrintInfo`/`PrintWarning`/`PrintError` for user-visible messages.
+### Safety patterns
+- Always use `SafeStrLen()`, `SafeStrCpy()`, `SafeFree()` instead of raw equivalents
+- `SafeFree()` NULLs the pointer after freeing
+- Assertions via `V_ASSERT()` macro (halts on failure in debug builds)
+- `_StriCmp()` is a custom case-insensitive compare to work around broken UEFI firmware Unicode collation
 
-### Working with Device Paths
-Use functions in `path.c`. Paths returned by `DevicePathFromHandle()` must NOT be freed. Paths from `GetParentDevice()` and `DevicePathToString()` MUST be freed with `FreePool()`/`SafeFree()`.
+### Conditional compilation
+- `__MAKEWITH_GNUEFI` — gnu-efi build path (includes `<efi.h>`)
+- Without it — EDK2 build path (includes `<Uefi.h>`)
+- `_DEBUG` — enables relaxed checks for QEMU testing
+- `CONFIG_<arch>` — architecture-specific defines from Makefile
+
+### Commit messages
+- Use imperative mood: "Add feature", "Fix bug", "Update component"
+- Be descriptive about what changed and why
+- The upstream project's default branch is `master`
+
+## Important Constraints
+
+- **Secure Boot compatibility**: The bootloader and its FS drivers must be signed by Microsoft for Secure Boot. GPLv3-licensed drivers cannot be signed (Microsoft policy), so only GPLv2 ntfs-3g drivers are used.
+- **No runtime allocation libraries**: This is bare-metal UEFI code. Use `AllocatePool`/`FreePool` from UEFI Boot Services, not malloc/free.
+- **Wide strings everywhere**: All user-visible strings are `CHAR16*` (UCS-2). Use `L"..."` string literals.
+- **Entry point must be `efi_main`**: Required for gnu-efi crt0 compatibility.
+- **version.h is auto-generated in CI**: Do not commit meaningful changes to this file. It is overwritten during CI builds with the git tag version.
+
+## Security Reporting
+
+Vulnerabilities should be reported to support@akeo.ie following responsible disclosure practices. See `SECURITY.md`.
