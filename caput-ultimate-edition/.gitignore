@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.js.map
+
+# Rust
+rust_boundary/target/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+data/keys/
+
+# Runtime data
+data/audit/
+data/evidence/
+*.jsonl
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Docker
+docker-compose.override.yml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Test artifacts
+coverage/
+.nyc_output/

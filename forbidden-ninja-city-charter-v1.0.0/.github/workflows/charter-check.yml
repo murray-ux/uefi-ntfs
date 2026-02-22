@@ -1,0 +1,29 @@
+name: Charter Integrity and Structure
+
+on:
+  push:
+    paths:
+      - "charter/**"
+      - "governance/**"
+      - "tests/**"
+  pull_request:
+    paths:
+      - "charter/**"
+      - "governance/**"
+      - "tests/**"
+
+jobs:
+  verify-charter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Structural check
+        run: |
+          chmod +x tests/test_charter_structure.sh
+          ./tests/test_charter_structure.sh
+
+      - name: Charter integrity check
+        run: |
+          chmod +x governance/verify.sh
+          ./governance/verify.sh

@@ -1,0 +1,72 @@
+{
+  "login": {
+    "title": "登录",
+    "username": "用户名",
+    "password": "密码",
+    "rememberMe": "保持登录状态",
+    "submit": "登录",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "没有账户？",
+    "createOne": "创建账户"
+  },
+  "passwordReset": {
+    "title": "重置密码",
+    "usernameLabel": "用户名",
+    "emailLabel": "电子邮箱",
+    "hint": "请输入您的用户名或电子邮箱（或两者都输入）。",
+    "submit": "请求重置密码",
+    "successMessage": "如果存在与该信息匹配的账户，密码重置邮件已发送。"
+  },
+  "createAccount": {
+    "title": "创建账户",
+    "subtitle": "注册以使用所有功能",
+    "usernameLabel": "用户名",
+    "passwordLabel": "密码",
+    "confirmPasswordLabel": "确认密码",
+    "emailLabel": "电子邮箱（可选）",
+    "submit": "创建账户"
+  },
+  "settings": {
+    "title": "设置",
+    "display": "显示",
+    "email": "邮箱",
+    "security": "安全",
+    "textSize": "字体大小",
+    "colorTheme": "颜色主题",
+    "expandSections": "展开所有部分",
+    "epr": "增强密码重置",
+    "eprDescription": "重置密码时需要同时提供用户名和邮箱",
+    "save": "保存设置"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "auto": "自动"
+  },
+  "textSize": {
+    "standard": "标准",
+    "medium": "中等",
+    "large": "大"
+  },
+  "common": {
+    "cancel": "取消",
+    "back": "返回",
+    "help": "帮助",
+    "privacyPolicy": "隐私政策",
+    "termsOfUse": "使用条款",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功"
+  },
+  "errors": {
+    "invalidCredentials": "用户名或密码无效",
+    "accountLocked": "此账户已被锁定",
+    "usernameRequired": "用户名为必填项",
+    "passwordRequired": "密码为必填项",
+    "passwordMismatch": "密码不匹配",
+    "usernameTooShort": "用户名至少需要3个字符",
+    "passwordTooShort": "密码至少需要8个字符",
+    "invalidEmail": "请输入有效的电子邮箱地址",
+    "networkError": "网络错误，请重试。"
+  }
+}

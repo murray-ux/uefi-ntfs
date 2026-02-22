@@ -1,0 +1,13 @@
+node_modules
+dist
+rust_boundary/target
+*.log
+/data
+.git
+.github
+.env
+.env.*
+*.key
+*.pem
+__pycache__
+*.pyc

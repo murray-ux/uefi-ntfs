@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # NEXUS Auth Portal Application
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-auth-portal
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DATABASE_TYPE=${DATABASE_TYPE:-sqlite}
+      - DATABASE_PATH=/app/data/auth.db
+      - SESSION_SECRET=${SESSION_SECRET:-change-me-in-production}
+      - SITE_NAME=${SITE_NAME:-NEXUS Auth Portal}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - TRUST_PROXY=${TRUST_PROXY:-true}
+    volumes:
+      - auth-data:/app/data
+    networks:
+      - auth-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ============================================================================
+  # PostgreSQL (optional - for production scalability)
+  # ============================================================================
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: nexus-auth-db
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_USER=${DB_USER:-authportal}
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
+  #     - POSTGRES_DB=${DB_NAME:-authportal}
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - auth-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-authportal}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # ============================================================================
+  # Redis (optional - for session storage & caching)
+  # ============================================================================
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: nexus-auth-cache
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - auth-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # ============================================================================
+  # Nginx Reverse Proxy (optional - for SSL termination)
+  # ============================================================================
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nexus-auth-proxy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./certs:/etc/nginx/certs:ro
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - auth-network
+
+volumes:
+  auth-data:
+    driver: local
+  # postgres-data:
+  #   driver: local
+  # redis-data:
+  #   driver: local
+
+networks:
+  auth-network:
+    driver: bridge

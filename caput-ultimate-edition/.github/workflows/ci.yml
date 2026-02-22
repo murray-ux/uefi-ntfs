@@ -1,0 +1,275 @@
+# GENESIS 2.0 — CI/CD Pipeline
+# Copyright 2025 murray-ux — Apache-2.0
+#
+# Continuous Integration and Deployment workflow for
+# Master Generation Skeleton Ecosystem
+
+name: GENESIS CI/CD
+
+on:
+  push:
+    branches: [main, develop, 'feature/*', 'claude/*']
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '22.x'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LINT & TYPE CHECK
+  # ═══════════════════════════════════════════════════════════════════════════
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: TypeScript type check
+        run: npm run build --if-present
+        continue-on-error: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # UNIT TESTS
+  # ═══════════════════════════════════════════════════════════════════════════
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run module tests
+        run: npm run test:modules
+
+      - name: Run orchestration tests
+        run: npm run test:orchestration
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # GENERATION PIPELINE TESTS
+  # ═══════════════════════════════════════════════════════════════════════════
+  generation:
+    name: Generation Pipeline
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Test generation pipeline
+        run: |
+          node orchestration/generation_master.js \
+            --master_seed ci_test_seed \
+            --content_type creature \
+            --density 0.3 \
+            --chunk_coords 0,0,0 \
+            --output_format json > /tmp/generation_output.json
+
+      - name: Validate output
+        run: |
+          if [ -s /tmp/generation_output.json ]; then
+            echo "✓ Generation produced output"
+            head -100 /tmp/generation_output.json
+          else
+            echo "✗ Generation failed - no output"
+            exit 1
+          fi
+
+      - name: Upload generation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generation-output
+          path: /tmp/generation_output.json
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DETERMINISM CHECK
+  # ═══════════════════════════════════════════════════════════════════════════
+  determinism:
+    name: Determinism Verification
+    runs-on: ubuntu-latest
+    needs: generation
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Generate twice with same seed
+        run: |
+          node orchestration/generation_master.js \
+            --master_seed determinism_test \
+            --content_type generic \
+            --chunk_coords 0,0,0 \
+            --output_format json > /tmp/run1.json
+
+          node orchestration/generation_master.js \
+            --master_seed determinism_test \
+            --content_type generic \
+            --chunk_coords 0,0,0 \
+            --output_format json > /tmp/run2.json
+
+      - name: Compare outputs
+        run: |
+          if diff /tmp/run1.json /tmp/run2.json > /dev/null; then
+            echo "✓ Determinism verified - outputs are identical"
+          else
+            echo "✗ Determinism check failed - outputs differ"
+            diff /tmp/run1.json /tmp/run2.json | head -50
+            exit 1
+          fi
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BUILD & PACKAGE
+  # ═══════════════════════════════════════════════════════════════════════════
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    needs: [test, generation, determinism]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build TypeScript
+        run: npm run build --if-present
+
+      - name: Create release package
+        run: |
+          mkdir -p dist
+          cp -r orchestration dist/
+          cp -r prompts dist/
+          cp -r level_creator/templates dist/
+          cp package.json dist/
+          cp README.md dist/ || true
+          cd dist && tar -czf ../genesis-generation-${{ github.sha }}.tar.gz .
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-build
+          path: genesis-generation-*.tar.gz
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DEPLOY TO RENDER (on main)
+  # ═══════════════════════════════════════════════════════════════════════════
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Deploy to Render
+        run: |
+          echo "🚀 Deployment triggered"
+          echo "Render will auto-deploy from main branch"
+          # In production, you would trigger Render deploy hook here:
+          # curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PERFORMANCE BENCHMARK
+  # ═══════════════════════════════════════════════════════════════════════════
+  benchmark:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run benchmark
+        run: |
+          echo "Performance Benchmark"
+          echo "===================="
+
+          # Time different generation configurations
+          for type in creature structure terrain; do
+            echo ""
+            echo "Generating ${type}..."
+            start=$(date +%s%N)
+
+            node orchestration/generation_master.js \
+              --master_seed benchmark \
+              --content_type $type \
+              --chunk_coords 0,0,0 \
+              --output_format json > /dev/null
+
+            end=$(date +%s%N)
+            duration=$(( (end - start) / 1000000 ))
+            echo "  ${type}: ${duration}ms"
+          done
+
+      - name: Post benchmark results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '📊 **Performance Benchmark Complete**\n\nSee workflow run for detailed timing results.'
+            })

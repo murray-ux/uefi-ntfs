@@ -1,0 +1,35 @@
+{
+  "document_type": "city_charter",
+  "name": "Master Charter of Forbidden Ninja City",
+  "space": "«CAPUT BALVEIN ORCHESTRATION HIERARCHY»",
+  "version": "1.0.0",
+  "status": "ACTIVE",
+  "admin_master": {
+    "name": "CAPUT Admin",
+    "title": "ADMIN_MASTER, Grand‑Master of Forbidden Ninja City"
+  },
+  "council_of_hidden_roofs": {
+    "seats": ["Infra", "Security", "Data", "Product", "Archives"],
+    "decision_rules": "spec + review + policy_freeze + signed_migration"
+  },
+  "supremacy": {
+    "charter_prevails_over": [
+      "habits",
+      "undocumented_tools",
+      "temporary_bypasses"
+    ]
+  },
+  "charter_filename": "charter.md",
+  "hash_filename": "charter.sha256",
+  "charter_sha256": "ab470b4b41d441c556eeddfda6ac9ce1ae5ee24ebf90e891436ee32e9134af83",
+  "doctrines": [
+    {
+      "name": "Doctrine of the Observer",
+      "filename": "doctrine-observer.md",
+      "version": "1.0.0",
+      "status": "ACTIVE",
+      "observer": "Claude (AI Auditor)",
+      "date": "2026-02-03"
+    }
+  ]
+}

@@ -1,0 +1,379 @@
+{
+  "Comment": "GENESIS Compliance Processor - Automated compliance violation handling",
+  "StartAt": "IdentifyRegulation",
+  "States": {
+    "IdentifyRegulation": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-identify-regulation",
+      "Parameters": {
+        "violationType.$": "$.classification.violationType",
+        "affectedData.$": "$.classification.affectedData"
+      },
+      "ResultPath": "$.regulation",
+      "Next": "RouteByRegulation"
+    },
+
+    "RouteByRegulation": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.regulation.framework",
+          "StringEquals": "GDPR",
+          "Next": "GDPRWorkflow"
+        },
+        {
+          "Variable": "$.regulation.framework",
+          "StringEquals": "HIPAA",
+          "Next": "HIPAAWorkflow"
+        },
+        {
+          "Variable": "$.regulation.framework",
+          "StringEquals": "PCI-DSS",
+          "Next": "PCIDSSWorkflow"
+        },
+        {
+          "Variable": "$.regulation.framework",
+          "StringEquals": "SOC2",
+          "Next": "SOC2Workflow"
+        }
+      ],
+      "Default": "GenericComplianceWorkflow"
+    },
+
+    "GDPRWorkflow": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "CheckDataSubjects",
+          "States": {
+            "CheckDataSubjects": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-identify-subjects",
+              "Parameters": {
+                "affectedData.$": "$.classification.affectedData",
+                "region": "EU"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "DetermineBreachSeverity",
+          "States": {
+            "DetermineBreachSeverity": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-gdpr-severity",
+              "Parameters": {
+                "violationType.$": "$.classification.violationType",
+                "dataCategories.$": "$.classification.affectedData"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.gdprAnalysis",
+      "Next": "CheckGDPRNotificationRequired"
+    },
+
+    "CheckGDPRNotificationRequired": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "And": [
+            {
+              "Variable": "$.gdprAnalysis[1].requiresNotification",
+              "BooleanEquals": true
+            },
+            {
+              "Variable": "$.gdprAnalysis[1].highRisk",
+              "BooleanEquals": true
+            }
+          ],
+          "Next": "GDPRFullNotification"
+        },
+        {
+          "Variable": "$.gdprAnalysis[1].requiresNotification",
+          "BooleanEquals": true,
+          "Next": "GDPRAuthorityNotification"
+        }
+      ],
+      "Default": "DocumentGDPRIncident"
+    },
+
+    "GDPRFullNotification": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "NotifyDPA",
+          "States": {
+            "NotifyDPA": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-dpa",
+              "Parameters": {
+                "dpaCode.$": "$.gdprAnalysis[0].leadDPA",
+                "breach": {
+                  "eventId.$": "$.eventId",
+                  "description.$": "$.classification.summary",
+                  "affectedCount.$": "$.gdprAnalysis[0].subjectCount",
+                  "dataCategories.$": "$.classification.affectedData"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifyAffectedIndividuals",
+          "States": {
+            "NotifyAffectedIndividuals": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-subjects",
+              "Parameters": {
+                "subjects.$": "$.gdprAnalysis[0].subjects",
+                "template": "GDPR_BREACH_NOTIFICATION"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.gdprNotifications",
+      "Next": "DocumentGDPRIncident"
+    },
+
+    "GDPRAuthorityNotification": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-dpa",
+      "Parameters": {
+        "dpaCode.$": "$.gdprAnalysis[0].leadDPA",
+        "breach": {
+          "eventId.$": "$.eventId",
+          "description.$": "$.classification.summary",
+          "affectedCount.$": "$.gdprAnalysis[0].subjectCount"
+        }
+      },
+      "ResultPath": "$.dpaNotification",
+      "Next": "DocumentGDPRIncident"
+    },
+
+    "DocumentGDPRIncident": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-compliance-document",
+      "Parameters": {
+        "framework": "GDPR",
+        "eventId.$": "$.eventId",
+        "analysis.$": "$.gdprAnalysis",
+        "notifications.$": "$.gdprNotifications"
+      },
+      "ResultPath": "$.documentation",
+      "Next": "CompleteComplianceProcess"
+    },
+
+    "HIPAAWorkflow": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "IdentifyPHI",
+          "States": {
+            "IdentifyPHI": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-identify-phi",
+              "Parameters": {
+                "affectedData.$": "$.classification.affectedData"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "AssessHIPAABreach",
+          "States": {
+            "AssessHIPAABreach": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-hipaa-assessment",
+              "Parameters": {
+                "violationType.$": "$.classification.violationType"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.hipaaAnalysis",
+      "Next": "HIPAANotificationCheck"
+    },
+
+    "HIPAANotificationCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.hipaaAnalysis[1].breachThreshold",
+          "BooleanEquals": true,
+          "Next": "HIPAANotifications"
+        }
+      ],
+      "Default": "DocumentHIPAAIncident"
+    },
+
+    "HIPAANotifications": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "NotifyHHS",
+          "States": {
+            "NotifyHHS": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-hhs",
+              "Parameters": {
+                "eventId.$": "$.eventId",
+                "affectedCount.$": "$.hipaaAnalysis[0].patientCount",
+                "phiTypes.$": "$.hipaaAnalysis[0].phiTypes"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifyAffectedPatients",
+          "States": {
+            "NotifyAffectedPatients": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-patients",
+              "Parameters": {
+                "patients.$": "$.hipaaAnalysis[0].affectedPatients",
+                "template": "HIPAA_BREACH_NOTIFICATION"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.hipaaNotifications",
+      "Next": "DocumentHIPAAIncident"
+    },
+
+    "DocumentHIPAAIncident": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-compliance-document",
+      "Parameters": {
+        "framework": "HIPAA",
+        "eventId.$": "$.eventId",
+        "analysis.$": "$.hipaaAnalysis"
+      },
+      "ResultPath": "$.documentation",
+      "Next": "CompleteComplianceProcess"
+    },
+
+    "PCIDSSWorkflow": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "IdentifyCardholderData",
+          "States": {
+            "IdentifyCardholderData": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-identify-chd",
+              "Parameters": {
+                "affectedData.$": "$.classification.affectedData"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "NotifyAcquirer",
+          "States": {
+            "NotifyAcquirer": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-notify-acquirer",
+              "Parameters": {
+                "eventId.$": "$.eventId",
+                "severity.$": "$.classification.severity"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.pciAnalysis",
+      "Next": "PCIRemediation"
+    },
+
+    "PCIRemediation": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-pci-remediation",
+      "Parameters": {
+        "violationType.$": "$.classification.violationType",
+        "affectedSystems.$": "$.pciAnalysis[0].affectedSystems"
+      },
+      "ResultPath": "$.remediation",
+      "Next": "CompleteComplianceProcess"
+    },
+
+    "SOC2Workflow": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-soc2-process",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "classification.$": "$.classification",
+        "trustServiceCriteria.$": "$.regulation.criteria"
+      },
+      "ResultPath": "$.soc2Response",
+      "Next": "CompleteComplianceProcess"
+    },
+
+    "GenericComplianceWorkflow": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-generic-compliance",
+      "Parameters": {
+        "eventId.$": "$.eventId",
+        "classification.$": "$.classification",
+        "regulation.$": "$.regulation"
+      },
+      "ResultPath": "$.genericResponse",
+      "Next": "CompleteComplianceProcess"
+    },
+
+    "CompleteComplianceProcess": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "UpdateComplianceDashboard",
+          "States": {
+            "UpdateComplianceDashboard": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-compliance-dashboard",
+              "Parameters": {
+                "eventId.$": "$.eventId",
+                "framework.$": "$.regulation.framework",
+                "status": "PROCESSED"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "GenerateComplianceReport",
+          "States": {
+            "GenerateComplianceReport": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:genesis-compliance-report",
+              "Parameters": {
+                "eventId.$": "$.eventId",
+                "context.$": "$"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.completion",
+      "Next": "Success"
+    },
+
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}

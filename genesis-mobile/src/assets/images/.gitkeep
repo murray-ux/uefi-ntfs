@@ -1,0 +1,20 @@
+# Image Assets for GENESIS 2.0
+#
+# Required images:
+# - icon.png (1024x1024) - App icon
+# - splash.png (1284x2778) - Splash screen
+# - adaptive-icon.png (1024x1024) - Android adaptive icon
+# - favicon.png (48x48) - Web favicon
+# - notification-icon.png (96x96) - Notification small icon
+#
+# Design Guidelines:
+# - Use cyberpunk RGB theme colors
+# - Primary: #00FFFF (cyan)
+# - Secondary: #FF00FF (magenta)
+# - Accent: #FFFF00 (yellow)
+# - Background: #0A0A0F (dark)
+#
+# Tools:
+# - Figma: https://figma.com
+# - Icon Kitchen: https://icon.kitchen
+# - App Icon Generator: https://appicon.co

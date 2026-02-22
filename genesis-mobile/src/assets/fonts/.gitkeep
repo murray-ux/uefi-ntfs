@@ -1,0 +1,22 @@
+# Font Assets for GENESIS 2.0
+#
+# Required fonts (download from Google Fonts):
+# - Orbitron: https://fonts.google.com/specimen/Orbitron
+#   - Orbitron-Regular.ttf
+#   - Orbitron-Bold.ttf
+#   - Orbitron-Black.ttf
+#
+# - Rajdhani: https://fonts.google.com/specimen/Rajdhani
+#   - Rajdhani-Regular.ttf
+#   - Rajdhani-Medium.ttf
+#   - Rajdhani-SemiBold.ttf
+#   - Rajdhani-Bold.ttf
+#
+# - Share Tech Mono: https://fonts.google.com/specimen/Share+Tech+Mono
+#   - ShareTechMono-Regular.ttf
+#
+# Installation:
+# 1. Download fonts from Google Fonts
+# 2. Place .ttf files in this directory
+# 3. Run: npx expo install expo-font
+# 4. Fonts will be loaded in src/index.tsx

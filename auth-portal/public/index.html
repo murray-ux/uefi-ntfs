@@ -1,0 +1,3296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Authentication Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════════
+       NEXUS FUTURISTIC RGB THEME
+       Cyberpunk / Neon / Glass Morphism Design System
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    :root {
+      /* Core RGB Colors */
+      --rgb-cyan: #00f0ff;
+      --rgb-magenta: #ff00ff;
+      --rgb-yellow: #ffff00;
+      --rgb-green: #00ff88;
+      --rgb-orange: #ff6600;
+      --rgb-purple: #bf00ff;
+      --rgb-pink: #ff0080;
+      --rgb-blue: #0080ff;
+
+      /* Background layers */
+      --bg-void: #000000;
+      --bg-deep: #050510;
+      --bg-base: #0a0a1a;
+      --bg-elevated: #0f0f25;
+      --bg-surface: #141430;
+      --bg-card: rgba(20, 20, 50, 0.7);
+      --bg-glass: rgba(10, 10, 30, 0.85);
+
+      /* Text */
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0c0;
+      --text-muted: #606080;
+      --text-glow: #00f0ff;
+
+      /* Borders */
+      --border-dim: rgba(0, 240, 255, 0.1);
+      --border-glow: rgba(0, 240, 255, 0.3);
+      --border-bright: rgba(0, 240, 255, 0.6);
+
+      /* Gradients */
+      --gradient-rgb: linear-gradient(135deg, var(--rgb-cyan), var(--rgb-magenta), var(--rgb-yellow), var(--rgb-cyan));
+      --gradient-neon: linear-gradient(135deg, var(--rgb-cyan) 0%, var(--rgb-purple) 50%, var(--rgb-pink) 100%);
+      --gradient-card: linear-gradient(180deg, rgba(0, 240, 255, 0.05) 0%, transparent 100%);
+
+      /* Typography */
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'Rajdhani', sans-serif;
+      --font-mono: 'Share Tech Mono', monospace;
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+
+      /* Animation */
+      --transition-fast: 0.15s ease;
+      --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-glow: 0.5s ease;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Animations
+       ═══════════════════════════════════════════════════════════════════════ */
+    @keyframes rgbShift {
+      0%, 100% { filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(180deg); }
+    }
+
+    @keyframes rgbBorder {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px var(--rgb-cyan), 0 0 40px rgba(0, 240, 255, 0.3); }
+      50% { box-shadow: 0 0 30px var(--rgb-magenta), 0 0 60px rgba(255, 0, 255, 0.3); }
+    }
+
+    @keyframes textGlow {
+      0%, 100% { text-shadow: 0 0 10px var(--rgb-cyan), 0 0 20px var(--rgb-cyan), 0 0 30px var(--rgb-cyan); }
+      33% { text-shadow: 0 0 10px var(--rgb-magenta), 0 0 20px var(--rgb-magenta), 0 0 30px var(--rgb-magenta); }
+      66% { text-shadow: 0 0 10px var(--rgb-green), 0 0 20px var(--rgb-green), 0 0 30px var(--rgb-green); }
+    }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes gridMove {
+      0% { background-position: 0 0; }
+      100% { background-position: 50px 50px; }
+    }
+
+    @keyframes dataStream {
+      0% { transform: translateY(-100%); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    @keyframes borderRotate {
+      0% { --angle: 0deg; }
+      100% { --angle: 360deg; }
+    }
+
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       NEW RGB EFFECTS & ANIMATIONS
+       ═══════════════════════════════════════════════════════════════════════ */
+    @keyframes glitchText {
+      0%, 100% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+    }
+
+    @keyframes neonFlicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        opacity: 1;
+        text-shadow: 0 0 10px var(--rgb-cyan), 0 0 20px var(--rgb-cyan), 0 0 40px var(--rgb-cyan);
+      }
+      20%, 24%, 55% {
+        opacity: 0.8;
+        text-shadow: none;
+      }
+    }
+
+    @keyframes plasmaFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes rainbowTrail {
+      0% { filter: hue-rotate(0deg) brightness(1.2); }
+      100% { filter: hue-rotate(360deg) brightness(1.2); }
+    }
+
+    @keyframes matrixRain {
+      0% { transform: translateY(-100%) scaleY(1); opacity: 1; }
+      100% { transform: translateY(100vh) scaleY(2); opacity: 0; }
+    }
+
+    @keyframes typingCursor {
+      0%, 100% { border-color: var(--rgb-cyan); }
+      50% { border-color: transparent; }
+    }
+
+    @keyframes hologramShimmer {
+      0%, 100% { opacity: 0.3; transform: translateX(-100%); }
+      50% { opacity: 0.7; transform: translateX(100%); }
+    }
+
+    @keyframes energyPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    @keyframes orbitRing {
+      0% { transform: rotateX(60deg) rotateZ(0deg); }
+      100% { transform: rotateX(60deg) rotateZ(360deg); }
+    }
+
+    @keyframes waveform {
+      0%, 100% { height: 4px; }
+      50% { height: 20px; }
+    }
+
+    @keyframes spinnerRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spinnerDash {
+      0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+      50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+      100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+    }
+
+    @keyframes skeletonShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes progressGlow {
+      0%, 100% { box-shadow: 0 0 10px var(--rgb-cyan), 0 0 20px var(--rgb-cyan); }
+      50% { box-shadow: 0 0 20px var(--rgb-magenta), 0 0 40px var(--rgb-magenta); }
+    }
+
+    @keyframes dashboardPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.6), 0 0 60px rgba(255, 0, 255, 0.3); }
+    }
+
+    @keyframes statCounter {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes hexRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(60deg); }
+    }
+
+    @keyframes cyberLine {
+      0% { width: 0; left: 0; }
+      50% { width: 100%; left: 0; }
+      100% { width: 0; left: 100%; }
+    }
+
+    /* Enhanced hover effects */
+    .hover-glitch:hover {
+      animation: glitchText 0.3s ease infinite;
+    }
+
+    .hover-neon:hover {
+      animation: neonFlicker 1.5s ease infinite;
+    }
+
+    .hover-rainbow:hover {
+      animation: rainbowTrail 2s linear infinite;
+    }
+
+    /* Plasma background effect */
+    .plasma-bg {
+      background: linear-gradient(45deg,
+        var(--rgb-cyan), var(--rgb-magenta), var(--rgb-yellow),
+        var(--rgb-green), var(--rgb-purple), var(--rgb-cyan));
+      background-size: 400% 400%;
+      animation: plasmaFlow 8s ease infinite;
+    }
+
+    /* Hologram overlay */
+    .hologram-effect::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+      animation: hologramShimmer 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Energy ring effect */
+    .energy-ring {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 2px solid var(--rgb-cyan);
+      border-radius: 50%;
+      animation: energyPulse 2s ease-in-out infinite;
+    }
+
+    /* Matrix rain character */
+    .matrix-char {
+      position: absolute;
+      color: var(--rgb-green);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      text-shadow: 0 0 10px var(--rgb-green);
+      animation: matrixRain 2s linear infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Base Styles
+       ═══════════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background: var(--bg-void);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        /* Radial gradient overlay */
+        radial-gradient(ellipse at 50% 0%, rgba(0, 240, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 0% 100%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+        /* Grid pattern */
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        /* Base */
+        var(--bg-deep);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 50px 50px, 50px 50px, 100% 100%;
+      animation: gridMove 20s linear infinite;
+      z-index: -2;
+    }
+
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--rgb-cyan), transparent);
+      opacity: 0.1;
+      animation: scanline 8s linear infinite;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Floating Particles
+       ═══════════════════════════════════════════════════════════════════════ */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--rgb-cyan);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 6s ease-in-out infinite;
+      box-shadow: 0 0 10px var(--rgb-cyan);
+    }
+
+    .data-stream {
+      position: absolute;
+      width: 1px;
+      height: 100px;
+      background: linear-gradient(to bottom, transparent, var(--rgb-cyan), transparent);
+      opacity: 0.3;
+      animation: dataStream 3s linear infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Layout Container
+       ═══════════════════════════════════════════════════════════════════════ */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Header
+       ═══════════════════════════════════════════════════════════════════════ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-glow);
+      padding: var(--space-md) var(--space-xl);
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      position: relative;
+    }
+
+    .logo-icon svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 10px var(--rgb-cyan));
+    }
+
+    .logo-icon::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      background: var(--gradient-rgb);
+      background-size: 300% 300%;
+      border-radius: 12px;
+      animation: rgbBorder 4s ease infinite;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: textGlow 4s ease infinite;
+    }
+
+    .logo-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    /* Language Selector */
+    .language-selector {
+      position: relative;
+    }
+
+    .language-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      padding: var(--space-sm) var(--space-md);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      transition: var(--transition-smooth);
+    }
+
+    .language-btn:hover {
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    }
+
+    .language-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      min-width: 220px;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      z-index: 200;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+    .language-dropdown.open { display: block; }
+
+    .language-option {
+      padding: var(--space-sm) var(--space-md);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition-fast);
+      font-family: var(--font-body);
+    }
+    .language-option:hover {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--rgb-cyan);
+    }
+    .language-option.selected {
+      background: rgba(0, 240, 255, 0.15);
+      border-left: 3px solid var(--rgb-cyan);
+    }
+    .language-native {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Theme/Settings Buttons */
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glow);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .icon-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-rgb);
+      background-size: 300% 300%;
+      opacity: 0;
+      transition: var(--transition-smooth);
+      animation: rgbBorder 3s ease infinite;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--rgb-cyan);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 240, 255, 0.3);
+    }
+
+    .icon-btn:hover::before {
+      opacity: 0.15;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Main Content
+       ═══════════════════════════════════════════════════════════════════════ */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2xl) var(--space-md);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Cards - Glass Morphism
+       ═══════════════════════════════════════════════════════════════════════ */
+    .card {
+      position: relative;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: var(--space-xl);
+      margin-bottom: var(--space-lg);
+      overflow: hidden;
+      animation: borderRotate 8s linear infinite;
+    }
+
+    /* RGB animated border */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 2px;
+      background: conic-gradient(from var(--angle), var(--rgb-cyan), var(--rgb-magenta), var(--rgb-yellow), var(--rgb-green), var(--rgb-cyan));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* Inner glow */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 150px;
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.08) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: var(--space-sm);
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--rgb-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Forms
+       ═══════════════════════════════════════════════════════════════════════ */
+    .form-group {
+      margin-bottom: var(--space-lg);
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: var(--space-sm);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--space-md);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--text-primary);
+      background: rgba(10, 10, 30, 0.8);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .form-input:focus {
+      border-color: var(--rgb-cyan);
+      box-shadow:
+        0 0 0 3px rgba(0, 240, 255, 0.1),
+        0 0 20px rgba(0, 240, 255, 0.2),
+        inset 0 0 20px rgba(0, 240, 255, 0.05);
+    }
+
+    .form-input:hover:not(:focus) {
+      border-color: rgba(0, 240, 255, 0.5);
+    }
+
+    .form-hint {
+      margin-top: var(--space-xs);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .form-error {
+      color: var(--rgb-pink);
+    }
+
+    /* Checkbox */
+    .form-checkbox {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-checkbox input[type="checkbox"] {
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      background: rgba(10, 10, 30, 0.8);
+      border: 2px solid var(--border-glow);
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+
+    .form-checkbox input[type="checkbox"]:checked {
+      background: var(--rgb-cyan);
+      border-color: var(--rgb-cyan);
+      box-shadow: 0 0 15px var(--rgb-cyan);
+    }
+
+    .form-checkbox input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--bg-void);
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .form-checkbox span {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Buttons
+       ═══════════════════════════════════════════════════════════════════════ */
+    .form-actions {
+      margin-top: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-xl);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--rgb-cyan) 0%, var(--rgb-blue) 100%);
+      color: var(--bg-void);
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--rgb-magenta) 0%, var(--rgb-purple) 100%);
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 8px 30px rgba(0, 240, 255, 0.5),
+        0 0 50px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-primary:hover::before {
+      opacity: 1;
+    }
+
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--rgb-cyan);
+      border: 1px solid var(--border-glow);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--rgb-cyan);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Messages / Alerts
+       ═══════════════════════════════════════════════════════════════════════ */
+    .message {
+      padding: var(--space-md);
+      border-radius: 12px;
+      margin-bottom: var(--space-md);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 1;
+      border: 1px solid;
+    }
+
+    .message-success {
+      background: rgba(0, 255, 136, 0.1);
+      border-color: var(--rgb-green);
+      color: var(--rgb-green);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+    }
+
+    .message-error {
+      background: rgba(255, 0, 128, 0.1);
+      border-color: var(--rgb-pink);
+      color: var(--rgb-pink);
+      box-shadow: 0 0 20px rgba(255, 0, 128, 0.1);
+    }
+
+    .message-info {
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+    }
+
+    .message-warning {
+      background: rgba(255, 102, 0, 0.1);
+      border-color: var(--rgb-orange);
+      color: var(--rgb-orange);
+      box-shadow: 0 0 20px rgba(255, 102, 0, 0.1);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Links
+       ═══════════════════════════════════════════════════════════════════════ */
+    .link {
+      color: var(--rgb-cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+
+    .link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--rgb-cyan);
+      box-shadow: 0 0 10px var(--rgb-cyan);
+      transition: var(--transition-smooth);
+    }
+
+    .link:hover {
+      color: var(--rgb-magenta);
+      text-shadow: 0 0 10px var(--rgb-magenta);
+    }
+
+    .link:hover::after {
+      width: 100%;
+      background: var(--rgb-magenta);
+      box-shadow: 0 0 10px var(--rgb-magenta);
+    }
+
+    .links-section {
+      text-align: center;
+      margin-top: var(--space-xl);
+      position: relative;
+      z-index: 1;
+    }
+
+    .links-section p {
+      margin: var(--space-sm) 0;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Tabs
+       ═══════════════════════════════════════════════════════════════════════ */
+    .tabs {
+      display: flex;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-xl);
+      background: rgba(10, 10, 30, 0.5);
+      padding: var(--space-xs);
+      border-radius: 12px;
+      border: 1px solid var(--border-dim);
+      position: relative;
+      z-index: 1;
+    }
+
+    .tab {
+      flex: 1;
+      padding: var(--space-sm) var(--space-md);
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .tab:hover {
+      color: var(--text-secondary);
+      background: rgba(0, 240, 255, 0.05);
+    }
+
+    .tab.active {
+      background: var(--rgb-cyan);
+      color: var(--bg-void);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    }
+
+    .tab-panel {
+      display: none;
+      position: relative;
+      z-index: 1;
+    }
+    .tab-panel.active { display: block; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Help Section / Collapsibles
+       ═══════════════════════════════════════════════════════════════════════ */
+    .help-card {
+      background: rgba(10, 10, 30, 0.5);
+      border: 1px solid var(--border-dim);
+    }
+
+    .help-card::before {
+      background: conic-gradient(from var(--angle), var(--border-dim), var(--border-glow), var(--border-dim));
+    }
+
+    details {
+      margin-bottom: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: var(--space-md);
+      background: rgba(0, 240, 255, 0.03);
+      border: 1px solid var(--border-dim);
+      border-radius: 10px;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      transition: var(--transition-smooth);
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::before {
+      content: '▸';
+      color: var(--rgb-cyan);
+      transition: var(--transition-fast);
+      font-size: 0.8em;
+    }
+
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    summary:hover {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: var(--border-glow);
+      color: var(--rgb-cyan);
+    }
+
+    details > div {
+      padding: var(--space-md);
+      margin-top: var(--space-sm);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      border-left: 2px solid var(--border-glow);
+      margin-left: var(--space-md);
+    }
+
+    details > div p {
+      margin-bottom: var(--space-sm);
+    }
+
+    details > div ul {
+      margin-left: var(--space-lg);
+      margin-bottom: var(--space-sm);
+    }
+
+    details > div li {
+      margin-bottom: var(--space-xs);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Settings
+       ═══════════════════════════════════════════════════════════════════════ */
+    .settings-group {
+      margin-bottom: var(--space-xl);
+      position: relative;
+      z-index: 1;
+    }
+
+    .settings-group-title {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .settings-group-title::before {
+      content: '';
+      width: 12px;
+      height: 2px;
+      background: var(--rgb-cyan);
+      box-shadow: 0 0 10px var(--rgb-cyan);
+    }
+
+    .settings-options {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .settings-option {
+      padding: var(--space-sm) var(--space-lg);
+      background: rgba(10, 10, 30, 0.8);
+      border: 1px solid var(--border-dim);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .settings-option:hover {
+      border-color: var(--border-glow);
+      color: var(--text-secondary);
+      background: rgba(0, 240, 255, 0.05);
+    }
+
+    .settings-option.selected {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Footer
+       ═══════════════════════════════════════════════════════════════════════ */
+    .footer {
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border-dim);
+      padding: var(--space-lg) var(--space-md);
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-md);
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: var(--transition-fast);
+    }
+
+    .footer-link:hover {
+      color: var(--rgb-cyan);
+      text-shadow: 0 0 10px var(--rgb-cyan);
+    }
+
+    .footer-text {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      opacity: 0.6;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Utilities
+       ═══════════════════════════════════════════════════════════════════════ */
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .text-muted { color: var(--text-muted); }
+    .mt-md { margin-top: var(--space-md); }
+    .mb-md { margin-bottom: var(--space-md); }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Status Indicator
+       ═══════════════════════════════════════════════════════════════════════ */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--rgb-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--rgb-green);
+      animation: pulse 2s ease infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Responsive
+       ═══════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .header-inner {
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+
+      .logo-text {
+        font-size: 1.2rem;
+      }
+
+      .card {
+        padding: var(--space-lg);
+        border-radius: 16px;
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+      }
+
+      .tabs {
+        flex-direction: column;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Scrollbar
+       ═══════════════════════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-glow);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--rgb-cyan);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Selection
+       ═══════════════════════════════════════════════════════════════════════ */
+    ::selection {
+      background: var(--rgb-cyan);
+      color: var(--bg-void);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Loading Spinners & Progress
+       ═══════════════════════════════════════════════════════════════════════ */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      backdrop-filter: blur(10px);
+    }
+
+    .loading-overlay.hidden { display: none; }
+
+    /* Cyber Spinner */
+    .spinner-cyber {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+
+    .spinner-cyber svg {
+      animation: spinnerRotate 2s linear infinite;
+    }
+
+    .spinner-cyber circle {
+      fill: none;
+      stroke-width: 4;
+      stroke-linecap: round;
+      animation: spinnerDash 1.5s ease-in-out infinite;
+    }
+
+    .spinner-cyber circle:nth-child(1) { stroke: var(--rgb-cyan); }
+    .spinner-cyber circle:nth-child(2) { stroke: var(--rgb-magenta); animation-delay: 0.2s; }
+    .spinner-cyber circle:nth-child(3) { stroke: var(--rgb-green); animation-delay: 0.4s; }
+
+    /* Hex Spinner */
+    .spinner-hex {
+      width: 60px;
+      height: 60px;
+      position: relative;
+    }
+
+    .spinner-hex::before,
+    .spinner-hex::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid transparent;
+      border-top-color: var(--rgb-cyan);
+      border-bottom-color: var(--rgb-magenta);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      animation: spinnerRotate 1.5s linear infinite;
+    }
+
+    .spinner-hex::after {
+      width: 70%;
+      height: 70%;
+      top: 15%;
+      left: 15%;
+      border-top-color: var(--rgb-magenta);
+      border-bottom-color: var(--rgb-cyan);
+      animation-direction: reverse;
+      animation-duration: 1s;
+    }
+
+    /* Dot Spinner */
+    .spinner-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .spinner-dots span {
+      width: 12px;
+      height: 12px;
+      background: var(--rgb-cyan);
+      border-radius: 50%;
+      animation: pulse 1.4s ease-in-out infinite;
+      box-shadow: 0 0 15px var(--rgb-cyan);
+    }
+
+    .spinner-dots span:nth-child(2) { animation-delay: 0.2s; background: var(--rgb-magenta); box-shadow: 0 0 15px var(--rgb-magenta); }
+    .spinner-dots span:nth-child(3) { animation-delay: 0.4s; background: var(--rgb-green); box-shadow: 0 0 15px var(--rgb-green); }
+
+    /* Waveform Loader */
+    .spinner-wave {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 30px;
+    }
+
+    .spinner-wave span {
+      width: 4px;
+      background: linear-gradient(to top, var(--rgb-cyan), var(--rgb-magenta));
+      border-radius: 2px;
+      animation: waveform 1s ease-in-out infinite;
+    }
+
+    .spinner-wave span:nth-child(1) { animation-delay: 0s; }
+    .spinner-wave span:nth-child(2) { animation-delay: 0.1s; }
+    .spinner-wave span:nth-child(3) { animation-delay: 0.2s; }
+    .spinner-wave span:nth-child(4) { animation-delay: 0.3s; }
+    .spinner-wave span:nth-child(5) { animation-delay: 0.4s; }
+
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--rgb-cyan), var(--rgb-magenta), var(--rgb-cyan));
+      background-size: 200% 100%;
+      border-radius: 3px;
+      animation: plasmaFlow 2s linear infinite, progressGlow 2s ease infinite;
+      transition: width 0.3s ease;
+    }
+
+    /* Skeleton Loader */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-surface) 50%, var(--bg-elevated) 75%);
+      background-size: 200% 100%;
+      animation: skeletonShimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    .skeleton-text { height: 16px; margin-bottom: 8px; }
+    .skeleton-text.short { width: 60%; }
+    .skeleton-avatar { width: 60px; height: 60px; border-radius: 50%; }
+    .skeleton-card { height: 120px; }
+
+    .loading-text {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      color: var(--rgb-cyan);
+      letter-spacing: 3px;
+      margin-top: var(--space-lg);
+      text-transform: uppercase;
+      animation: neonFlicker 2s ease infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       OAuth Buttons
+       ═══════════════════════════════════════════════════════════════════════ */
+    .oauth-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin: var(--space-xl) 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .oauth-divider::before,
+    .oauth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+    }
+
+    .oauth-divider span {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .oauth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-oauth {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-xl);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 500;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .btn-oauth::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-oauth:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-oauth:hover::before {
+      opacity: 0.1;
+    }
+
+    .btn-oauth svg {
+      width: 24px;
+      height: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-oauth span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Google */
+    .btn-google {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    .btn-google:hover {
+      border-color: #4285f4;
+      box-shadow: 0 0 30px rgba(66, 133, 244, 0.3);
+    }
+
+    .btn-google::before {
+      background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+    }
+
+    /* GitHub */
+    .btn-github {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    .btn-github:hover {
+      border-color: #6e5494;
+      box-shadow: 0 0 30px rgba(110, 84, 148, 0.3);
+    }
+
+    .btn-github::before {
+      background: linear-gradient(135deg, #6e5494, #24292e);
+    }
+
+    /* Discord */
+    .btn-discord {
+      background: rgba(88, 101, 242, 0.1);
+      color: #5865F2;
+    }
+
+    .btn-discord:hover {
+      border-color: #5865F2;
+      box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);
+    }
+
+    .btn-discord::before {
+      background: #5865F2;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       2FA / MFA Verification Page
+       ═══════════════════════════════════════════════════════════════════════ */
+    .mfa-code-container {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin: var(--space-xl) 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mfa-code-input {
+      width: 56px;
+      height: 72px;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--rgb-cyan);
+      background: rgba(10, 10, 30, 0.9);
+      border: 2px solid var(--border-glow);
+      border-radius: 12px;
+      outline: none;
+      transition: var(--transition-smooth);
+      caret-color: var(--rgb-cyan);
+    }
+
+    .mfa-code-input:focus {
+      border-color: var(--rgb-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1);
+      animation: typingCursor 1s ease infinite;
+    }
+
+    .mfa-code-input.filled {
+      border-color: var(--rgb-green);
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    }
+
+    .mfa-code-input.error {
+      border-color: var(--rgb-pink);
+      animation: glitchText 0.3s ease;
+    }
+
+    .mfa-timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .mfa-timer-ring {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-glow);
+      border-top-color: var(--rgb-cyan);
+      border-radius: 50%;
+      animation: spinnerRotate 1s linear infinite;
+    }
+
+    .mfa-method-switch {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+      position: relative;
+      z-index: 1;
+    }
+
+    .mfa-method {
+      padding: var(--space-sm) var(--space-md);
+      background: transparent;
+      border: 1px solid var(--border-dim);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .mfa-method:hover {
+      border-color: var(--border-glow);
+      color: var(--text-secondary);
+    }
+
+    .mfa-method.active {
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--rgb-cyan);
+      color: var(--rgb-cyan);
+    }
+
+    .mfa-icon {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: var(--space-lg);
+      filter: drop-shadow(0 0 20px var(--rgb-cyan));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Dashboard Page
+       ═══════════════════════════════════════════════════════════════════════ */
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-xl);
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2xl);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+
+    .dashboard-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dashboard-user {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    .dashboard-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--gradient-rgb);
+      background-size: 300% 300%;
+      animation: plasmaFlow 4s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--bg-void);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .dashboard-username {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+
+    .dashboard-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--rgb-green);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .dashboard-card {
+      position: relative;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: var(--space-lg);
+      animation: dashboardPulse 4s ease infinite;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 1px;
+      background: linear-gradient(135deg, var(--rgb-cyan), var(--rgb-magenta), var(--rgb-cyan));
+      background-size: 200% 200%;
+      animation: plasmaFlow 4s ease infinite;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .dashboard-card-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-md);
+      filter: drop-shadow(0 0 10px currentColor);
+    }
+
+    .dashboard-card-title {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-sm);
+    }
+
+    .dashboard-card-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--rgb-cyan);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+      animation: statCounter 0.6s ease-out;
+    }
+
+    .dashboard-card-change {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      margin-top: var(--space-sm);
+    }
+
+    .dashboard-card-change.positive { color: var(--rgb-green); }
+    .dashboard-card-change.negative { color: var(--rgb-pink); }
+
+    /* Stats mini chart */
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 40px;
+      margin-top: var(--space-md);
+    }
+
+    .mini-chart-bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--rgb-cyan), var(--rgb-magenta));
+      border-radius: 2px 2px 0 0;
+      transition: height 0.3s ease;
+      opacity: 0.8;
+    }
+
+    .mini-chart-bar:hover {
+      opacity: 1;
+      box-shadow: 0 0 10px var(--rgb-cyan);
+    }
+
+    /* Activity Feed */
+    .activity-feed {
+      position: relative;
+      z-index: 1;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 240, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xs);
+    }
+
+    .activity-time {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-lg);
+      background: rgba(0, 240, 255, 0.03);
+      border: 1px solid var(--border-dim);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      text-align: center;
+    }
+
+    .quick-action:hover {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: var(--rgb-cyan);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.2);
+    }
+
+    .quick-action-icon {
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 10px currentColor);
+    }
+
+    .quick-action-label {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* System Status Widget */
+    .system-status {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-item {
+      text-align: center;
+      padding: var(--space-md);
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin: 0 auto var(--space-sm);
+      animation: pulse 2s ease infinite;
+    }
+
+    .status-indicator.online {
+      background: var(--rgb-green);
+      box-shadow: 0 0 15px var(--rgb-green);
+    }
+
+    .status-indicator.warning {
+      background: var(--rgb-orange);
+      box-shadow: 0 0 15px var(--rgb-orange);
+    }
+
+    .status-indicator.offline {
+      background: var(--rgb-pink);
+      box-shadow: 0 0 15px var(--rgb-pink);
+    }
+
+    .status-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .status-value {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-xs);
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="spinner-cyber">
+      <svg width="80" height="80" viewBox="0 0 50 50">
+        <circle cx="25" cy="25" r="20" stroke-dasharray="31.4 31.4" transform="rotate(-90 25 25)"/>
+        <circle cx="25" cy="25" r="15" stroke-dasharray="23.5 23.5" transform="rotate(-90 25 25)"/>
+        <circle cx="25" cy="25" r="10" stroke-dasharray="15.7 15.7" transform="rotate(-90 25 25)"/>
+      </svg>
+    </div>
+    <div class="loading-text" id="loading-text">Initializing...</div>
+    <div class="progress-bar" style="width: 200px; margin-top: 24px;">
+      <div class="progress-bar-fill" id="loading-progress" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <!-- Floating Particles -->
+  <div class="particles" id="particles"></div>
+
+  <div class="app-container">
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Header
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <header class="header">
+      <div class="header-inner">
+        <a href="#" class="logo" onclick="showPage('login'); return false;">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" fill="rgba(0,240,255,0.1)"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+              <circle cx="12" cy="12" r="3" fill="rgba(0,240,255,0.3)"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text">NEXUS</div>
+            <div class="logo-subtitle">Authentication Portal</div>
+          </div>
+        </a>
+
+        <div class="header-actions">
+          <!-- Language Selector -->
+          <div class="language-selector">
+            <button class="language-btn" onclick="toggleLanguageDropdown()">
+              <span id="current-language">EN</span>
+              <span style="font-size: 0.7em;">▼</span>
+            </button>
+            <div class="language-dropdown" id="language-dropdown"></div>
+          </div>
+
+          <!-- Theme Toggle -->
+          <button class="icon-btn" onclick="cycleRGB()" title="Cycle RGB Effect">
+            <span id="rgb-icon">🌈</span>
+          </button>
+
+          <!-- Settings -->
+          <button class="icon-btn" onclick="showPage('settings')" title="Settings">
+            ⚙️
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Main Content
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <main class="main">
+      <div class="container">
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Login Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-login" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Initialize</h1>
+              <p class="card-subtitle">// SECURE AUTHENTICATION REQUIRED</p>
+            </div>
+
+            <div id="login-message"></div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+              <div class="form-group">
+                <label class="form-label" for="login-username">User Identifier</label>
+                <input type="text" id="login-username" class="form-input" placeholder="Enter username" required autocomplete="username">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="login-password">Access Key</label>
+                <input type="password" id="login-password" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+              </div>
+
+              <div class="form-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="login-remember">
+                  <span>Maintain session persistence</span>
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                  <span>Access System</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- OAuth Divider -->
+            <div class="oauth-divider">
+              <span>Or Connect Via</span>
+            </div>
+
+            <!-- OAuth Buttons -->
+            <div class="oauth-buttons">
+              <button class="btn-oauth btn-google" onclick="handleOAuthLogin('google')">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+
+              <button class="btn-oauth btn-github" onclick="handleOAuthLogin('github')">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                <span>Continue with GitHub</span>
+              </button>
+
+              <button class="btn-oauth btn-discord" onclick="handleOAuthLogin('discord')">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+                </svg>
+                <span>Continue with Discord</span>
+              </button>
+            </div>
+
+            <div class="links-section">
+              <p><a href="#" class="link" onclick="showPage('reset-password'); return false;">Lost access credentials?</a></p>
+              <p>No account? <a href="#" class="link" onclick="showPage('create-account'); return false;">Register new identity</a></p>
+            </div>
+          </div>
+
+          <div class="card help-card">
+            <details>
+              <summary>Authentication Protocol</summary>
+              <div>
+                <p>Enter your unique identifier and access key to authenticate. Sessions expire after 24 hours of inactivity.</p>
+                <p>Enable session persistence to remain authenticated across browser sessions.</p>
+              </div>
+            </details>
+          </div>
+
+          <div class="status-bar">
+            <span class="status-dot"></span>
+            <span>SYSTEM ONLINE // SECURE CONNECTION ESTABLISHED</span>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Create Account Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-create-account" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Register</h1>
+              <p class="card-subtitle">// CREATE NEW IDENTITY</p>
+            </div>
+
+            <div id="create-message"></div>
+
+            <form id="create-form" onsubmit="handleCreateAccount(event)">
+              <div class="form-group">
+                <label class="form-label" for="create-username">User Identifier *</label>
+                <input type="text" id="create-username" class="form-input" placeholder="Choose username" required autocomplete="username" pattern="[a-zA-Z0-9_-]{3,30}">
+                <p class="form-hint">3-30 chars // Alphanumeric + underscore/hyphen</p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="create-password">Access Key *</label>
+                <input type="password" id="create-password" class="form-input" placeholder="Create password" required autocomplete="new-password" minlength="8">
+                <p class="form-hint">Min 8 characters // Strong encryption recommended</p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="create-password-confirm">Confirm Access Key *</label>
+                <input type="password" id="create-password-confirm" class="form-input" placeholder="Re-enter password" required autocomplete="new-password">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="create-email">Recovery Channel (Optional)</label>
+                <input type="email" id="create-email" class="form-input" placeholder="email@domain.com" autocomplete="email">
+                <p class="form-hint">Required for credential recovery</p>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><span>Initialize Account</span></button>
+                <button type="button" class="btn btn-secondary" onclick="showPage('login')">Abort</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Password Reset Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-reset-password" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Recovery</h1>
+              <p class="card-subtitle">// CREDENTIAL RESET PROTOCOL</p>
+            </div>
+
+            <div id="reset-message"></div>
+
+            <form id="reset-form" onsubmit="handlePasswordReset(event)">
+              <div class="form-group">
+                <label class="form-label" for="reset-username">User Identifier</label>
+                <input type="text" id="reset-username" class="form-input" placeholder="Enter username" autocomplete="username">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="reset-email">Recovery Channel</label>
+                <input type="email" id="reset-email" class="form-input" placeholder="email@domain.com" autocomplete="email">
+              </div>
+
+              <p class="form-hint mb-md">
+                Provide identifier and/or recovery channel. Reset instructions will be transmitted if account exists.
+              </p>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><span>Initiate Recovery</span></button>
+                <button type="button" class="btn btn-secondary" onclick="showPage('login')">Cancel</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card help-card">
+            <details>
+              <summary>Recovery Protocol FAQ</summary>
+              <div>
+                <p><strong>When to initiate recovery?</strong><br>
+                Use when access credentials are lost or suspected compromise.</p>
+              </div>
+            </details>
+
+            <details>
+              <summary>Email Not Received?</summary>
+              <div>
+                <ul>
+                  <li>Check spam/junk filters</li>
+                  <li>Verify account has linked email</li>
+                  <li>EPR enabled accounts require both fields</li>
+                  <li>Rate limiting may apply</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>Enhanced Protection (EPR)</summary>
+              <div>
+                <p>EPR requires BOTH username AND email for recovery. Enable in Settings for additional security.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Settings Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-settings" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="card-title">Config</h1>
+              <p class="card-subtitle">// SYSTEM PREFERENCES</p>
+            </div>
+
+            <div class="tabs">
+              <button class="tab active" onclick="showSettingsTab('display')">Display</button>
+              <button class="tab" onclick="showSettingsTab('email')">Comms</button>
+              <button class="tab" onclick="showSettingsTab('security')">Security</button>
+            </div>
+
+            <!-- Display Settings -->
+            <div id="settings-display" class="tab-panel active">
+              <div class="settings-group">
+                <div class="settings-group-title">Interface Scale</div>
+                <p class="form-hint mb-md">Adjust visual density</p>
+                <div class="settings-options">
+                  <button class="settings-option selected" onclick="setTextSize('standard')" data-size="standard">Standard</button>
+                  <button class="settings-option" onclick="setTextSize('medium')" data-size="medium">Medium</button>
+                  <button class="settings-option" onclick="setTextSize('large')" data-size="large">Large</button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <div class="settings-group-title">RGB Mode</div>
+                <p class="form-hint mb-md">Color cycling speed</p>
+                <div class="settings-options">
+                  <button class="settings-option" onclick="setRGBSpeed('off')" data-rgb="off">Off</button>
+                  <button class="settings-option" onclick="setRGBSpeed('slow')" data-rgb="slow">Slow</button>
+                  <button class="settings-option selected" onclick="setRGBSpeed('normal')" data-rgb="normal">Normal</button>
+                  <button class="settings-option" onclick="setRGBSpeed('fast')" data-rgb="fast">Fast</button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-particles" checked onchange="toggleParticles()">
+                  <span>Enable particle effects</span>
+                </label>
+              </div>
+
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-expand-sections" onchange="toggleExpandSections()">
+                  <span>Auto-expand all sections</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Email Settings -->
+            <div id="settings-email" class="tab-panel">
+              <div class="form-group">
+                <label class="form-label" for="settings-email-input">Communication Channel</label>
+                <input type="email" id="settings-email-input" class="form-input" placeholder="email@domain.com">
+                <p class="form-hint">Primary channel for notifications and recovery</p>
+              </div>
+
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-email-notifications">
+                  <span>Enable system notifications</span>
+                </label>
+              </div>
+
+              <div class="message message-info mt-md">
+                <strong>PENDING:</strong> Channel verification required. Check inbox for confirmation sequence.
+              </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div id="settings-security" class="tab-panel">
+              <div class="settings-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="setting-epr" onchange="toggleEPR()">
+                  <span><strong>Enhanced Protection (EPR)</strong><br>
+                  <span class="text-muted">Require both identifier AND recovery channel for reset operations</span></span>
+                </label>
+              </div>
+
+              <div class="message message-warning mt-md">
+                <strong>NOTICE:</strong> EPR activation requires both credentials for any recovery attempt. System will not indicate which field is missing.
+              </div>
+
+              <div class="settings-group mt-md">
+                <div class="settings-group-title">Access Key</div>
+                <button class="btn btn-secondary" onclick="showPage('reset-password')">Rotate Credentials</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions" style="max-width: 480px; margin: 0 auto;">
+            <button class="btn btn-primary" onclick="saveSettings()"><span>Apply Changes</span></button>
+            <button class="btn btn-secondary" onclick="showPage('login')">Return</button>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             2FA / MFA Verification Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-mfa" class="page hidden">
+          <div class="card">
+            <div class="card-header">
+              <div class="mfa-icon">🔐</div>
+              <h1 class="card-title">Verify</h1>
+              <p class="card-subtitle">// TWO-FACTOR AUTHENTICATION</p>
+            </div>
+
+            <div id="mfa-message"></div>
+
+            <div class="mfa-method-switch">
+              <button class="mfa-method active" onclick="switchMFAMethod('app')" data-method="app">📱 Auth App</button>
+              <button class="mfa-method" onclick="switchMFAMethod('sms')" data-method="sms">💬 SMS</button>
+              <button class="mfa-method" onclick="switchMFAMethod('email')" data-method="email">📧 Email</button>
+            </div>
+
+            <form id="mfa-form" onsubmit="handleMFASubmit(event)">
+              <p class="text-center text-muted mt-md" style="position: relative; z-index: 1;">
+                Enter the 6-digit verification code from your authenticator app
+              </p>
+
+              <div class="mfa-code-container">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="0" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)" autofocus>
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="1" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="2" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="3" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="4" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+                <input type="text" class="mfa-code-input" maxlength="1" data-index="5" oninput="handleMFAInput(this)" onkeydown="handleMFAKeydown(event, this)">
+              </div>
+
+              <div class="mfa-timer">
+                <div class="mfa-timer-ring"></div>
+                <span id="mfa-countdown">Code expires in <strong>29</strong> seconds</span>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><span>Verify Identity</span></button>
+                <button type="button" class="btn btn-secondary" onclick="resendMFACode()">Resend Code</button>
+              </div>
+            </form>
+
+            <div class="links-section">
+              <p><a href="#" class="link" onclick="showPage('login'); return false;">← Return to login</a></p>
+              <p class="text-muted">Can't access your device? <a href="#" class="link">Use recovery code</a></p>
+            </div>
+          </div>
+
+          <div class="card help-card">
+            <details>
+              <summary>Having trouble?</summary>
+              <div>
+                <p><strong>Authenticator app not synced?</strong><br>
+                Ensure your device's time is synchronized. Check Settings → Date &amp; Time → Set Automatically.</p>
+                <p><strong>Lost your authenticator?</strong><br>
+                Use a recovery code or contact support to regain access.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             Dashboard Page
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="page-dashboard" class="page hidden">
+          <div class="dashboard-container">
+            <div class="dashboard-header">
+              <div>
+                <h1 class="dashboard-title">Command Center</h1>
+                <p class="card-subtitle" style="margin-top: 8px;">// NEXUS CONTROL INTERFACE</p>
+              </div>
+              <div class="dashboard-user">
+                <div>
+                  <div class="dashboard-username">OPERATOR_7X</div>
+                  <div class="dashboard-status">
+                    <span class="status-dot"></span>
+                    <span>ONLINE // SECURE</span>
+                  </div>
+                </div>
+                <div class="dashboard-avatar">7X</div>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="dashboard-grid">
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-cyan);">⚡</div>
+                <div class="dashboard-card-title">Active Sessions</div>
+                <div class="dashboard-card-value">12</div>
+                <div class="dashboard-card-change positive">↑ 23% this week</div>
+                <div class="mini-chart">
+                  <div class="mini-chart-bar" style="height: 40%;"></div>
+                  <div class="mini-chart-bar" style="height: 65%;"></div>
+                  <div class="mini-chart-bar" style="height: 45%;"></div>
+                  <div class="mini-chart-bar" style="height: 80%;"></div>
+                  <div class="mini-chart-bar" style="height: 55%;"></div>
+                  <div class="mini-chart-bar" style="height: 90%;"></div>
+                  <div class="mini-chart-bar" style="height: 75%;"></div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-magenta);">🛡️</div>
+                <div class="dashboard-card-title">Security Score</div>
+                <div class="dashboard-card-value">94<span style="font-size: 1rem;">%</span></div>
+                <div class="dashboard-card-change positive">↑ Excellent rating</div>
+                <div class="progress-bar" style="margin-top: 16px;">
+                  <div class="progress-bar-fill" style="width: 94%;"></div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-green);">📊</div>
+                <div class="dashboard-card-title">Data Transfers</div>
+                <div class="dashboard-card-value">2.4<span style="font-size: 1rem;">TB</span></div>
+                <div class="dashboard-card-change negative">↓ 5% vs last month</div>
+                <div class="mini-chart">
+                  <div class="mini-chart-bar" style="height: 90%;"></div>
+                  <div class="mini-chart-bar" style="height: 75%;"></div>
+                  <div class="mini-chart-bar" style="height: 85%;"></div>
+                  <div class="mini-chart-bar" style="height: 60%;"></div>
+                  <div class="mini-chart-bar" style="height: 70%;"></div>
+                  <div class="mini-chart-bar" style="height: 55%;"></div>
+                  <div class="mini-chart-bar" style="height: 65%;"></div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-icon" style="color: var(--rgb-purple);">🔔</div>
+                <div class="dashboard-card-title">Alerts</div>
+                <div class="dashboard-card-value">3</div>
+                <div class="dashboard-card-change" style="color: var(--rgb-orange);">⚠ Action required</div>
+              </div>
+            </div>
+
+            <!-- System Status & Quick Actions -->
+            <div class="dashboard-grid" style="margin-top: var(--space-lg);">
+              <div class="dashboard-card">
+                <div class="dashboard-card-title" style="margin-bottom: var(--space-lg);">System Status</div>
+                <div class="system-status">
+                  <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-label">API</div>
+                    <div class="status-value">99.9%</div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-label">DATABASE</div>
+                    <div class="status-value">OPTIMAL</div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-indicator warning"></div>
+                    <div class="status-label">STORAGE</div>
+                    <div class="status-value">78%</div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-label">CDN</div>
+                    <div class="status-value">ACTIVE</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="dashboard-card">
+                <div class="dashboard-card-title" style="margin-bottom: var(--space-lg);">Quick Actions</div>
+                <div class="quick-actions">
+                  <div class="quick-action" onclick="playSound('click')">
+                    <div class="quick-action-icon">🔄</div>
+                    <div class="quick-action-label">Sync</div>
+                  </div>
+                  <div class="quick-action" onclick="playSound('click')">
+                    <div class="quick-action-icon">📤</div>
+                    <div class="quick-action-label">Export</div>
+                  </div>
+                  <div class="quick-action" onclick="playSound('click')">
+                    <div class="quick-action-icon">🔒</div>
+                    <div class="quick-action-label">Lock</div>
+                  </div>
+                  <div class="quick-action" onclick="showPage('settings'); playSound('click')">
+                    <div class="quick-action-icon">⚙️</div>
+                    <div class="quick-action-label">Config</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="dashboard-grid" style="margin-top: var(--space-lg);">
+              <div class="dashboard-card" style="grid-column: span 2;">
+                <div class="dashboard-card-title" style="margin-bottom: var(--space-lg);">Recent Activity</div>
+                <div class="activity-feed">
+                  <div class="activity-item">
+                    <div class="activity-icon">🔓</div>
+                    <div class="activity-content">
+                      <div class="activity-text">Successful authentication from <strong>192.168.1.42</strong></div>
+                      <div class="activity-time">2 minutes ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">🛡️</div>
+                    <div class="activity-content">
+                      <div class="activity-text">Two-factor authentication enabled</div>
+                      <div class="activity-time">1 hour ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">📧</div>
+                    <div class="activity-content">
+                      <div class="activity-text">Email address verified: <strong>user@nexus.io</strong></div>
+                      <div class="activity-time">3 hours ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">🔑</div>
+                    <div class="activity-content">
+                      <div class="activity-text">API key generated for <strong>Production Environment</strong></div>
+                      <div class="activity-time">Yesterday</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logout Button -->
+            <div class="form-actions" style="max-width: 480px; margin: var(--space-2xl) auto 0;">
+              <button class="btn btn-secondary" onclick="handleLogout()">🚪 Terminate Session</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Footer
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="#" class="footer-link" onclick="showPage('reset-password'); return false;">SUPPORT</a>
+        <a href="#" class="footer-link">PRIVACY</a>
+        <a href="#" class="footer-link">TERMS</a>
+        <a href="#" class="footer-link">CONTACT</a>
+      </div>
+      <p class="footer-text">NEXUS AUTH v2.0 // SECURE SYSTEMS DIVISION</p>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       JavaScript
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════
+    // State
+    // ═══════════════════════════════════════════════════════════════════════
+    const state = {
+      currentPage: 'login',
+      textSize: localStorage.getItem('textSize') || 'standard',
+      language: localStorage.getItem('language') || 'en',
+      expandSections: localStorage.getItem('expandSections') === 'true',
+      epr: localStorage.getItem('epr') === 'true',
+      particles: localStorage.getItem('particles') !== 'false',
+      rgbSpeed: localStorage.getItem('rgbSpeed') || 'normal',
+      rgbHue: 0
+    };
+
+    const languages = [
+      { code: 'en', name: 'English', native: 'EN' },
+      { code: 'es', name: 'Español', native: 'ES' },
+      { code: 'fr', name: 'Français', native: 'FR' },
+      { code: 'de', name: 'Deutsch', native: 'DE' },
+      { code: 'zh', name: '中文', native: 'ZH' },
+      { code: 'ja', name: '日本語', native: 'JA' },
+      { code: 'pt', name: 'Português', native: 'PT' },
+      { code: 'ru', name: 'Русский', native: 'RU' },
+      { code: 'ar', name: 'العربية', native: 'AR' },
+      { code: 'ko', name: '한국어', native: 'KO' },
+    ];
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Particles System
+    // ═══════════════════════════════════════════════════════════════════════
+    function createParticles() {
+      const container = document.getElementById('particles');
+      container.innerHTML = '';
+
+      if (!state.particles) return;
+
+      // Floating particles
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+
+        const colors = ['var(--rgb-cyan)', 'var(--rgb-magenta)', 'var(--rgb-green)', 'var(--rgb-purple)'];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.boxShadow = `0 0 10px ${particle.style.background}`;
+
+        container.appendChild(particle);
+      }
+
+      // Data streams
+      for (let i = 0; i < 8; i++) {
+        const stream = document.createElement('div');
+        stream.className = 'data-stream';
+        stream.style.left = Math.random() * 100 + '%';
+        stream.style.animationDelay = Math.random() * 5 + 's';
+        stream.style.animationDuration = (2 + Math.random() * 3) + 's';
+        stream.style.height = (50 + Math.random() * 100) + 'px';
+        container.appendChild(stream);
+      }
+    }
+
+    function toggleParticles() {
+      state.particles = document.getElementById('setting-particles').checked;
+      localStorage.setItem('particles', state.particles);
+      createParticles();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // RGB Effects
+    // ═══════════════════════════════════════════════════════════════════════
+    let rgbInterval;
+
+    function setRGBSpeed(speed) {
+      state.rgbSpeed = speed;
+      localStorage.setItem('rgbSpeed', speed);
+
+      document.querySelectorAll('[data-rgb]').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.rgb === speed);
+      });
+
+      startRGBCycle();
+    }
+
+    function startRGBCycle() {
+      if (rgbInterval) clearInterval(rgbInterval);
+
+      const speeds = { off: 0, slow: 100, normal: 50, fast: 20 };
+      const interval = speeds[state.rgbSpeed];
+
+      if (interval === 0) {
+        document.documentElement.style.filter = '';
+        return;
+      }
+
+      rgbInterval = setInterval(() => {
+        state.rgbHue = (state.rgbHue + 1) % 360;
+        // Subtle hue shift on entire page
+        // document.documentElement.style.filter = `hue-rotate(${state.rgbHue}deg)`;
+      }, interval);
+    }
+
+    function cycleRGB() {
+      const speeds = ['off', 'slow', 'normal', 'fast'];
+      const currentIndex = speeds.indexOf(state.rgbSpeed);
+      const nextIndex = (currentIndex + 1) % speeds.length;
+      setRGBSpeed(speeds[nextIndex]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Page Navigation
+    // ═══════════════════════════════════════════════════════════════════════
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      document.getElementById('page-' + pageId)?.classList.remove('hidden');
+      state.currentPage = pageId;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Text Size
+    // ═══════════════════════════════════════════════════════════════════════
+    function setTextSize(size) {
+      state.textSize = size;
+      localStorage.setItem('textSize', size);
+
+      const scales = { standard: '16px', medium: '18px', large: '20px' };
+      document.documentElement.style.fontSize = scales[size];
+
+      document.querySelectorAll('[data-size]').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.size === size);
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Language
+    // ═══════════════════════════════════════════════════════════════════════
+    function initLanguageDropdown() {
+      const dropdown = document.getElementById('language-dropdown');
+      dropdown.innerHTML = languages.map(lang => `
+        <div class="language-option ${lang.code === state.language ? 'selected' : ''}"
+             onclick="setLanguage('${lang.code}')">
+          <span>${lang.name}</span>
+          <span class="language-native">${lang.native}</span>
+        </div>
+      `).join('');
+      updateCurrentLanguage();
+    }
+
+    function toggleLanguageDropdown() {
+      document.getElementById('language-dropdown').classList.toggle('open');
+    }
+
+    function setLanguage(code) {
+      state.language = code;
+      localStorage.setItem('language', code);
+      updateCurrentLanguage();
+      document.getElementById('language-dropdown').classList.remove('open');
+    }
+
+    function updateCurrentLanguage() {
+      const lang = languages.find(l => l.code === state.language);
+      document.getElementById('current-language').textContent = lang?.native || 'EN';
+      document.querySelectorAll('.language-option').forEach(opt => {
+        const isSelected = opt.textContent.includes(lang?.name);
+        opt.classList.toggle('selected', isSelected);
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.language-selector')) {
+        document.getElementById('language-dropdown').classList.remove('open');
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Settings
+    // ═══════════════════════════════════════════════════════════════════════
+    function showSettingsTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('settings-' + tabId)?.classList.add('active');
+    }
+
+    function toggleExpandSections() {
+      state.expandSections = document.getElementById('setting-expand-sections').checked;
+      localStorage.setItem('expandSections', state.expandSections);
+      if (state.expandSections) {
+        document.querySelectorAll('details').forEach(d => d.open = true);
+      }
+    }
+
+    function toggleEPR() {
+      state.epr = document.getElementById('setting-epr').checked;
+      localStorage.setItem('epr', state.epr);
+    }
+
+    function saveSettings() {
+      showMessage('login-message', 'Configuration saved successfully', 'success');
+      showPage('login');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Form Handlers
+    // ═══════════════════════════════════════════════════════════════════════
+    function showMessage(containerId, message, type = 'info') {
+      const container = document.getElementById(containerId);
+      container.innerHTML = `<div class="message message-${type}">${message}</div>`;
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      if (username && password) {
+        showMessage('login-message', 'AUTHENTICATION SUCCESSFUL // Initializing session...', 'success');
+      } else {
+        showMessage('login-message', 'ERROR: Invalid credentials', 'error');
+      }
+    }
+
+    function handleCreateAccount(e) {
+      e.preventDefault();
+      const password = document.getElementById('create-password').value;
+      const confirm = document.getElementById('create-password-confirm').value;
+
+      if (password !== confirm) {
+        showMessage('create-message', 'ERROR: Access keys do not match', 'error');
+        return;
+      }
+
+      showMessage('create-message', 'IDENTITY CREATED // Verification sequence initiated', 'success');
+    }
+
+    function handlePasswordReset(e) {
+      e.preventDefault();
+      showMessage('reset-message',
+        'RECOVERY INITIATED // If account exists, instructions transmitted to recovery channel',
+        'success'
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Sound Effects System
+    // ═══════════════════════════════════════════════════════════════════════
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      const now = audioContext.currentTime;
+
+      switch(type) {
+        case 'click':
+          oscillator.frequency.setValueAtTime(800, now);
+          oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+          gainNode.gain.setValueAtTime(0.1, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+          oscillator.type = 'sine';
+          oscillator.start(now);
+          oscillator.stop(now + 0.1);
+          break;
+
+        case 'success':
+          oscillator.frequency.setValueAtTime(523.25, now); // C5
+          oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
+          oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
+          gainNode.gain.setValueAtTime(0.15, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          oscillator.type = 'sine';
+          oscillator.start(now);
+          oscillator.stop(now + 0.4);
+          break;
+
+        case 'error':
+          oscillator.frequency.setValueAtTime(200, now);
+          oscillator.frequency.setValueAtTime(150, now + 0.1);
+          gainNode.gain.setValueAtTime(0.15, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          oscillator.type = 'sawtooth';
+          oscillator.start(now);
+          oscillator.stop(now + 0.3);
+          break;
+
+        case 'hover':
+          oscillator.frequency.setValueAtTime(1200, now);
+          gainNode.gain.setValueAtTime(0.03, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+          oscillator.type = 'sine';
+          oscillator.start(now);
+          oscillator.stop(now + 0.05);
+          break;
+
+        case 'type':
+          oscillator.frequency.setValueAtTime(600 + Math.random() * 200, now);
+          gainNode.gain.setValueAtTime(0.05, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+          oscillator.type = 'square';
+          oscillator.start(now);
+          oscillator.stop(now + 0.03);
+          break;
+
+        case 'whoosh':
+          const noise = audioContext.createBufferSource();
+          const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < buffer.length; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          noise.buffer = buffer;
+          const noiseGain = audioContext.createGain();
+          noise.connect(noiseGain);
+          noiseGain.connect(audioContext.destination);
+          noiseGain.gain.setValueAtTime(0.1, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          noise.start(now);
+          noise.stop(now + 0.2);
+          return;
+
+        case 'boot':
+          // Cyber boot sound
+          for (let i = 0; i < 5; i++) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(200 + i * 150, now + i * 0.1);
+            gain.gain.setValueAtTime(0.08, now + i * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
+            osc.type = 'sine';
+            osc.start(now + i * 0.1);
+            osc.stop(now + i * 0.1 + 0.15);
+          }
+          return;
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('soundEnabled', soundEnabled);
+      if (soundEnabled) playSound('success');
+    }
+
+    // Add sound effects to buttons and inputs
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('button, .btn, .settings-option, .quick-action, .tab, .link')) {
+        playSound('click');
+      }
+    });
+
+    document.addEventListener('input', (e) => {
+      if (e.target.matches('input')) {
+        playSound('type');
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Loading System
+    // ═══════════════════════════════════════════════════════════════════════
+    function showLoading(text = 'Processing...') {
+      const overlay = document.getElementById('loading-overlay');
+      const loadingText = document.getElementById('loading-text');
+      const progress = document.getElementById('loading-progress');
+
+      loadingText.textContent = text;
+      progress.style.width = '0%';
+      overlay.classList.remove('hidden');
+
+      // Animate progress
+      let width = 0;
+      const interval = setInterval(() => {
+        width += Math.random() * 15;
+        if (width >= 90) {
+          clearInterval(interval);
+          width = 90;
+        }
+        progress.style.width = width + '%';
+      }, 200);
+
+      return interval;
+    }
+
+    function hideLoading(interval) {
+      const overlay = document.getElementById('loading-overlay');
+      const progress = document.getElementById('loading-progress');
+
+      if (interval) clearInterval(interval);
+      progress.style.width = '100%';
+
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // OAuth Handlers
+    // ═══════════════════════════════════════════════════════════════════════
+    function handleOAuthLogin(provider) {
+      playSound('whoosh');
+      const loadingInterval = showLoading(`Connecting to ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`);
+
+      // Simulate OAuth flow
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+
+        // Show MFA verification for demo
+        showPage('mfa');
+        showMessage('mfa-message', `Connected via ${provider.toUpperCase()} // Verify identity`, 'info');
+      }, 2000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // MFA / 2FA System
+    // ═══════════════════════════════════════════════════════════════════════
+    let mfaTimer;
+    let mfaCountdown = 30;
+
+    function startMFATimer() {
+      if (mfaTimer) clearInterval(mfaTimer);
+      mfaCountdown = 30;
+      updateMFACountdown();
+
+      mfaTimer = setInterval(() => {
+        mfaCountdown--;
+        updateMFACountdown();
+
+        if (mfaCountdown <= 0) {
+          clearInterval(mfaTimer);
+          showMessage('mfa-message', 'Code expired. Request a new one.', 'warning');
+        }
+      }, 1000);
+    }
+
+    function updateMFACountdown() {
+      document.getElementById('mfa-countdown').innerHTML =
+        `Code expires in <strong>${mfaCountdown}</strong> seconds`;
+    }
+
+    function handleMFAInput(input) {
+      const value = input.value.replace(/[^0-9]/g, '');
+      input.value = value;
+
+      if (value) {
+        input.classList.add('filled');
+        playSound('type');
+
+        // Move to next input
+        const index = parseInt(input.dataset.index);
+        const nextInput = document.querySelector(`.mfa-code-input[data-index="${index + 1}"]`);
+        if (nextInput) {
+          nextInput.focus();
+        }
+      } else {
+        input.classList.remove('filled');
+      }
+
+      // Check if all inputs are filled
+      const inputs = document.querySelectorAll('.mfa-code-input');
+      const code = Array.from(inputs).map(i => i.value).join('');
+      if (code.length === 6) {
+        verifyMFACode(code);
+      }
+    }
+
+    function handleMFAKeydown(e, input) {
+      if (e.key === 'Backspace' && !input.value) {
+        const index = parseInt(input.dataset.index);
+        const prevInput = document.querySelector(`.mfa-code-input[data-index="${index - 1}"]`);
+        if (prevInput) {
+          prevInput.focus();
+          prevInput.value = '';
+          prevInput.classList.remove('filled');
+        }
+      }
+    }
+
+    function verifyMFACode(code) {
+      const inputs = document.querySelectorAll('.mfa-code-input');
+      const loadingInterval = showLoading('Verifying code...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+
+        // Demo: accept any 6-digit code
+        if (code.length === 6) {
+          playSound('success');
+          inputs.forEach(i => i.classList.add('filled'));
+          showMessage('mfa-message', 'VERIFICATION COMPLETE // Access granted', 'success');
+
+          setTimeout(() => {
+            showPage('dashboard');
+          }, 1000);
+        } else {
+          playSound('error');
+          inputs.forEach(i => {
+            i.classList.add('error');
+            i.value = '';
+            i.classList.remove('filled');
+          });
+          setTimeout(() => inputs.forEach(i => i.classList.remove('error')), 500);
+          showMessage('mfa-message', 'INVALID CODE // Try again', 'error');
+          inputs[0].focus();
+        }
+      }, 1500);
+    }
+
+    function handleMFASubmit(e) {
+      e.preventDefault();
+      const inputs = document.querySelectorAll('.mfa-code-input');
+      const code = Array.from(inputs).map(i => i.value).join('');
+      verifyMFACode(code);
+    }
+
+    function switchMFAMethod(method) {
+      document.querySelectorAll('.mfa-method').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.method === method);
+      });
+
+      const messages = {
+        app: 'Enter the 6-digit verification code from your authenticator app',
+        sms: 'Enter the 6-digit code sent to your phone ending in ****7842',
+        email: 'Enter the 6-digit code sent to your email address'
+      };
+
+      const hints = document.querySelector('#page-mfa .text-center.text-muted');
+      if (hints) hints.textContent = messages[method];
+
+      // Clear and refocus inputs
+      document.querySelectorAll('.mfa-code-input').forEach(i => {
+        i.value = '';
+        i.classList.remove('filled');
+      });
+      document.querySelector('.mfa-code-input[data-index="0"]')?.focus();
+
+      playSound('click');
+    }
+
+    function resendMFACode() {
+      playSound('whoosh');
+      showMessage('mfa-message', 'New code transmitted to your device', 'info');
+      startMFATimer();
+
+      // Clear inputs
+      document.querySelectorAll('.mfa-code-input').forEach(i => {
+        i.value = '';
+        i.classList.remove('filled');
+      });
+      document.querySelector('.mfa-code-input[data-index="0"]')?.focus();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Dashboard Functions
+    // ═══════════════════════════════════════════════════════════════════════
+    function handleLogout() {
+      playSound('whoosh');
+      const loadingInterval = showLoading('Terminating session...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+        showPage('login');
+        showMessage('login-message', 'Session terminated successfully', 'info');
+      }, 1500);
+    }
+
+    // Animate dashboard stats on page show
+    function animateDashboardStats() {
+      const values = document.querySelectorAll('.dashboard-card-value');
+      values.forEach(el => {
+        el.style.animation = 'none';
+        el.offsetHeight; // Trigger reflow
+        el.style.animation = 'statCounter 0.6s ease-out';
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Enhanced Page Navigation
+    // ═══════════════════════════════════════════════════════════════════════
+    const originalShowPage = showPage;
+    showPage = function(pageId) {
+      playSound('whoosh');
+      originalShowPage(pageId);
+
+      // Special page initializations
+      if (pageId === 'mfa') {
+        startMFATimer();
+        setTimeout(() => {
+          document.querySelector('.mfa-code-input[data-index="0"]')?.focus();
+        }, 100);
+      }
+
+      if (pageId === 'dashboard') {
+        animateDashboardStats();
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Enhanced Form Handlers with Loading & Sound
+    // ═══════════════════════════════════════════════════════════════════════
+    const originalHandleLogin = handleLogin;
+    handleLogin = function(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      if (!username || !password) {
+        playSound('error');
+        showMessage('login-message', 'ERROR: All fields required', 'error');
+        return;
+      }
+
+      const loadingInterval = showLoading('Authenticating...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+
+        // Show MFA page for demo
+        showPage('mfa');
+        showMessage('mfa-message', `Welcome, ${username} // Complete verification`, 'info');
+      }, 1500);
+    };
+
+    const originalHandleCreateAccount = handleCreateAccount;
+    handleCreateAccount = function(e) {
+      e.preventDefault();
+      const password = document.getElementById('create-password').value;
+      const confirm = document.getElementById('create-password-confirm').value;
+
+      if (password !== confirm) {
+        playSound('error');
+        showMessage('create-message', 'ERROR: Access keys do not match', 'error');
+        return;
+      }
+
+      const loadingInterval = showLoading('Creating identity...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+        showMessage('create-message', 'IDENTITY CREATED // Verification sequence initiated', 'success');
+
+        setTimeout(() => showPage('login'), 2000);
+      }, 2000);
+    };
+
+    const originalHandlePasswordReset = handlePasswordReset;
+    handlePasswordReset = function(e) {
+      e.preventDefault();
+      const loadingInterval = showLoading('Initiating recovery...');
+
+      setTimeout(() => {
+        hideLoading(loadingInterval);
+        playSound('success');
+        showMessage('reset-message',
+          'RECOVERY INITIATED // If account exists, instructions transmitted to recovery channel',
+          'success'
+        );
+      }, 1500);
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Matrix Rain Effect (Optional Enhancement)
+    // ═══════════════════════════════════════════════════════════════════════
+    function createMatrixRain() {
+      const container = document.getElementById('particles');
+      const chars = '01アイウエオカキクケコサシスセソタチツテト';
+
+      for (let i = 0; i < 20; i++) {
+        const char = document.createElement('div');
+        char.className = 'matrix-char';
+        char.textContent = chars[Math.floor(Math.random() * chars.length)];
+        char.style.left = Math.random() * 100 + '%';
+        char.style.animationDelay = Math.random() * 5 + 's';
+        char.style.animationDuration = (2 + Math.random() * 3) + 's';
+        container.appendChild(char);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Initialize
+    // ═══════════════════════════════════════════════════════════════════════
+    function init() {
+      setTextSize(state.textSize);
+      initLanguageDropdown();
+      createParticles();
+      startRGBCycle();
+
+      // Apply stored settings
+      document.getElementById('setting-expand-sections').checked = state.expandSections;
+      document.getElementById('setting-epr').checked = state.epr;
+      document.getElementById('setting-particles').checked = state.particles;
+
+      // Update RGB speed buttons
+      document.querySelectorAll('[data-rgb]').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.rgb === state.rgbSpeed);
+      });
+
+      if (state.expandSections) {
+        document.querySelectorAll('details').forEach(d => d.open = true);
+      }
+
+      // Play boot sound
+      setTimeout(() => playSound('boot'), 500);
+
+      // Optional: Add matrix rain effect
+      // createMatrixRain();
+    }
+
+    init();
+  </script>
+</body>
+</html>

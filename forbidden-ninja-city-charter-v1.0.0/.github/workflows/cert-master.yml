@@ -1,0 +1,53 @@
+name: CERT-MASTER Pipeline (Charter-Enforced)
+
+on:
+  push:
+    paths:
+      - "charter/**"
+      - "governance/**"
+      - "tests/**"
+      - "src/**"
+      - "config/**"
+  pull_request:
+    paths:
+      - "charter/**"
+      - "governance/**"
+      - "tests/**"
+      - "src/**"
+      - "config/**"
+
+jobs:
+  cert-master-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Structural charter check
+        run: |
+          chmod +x tests/test_charter_structure.sh
+          ./tests/test_charter_structure.sh
+
+      - name: Charter integrity check
+        run: |
+          chmod +x governance/verify.sh
+          ./governance/verify.sh
+
+      - name: Silver_Bullet check for CERT-MASTER CLI
+        run: |
+          chmod +x governance/tombs_check.sh
+          if [ -f src/cli/main_cli.js ]; then
+            HASH=$(sha256sum src/cli/main_cli.js | cut -d ' ' -f1)
+            ./governance/tombs_check.sh "$HASH"
+          else
+            echo "CLI not found, skipping Silver_Bullet check"
+          fi
+
+      - name: Run CERT-MASTER build
+        env:
+          CERT_MASTER_SECRET: ${{ secrets.CERT_MASTER_SECRET }}
+        run: |
+          if [ -f src/cli/main_cli.js ]; then
+            node src/cli/main_cli.js --config config/config.json --profile
+          else
+            echo "CLI not found, skipping build"
+          fi

@@ -1,0 +1,11 @@
+{
+  "document_type": "tombs_register",
+  "version": "1.0.0",
+  "file": "tombs.log",
+  "fields": ["timestamp", "sha256", "artifact_id", "owner", "reason"],
+  "policy": {
+    "append_only": true,
+    "hash_format": "sha256-hex",
+    "min_reason_length": 8
+  }
+}

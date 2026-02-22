@@ -1,0 +1,40 @@
+# genesis_infrastructure.yml
+# Role: Single source of truth for org identity, providers, and hardware.
+# NOTE: All personal values replaced with env-var placeholders.
+#       Populate via .env or secrets manager before deployment.
+
+owner:
+  name: "${OWNER_NAME}"
+  primary_email: "${OWNER_EMAIL}"
+  location: "${OWNER_LOCATION}"
+
+organisation:
+  name: "MuzzL3d Dictionary"
+  domain_primary: "${ORG_DOMAIN_PRIMARY}"
+  domain_secondary: "${ORG_DOMAIN_SECONDARY}"
+  abn: "${ORG_ABN}"
+  duns: "${ORG_DUNS}"
+  usi: "${ORG_USI}"
+
+identity_providers:
+  bitwarden:
+    org_id: "${BITWARDEN_ORG_ID}"
+    portal: "https://vault.bitwarden.com"
+    sso: true
+  google_workspace:
+    customer_id: "${GOOGLE_CUSTOMER_ID}"
+    sso: true
+  azure_m365:
+    tenant_id: "${AZURE_TENANT_ID}"
+    sso: true
+
+emails:
+  primary_admin: "${OWNER_EMAIL}"
+  service_accounts:
+    - "${SVC_ADMIN_EMAIL}"
+    - "${SVC_INFO_EMAIL}"
+    - "${SVC_OPS_EMAIL}"
+
+hardware:
+  main_station: "${HARDWARE_STATION}"
+  os: "${HARDWARE_OS}"

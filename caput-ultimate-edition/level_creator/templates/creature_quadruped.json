@@ -1,0 +1,406 @@
+{
+  "name": "Quadruped Creature Template",
+  "version": "1.0.0",
+  "contentType": "creature",
+  "subType": "quadruped",
+  "description": "Template for four-legged creature generation (mammals, reptiles, etc.)",
+
+  "skeleton": {
+    "hierarchy": {
+      "root": {
+        "type": "fixed",
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "children": ["pelvis"]
+      },
+      "pelvis": {
+        "type": "ball",
+        "limits": { "minPitch": -15, "maxPitch": 15, "minYaw": -10, "maxYaw": 10, "minRoll": -10, "maxRoll": 10 },
+        "children": ["spine_lower", "hip_FL", "hip_FR", "hip_BL", "hip_BR", "tail_base"]
+      },
+      "spine_lower": {
+        "type": "ball",
+        "limits": { "minPitch": -20, "maxPitch": 20, "minYaw": -15, "maxYaw": 15 },
+        "children": ["spine_mid"]
+      },
+      "spine_mid": {
+        "type": "ball",
+        "limits": { "minPitch": -20, "maxPitch": 20, "minYaw": -20, "maxYaw": 20 },
+        "children": ["spine_upper"]
+      },
+      "spine_upper": {
+        "type": "ball",
+        "limits": { "minPitch": -15, "maxPitch": 20, "minYaw": -15, "maxYaw": 15 },
+        "children": ["chest"]
+      },
+      "chest": {
+        "type": "ball",
+        "limits": { "minPitch": -10, "maxPitch": 15, "minYaw": -10, "maxYaw": 10 },
+        "children": ["neck_base", "shoulder_L", "shoulder_R"]
+      },
+      "neck_base": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 45, "minYaw": -30, "maxYaw": 30 },
+        "children": ["neck_mid"]
+      },
+      "neck_mid": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 45, "minYaw": -40, "maxYaw": 40 },
+        "children": ["neck_top"]
+      },
+      "neck_top": {
+        "type": "ball",
+        "limits": { "minPitch": -25, "maxPitch": 35, "minYaw": -35, "maxYaw": 35 },
+        "children": ["head"]
+      },
+      "head": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 30, "minYaw": -45, "maxYaw": 45 },
+        "children": ["jaw"]
+      },
+      "jaw": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 45 },
+        "children": []
+      },
+      "shoulder_L": {
+        "type": "ball",
+        "limits": { "minPitch": -45, "maxPitch": 60, "minYaw": -30, "maxYaw": 30 },
+        "children": ["elbow_FL"]
+      },
+      "elbow_FL": {
+        "type": "hinge",
+        "limits": { "minAngle": -10, "maxAngle": 140 },
+        "children": ["wrist_FL"]
+      },
+      "wrist_FL": {
+        "type": "hinge",
+        "limits": { "minAngle": -30, "maxAngle": 30 },
+        "children": ["paw_FL"]
+      },
+      "paw_FL": {
+        "type": "hinge",
+        "limits": { "minAngle": -20, "maxAngle": 60 },
+        "children": []
+      },
+      "shoulder_R": {
+        "type": "ball",
+        "limits": { "minPitch": -45, "maxPitch": 60, "minYaw": -30, "maxYaw": 30 },
+        "children": ["elbow_FR"],
+        "mirror": "shoulder_L"
+      },
+      "elbow_FR": {
+        "type": "hinge",
+        "limits": { "minAngle": -10, "maxAngle": 140 },
+        "children": ["wrist_FR"],
+        "mirror": "elbow_FL"
+      },
+      "wrist_FR": {
+        "type": "hinge",
+        "limits": { "minAngle": -30, "maxAngle": 30 },
+        "children": ["paw_FR"],
+        "mirror": "wrist_FL"
+      },
+      "paw_FR": {
+        "type": "hinge",
+        "limits": { "minAngle": -20, "maxAngle": 60 },
+        "children": [],
+        "mirror": "paw_FL"
+      },
+      "hip_FL": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 90, "minYaw": -20, "maxYaw": 20 },
+        "children": ["knee_FL"]
+      },
+      "knee_FL": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 150 },
+        "children": ["ankle_FL"]
+      },
+      "ankle_FL": {
+        "type": "hinge",
+        "limits": { "minAngle": -45, "maxAngle": 45 },
+        "children": ["hindpaw_FL"]
+      },
+      "hindpaw_FL": {
+        "type": "hinge",
+        "limits": { "minAngle": -20, "maxAngle": 60 },
+        "children": []
+      },
+      "hip_FR": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 90, "minYaw": -20, "maxYaw": 20 },
+        "children": ["knee_FR"],
+        "mirror": "hip_FL"
+      },
+      "knee_FR": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 150 },
+        "children": ["ankle_FR"],
+        "mirror": "knee_FL"
+      },
+      "ankle_FR": {
+        "type": "hinge",
+        "limits": { "minAngle": -45, "maxAngle": 45 },
+        "children": ["hindpaw_FR"],
+        "mirror": "ankle_FL"
+      },
+      "hindpaw_FR": {
+        "type": "hinge",
+        "limits": { "minAngle": -20, "maxAngle": 60 },
+        "children": [],
+        "mirror": "hindpaw_FL"
+      },
+      "hip_BL": {
+        "type": "ball",
+        "limits": { "minPitch": -40, "maxPitch": 100, "minYaw": -25, "maxYaw": 25 },
+        "children": ["knee_BL"]
+      },
+      "knee_BL": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 160 },
+        "children": ["ankle_BL"]
+      },
+      "ankle_BL": {
+        "type": "hinge",
+        "limits": { "minAngle": -50, "maxAngle": 50 },
+        "children": ["hindpaw_BL"]
+      },
+      "hindpaw_BL": {
+        "type": "hinge",
+        "limits": { "minAngle": -25, "maxAngle": 65 },
+        "children": []
+      },
+      "hip_BR": {
+        "type": "ball",
+        "limits": { "minPitch": -40, "maxPitch": 100, "minYaw": -25, "maxYaw": 25 },
+        "children": ["knee_BR"],
+        "mirror": "hip_BL"
+      },
+      "knee_BR": {
+        "type": "hinge",
+        "limits": { "minAngle": 0, "maxAngle": 160 },
+        "children": ["ankle_BR"],
+        "mirror": "knee_BL"
+      },
+      "ankle_BR": {
+        "type": "hinge",
+        "limits": { "minAngle": -50, "maxAngle": 50 },
+        "children": ["hindpaw_BR"],
+        "mirror": "ankle_BL"
+      },
+      "hindpaw_BR": {
+        "type": "hinge",
+        "limits": { "minAngle": -25, "maxAngle": 65 },
+        "children": [],
+        "mirror": "hindpaw_BL"
+      },
+      "tail_base": {
+        "type": "ball",
+        "limits": { "minPitch": -60, "maxPitch": 60, "minYaw": -45, "maxYaw": 45 },
+        "children": ["tail_mid"]
+      },
+      "tail_mid": {
+        "type": "ball",
+        "limits": { "minPitch": -45, "maxPitch": 45, "minYaw": -60, "maxYaw": 60 },
+        "children": ["tail_tip"]
+      },
+      "tail_tip": {
+        "type": "ball",
+        "limits": { "minPitch": -30, "maxPitch": 30, "minYaw": -45, "maxYaw": 45 },
+        "children": []
+      }
+    },
+
+    "proportions": {
+      "head_to_body": 0.18,
+      "neck_to_body": 0.25,
+      "torso_length": 0.4,
+      "front_leg_to_body": 0.35,
+      "back_leg_to_body": 0.38,
+      "tail_to_body": 0.3,
+      "shoulder_width": 0.15,
+      "hip_width": 0.18
+    },
+
+    "variants": {
+      "canine": { "neck_length_mult": 0.9, "tail_length_mult": 1.2, "leg_proportion": 1.0 },
+      "feline": { "neck_length_mult": 0.8, "tail_length_mult": 1.3, "leg_proportion": 0.95 },
+      "equine": { "neck_length_mult": 1.4, "tail_length_mult": 1.0, "leg_proportion": 1.3 },
+      "bovine": { "neck_length_mult": 0.7, "tail_length_mult": 0.8, "leg_proportion": 0.9 },
+      "reptile": { "neck_length_mult": 0.5, "tail_length_mult": 1.8, "leg_proportion": 0.6 }
+    }
+  },
+
+  "animations": {
+    "idle": {
+      "duration": 3.0,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "spine_mid",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 0, "y": 0, "z": 0 }, "easing": "easeInOut" },
+            { "time": 1.5, "value": { "x": 3, "y": 0, "z": 0 }, "easing": "easeInOut" },
+            { "time": 3.0, "value": { "x": 0, "y": 0, "z": 0 }, "easing": "easeInOut" }
+          ]
+        },
+        {
+          "target": "tail_base",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 0, "y": 0, "z": 0 } },
+            { "time": 0.75, "value": { "x": 0, "y": 15, "z": 0 } },
+            { "time": 1.5, "value": { "x": 0, "y": 0, "z": 0 } },
+            { "time": 2.25, "value": { "x": 0, "y": -15, "z": 0 } },
+            { "time": 3.0, "value": { "x": 0, "y": 0, "z": 0 } }
+          ]
+        }
+      ]
+    },
+    "walk": {
+      "duration": 1.2,
+      "loop": true,
+      "gaitType": "lateral",
+      "tracks": [
+        {
+          "target": "hip_FL",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 0.3, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 0.6, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 0.9, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 1.2, "value": { "x": -25, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "hip_BR",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 0.3, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 0.6, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 0.9, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 1.2, "value": { "x": -25, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "hip_FR",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 0.3, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 0.6, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 0.9, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 1.2, "value": { "x": 25, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "hip_BL",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 0.3, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 0.6, "value": { "x": 25, "y": 0, "z": 0 } },
+            { "time": 0.9, "value": { "x": -25, "y": 0, "z": 0 } },
+            { "time": 1.2, "value": { "x": 25, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "spine_mid",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": 0, "y": 3, "z": 0 } },
+            { "time": 0.3, "value": { "x": 0, "y": -3, "z": 0 } },
+            { "time": 0.6, "value": { "x": 0, "y": 3, "z": 0 } },
+            { "time": 0.9, "value": { "x": 0, "y": -3, "z": 0 } },
+            { "time": 1.2, "value": { "x": 0, "y": 3, "z": 0 } }
+          ]
+        }
+      ]
+    },
+    "run": {
+      "duration": 0.6,
+      "loop": true,
+      "gaitType": "rotary_gallop",
+      "tracks": [
+        {
+          "target": "hip_FL",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": -40, "y": 0, "z": 0 } },
+            { "time": 0.15, "value": { "x": 50, "y": 0, "z": 0 } },
+            { "time": 0.3, "value": { "x": -40, "y": 0, "z": 0 } },
+            { "time": 0.45, "value": { "x": 50, "y": 0, "z": 0 } },
+            { "time": 0.6, "value": { "x": -40, "y": 0, "z": 0 } }
+          ]
+        },
+        {
+          "target": "spine_mid",
+          "property": "rotation",
+          "keyframes": [
+            { "time": 0, "value": { "x": -15, "y": 0, "z": 0 } },
+            { "time": 0.15, "value": { "x": 10, "y": 0, "z": 0 } },
+            { "time": 0.3, "value": { "x": -15, "y": 0, "z": 0 } },
+            { "time": 0.45, "value": { "x": 10, "y": 0, "z": 0 } },
+            { "time": 0.6, "value": { "x": -15, "y": 0, "z": 0 } }
+          ]
+        }
+      ]
+    }
+  },
+
+  "texturing": {
+    "baseColors": [
+      { "name": "fur_primary", "hue": [20, 50], "saturation": [0.2, 0.6], "lightness": [0.2, 0.7] },
+      { "name": "fur_secondary", "hue": [15, 45], "saturation": [0.1, 0.4], "lightness": [0.3, 0.8] },
+      { "name": "skin_exposed", "hue": [0, 30], "saturation": [0.2, 0.5], "lightness": [0.3, 0.6] }
+    ],
+    "patterns": [
+      { "type": "spotted", "frequency": 0.3, "contrast": 0.5 },
+      { "type": "striped", "frequency": 0.2, "contrast": 0.6 },
+      { "type": "solid", "frequency": 0.4, "contrast": 0.1 },
+      { "type": "gradient", "frequency": 0.1, "contrast": 0.3 }
+    ],
+    "noiseTypes": ["fur", "organic", "cellular"],
+    "normalStrength": 2.0,
+    "roughnessRange": [0.5, 0.8],
+    "furDirection": {
+      "head": [0, 0, -1],
+      "body": [0, 0, -1],
+      "legs": [0, -1, 0],
+      "tail": [0, 0, -1]
+    }
+  },
+
+  "audio": {
+    "footstep": {
+      "type": "impact",
+      "frequency": [60, 100],
+      "duration": 0.1,
+      "variations": 4
+    },
+    "breathe": {
+      "type": "ambient",
+      "frequency": [80, 120],
+      "duration": 1.5
+    },
+    "vocalize": {
+      "type": "vocalization",
+      "frequency": [200, 800],
+      "duration": [0.3, 2.0],
+      "harmonics": 3
+    }
+  },
+
+  "physics": {
+    "mass_kg_range": [5, 500],
+    "center_of_mass_offset": { "x": 0, "y": 0.1, "z": 0.15 },
+    "collision_capsules": [
+      { "name": "body", "radius": 0.3, "height": 0.8 },
+      { "name": "head", "radius": 0.15, "height": 0.25 },
+      { "name": "leg", "radius": 0.08, "height": 0.4 }
+    ]
+  }
+}

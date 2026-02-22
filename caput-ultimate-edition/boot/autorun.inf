@@ -1,0 +1,18 @@
+[autorun]
+label=GENESIS 2.0 — CAPUT Admin
+icon=genesis\genesis.ico
+open=genesis\GENESIS-Launcher.exe
+action=Launch GENESIS 2.0 Security Platform
+
+[Content]
+MusicFiles=false
+PictureFiles=false
+VideoFiles=false
+
+[ExclusiveContentPaths]
+\genesis
+\caput-ultimate-edition
+
+[IgnoreContentPaths]
+\EFI
+\boot

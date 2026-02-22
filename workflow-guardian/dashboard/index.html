@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workflow Guardian Dashboard</title>
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --text-primary: #c9d1d9;
+      --text-secondary: #8b949e;
+      --border: #30363d;
+      --accent-green: #238636;
+      --accent-red: #da3633;
+      --accent-orange: #d29922;
+      --accent-blue: #58a6ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .status-badge.allow { background: var(--accent-green); color: white; }
+    .status-badge.warn { background: var(--accent-orange); color: black; }
+    .status-badge.block { background: var(--accent-red); color: white; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem;
+    }
+
+    .card h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .card .value {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .card .subtext {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .mape-loop {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .mape-step {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .mape-step.active {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+    }
+
+    .mape-step::after {
+      content: '→';
+      position: absolute;
+      right: -1rem;
+      color: var(--text-secondary);
+    }
+
+    .mape-step:last-child::after {
+      content: '';
+    }
+
+    .findings-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .findings-table th,
+    .findings-table td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .findings-table th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+    }
+
+    .level-badge {
+      padding: 0.125rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .level-badge.critical { background: var(--accent-red); color: white; }
+    .level-badge.high { background: var(--accent-orange); color: black; }
+    .level-badge.medium { background: #ffd33d; color: black; }
+    .level-badge.low { background: var(--accent-blue); color: white; }
+
+    .confidence-bar {
+      height: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      background: var(--accent-green);
+      transition: width 0.3s ease;
+    }
+
+    .confidence-fill.low { background: var(--accent-orange); }
+    .confidence-fill.critical { background: var(--accent-red); }
+
+    #dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 3rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 2rem;
+    }
+
+    #dropzone:hover, #dropzone.dragover {
+      border-color: var(--accent-blue);
+      background: rgba(88, 166, 255, 0.05);
+    }
+
+    #dropzone input { display: none; }
+
+    .history {
+      margin-top: 2rem;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-item:hover {
+      background: var(--bg-tertiary);
+    }
+
+    code {
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 0.875rem;
+      background: var(--bg-tertiary);
+      padding: 0.125rem 0.375rem;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Workflow Guardian
+      </h1>
+      <span id="verdict-badge" class="status-badge allow">READY</span>
+    </header>
+
+    <div class="mape-loop">
+      <div class="mape-step" id="step-monitor">Monitor</div>
+      <div class="mape-step" id="step-analyze">Analyze</div>
+      <div class="mape-step" id="step-plan">Plan</div>
+      <div class="mape-step" id="step-execute">Execute</div>
+    </div>
+
+    <div id="dropzone">
+      <input type="file" id="fileInput" accept=".yml,.yaml" multiple>
+      <p>Drop workflow files here or click to upload</p>
+      <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem">
+        Supports .yml and .yaml files
+      </p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Risk Score</h3>
+        <div class="value" id="risk-score">0</div>
+        <div class="subtext">out of 100</div>
+      </div>
+      <div class="card">
+        <h3>Confidence</h3>
+        <div class="value" id="confidence">--</div>
+        <div class="confidence-bar">
+          <div class="confidence-fill" id="confidence-bar" style="width: 0%"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Findings</h3>
+        <div class="value" id="findings-count">0</div>
+        <div class="subtext" id="findings-breakdown">No issues detected</div>
+      </div>
+      <div class="card">
+        <h3>Scanned</h3>
+        <div class="value" id="scanned-count">0</div>
+        <div class="subtext">workflows analyzed</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom: 1rem">Findings</h3>
+      <table class="findings-table">
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Rule</th>
+            <th>Message</th>
+            <th>Location</th>
+            <th>Fix</th>
+          </tr>
+        </thead>
+        <tbody id="findings-body">
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-secondary)">
+              Upload a workflow to scan
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="history card" style="margin-top: 2rem">
+      <h3 style="margin-bottom: 1rem">Scan History</h3>
+      <div id="history-list">
+        <div style="text-align: center; color: var(--text-secondary); padding: 1rem">
+          No scans yet
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Inline guardian logic for browser
+    const RISK_PATTERNS = {
+      CURL_PIPE_BASH: /curl\s+.*\|\s*(bash|sh|zsh)/i,
+      WGET_PIPE_BASH: /wget\s+.*\|\s*(bash|sh|zsh)/i,
+      PULL_REQUEST_TARGET: /pull_request_target/,
+      SECRETS_IN_PR: /\$\{\{\s*secrets\./,
+      UNPINNED_MAIN: /@(main|master|HEAD)\s*$/,
+      UNPINNED_VERSION: /@v\d+\s*$/,
+      SUDO_USAGE: /sudo\s+/,
+      HTTP_URL: /http:\/\//,
+      HARDCODED_CREDS: /(password|token|key|secret)\s*[:=]\s*['"][^$]/i,
+      WIDE_PERMISSIONS: /permissions:\s*write-all/,
+    };
+
+    const RISK_WEIGHTS = { CRITICAL: 100, HIGH: 40, MEDIUM: 15, LOW: 5, NONE: 0 };
+
+    function scanWorkflow(content, filename) {
+      const tokens = [];
+      const lines = content.split('\n');
+
+      lines.forEach((line, idx) => {
+        const lineNum = idx + 1;
+        if (RISK_PATTERNS.CURL_PIPE_BASH.test(line)) {
+          tokens.push({ type: 'SCRIPT', line: lineNum, risk: 'CRITICAL', reason: 'curl piped to shell' });
+        }
+        if (RISK_PATTERNS.WGET_PIPE_BASH.test(line)) {
+          tokens.push({ type: 'SCRIPT', line: lineNum, risk: 'CRITICAL', reason: 'wget piped to shell' });
+        }
+        if (RISK_PATTERNS.PULL_REQUEST_TARGET.test(line)) {
+          tokens.push({ type: 'TRIGGER', line: lineNum, risk: 'CRITICAL', reason: 'pull_request_target exposes secrets' });
+        }
+        if (/@(main|master|HEAD)\s*$/.test(line)) {
+          tokens.push({ type: 'ACTION', line: lineNum, risk: 'CRITICAL', reason: 'Unpinned action ref - use SHA' });
+        }
+        if (/@v\d+\s*$/.test(line) && line.includes('uses:')) {
+          tokens.push({ type: 'VERSION', line: lineNum, risk: 'HIGH', reason: 'Floating version - pin to exact' });
+        }
+        if (RISK_PATTERNS.SUDO_USAGE.test(line)) {
+          tokens.push({ type: 'SCRIPT', line: lineNum, risk: 'HIGH', reason: 'sudo usage detected' });
+        }
+        if (RISK_PATTERNS.HTTP_URL.test(line)) {
+          tokens.push({ type: 'URL', line: lineNum, risk: 'MEDIUM', reason: 'Insecure HTTP URL' });
+        }
+        if (RISK_PATTERNS.WIDE_PERMISSIONS.test(line)) {
+          tokens.push({ type: 'PERM', line: lineNum, risk: 'HIGH', reason: 'write-all is overly permissive' });
+        }
+      });
+
+      const riskScore = Math.min(100, tokens.reduce((s, t) => s + RISK_WEIGHTS[t.risk], 0));
+      const critical = tokens.filter(t => t.risk === 'CRITICAL').length;
+      const high = tokens.filter(t => t.risk === 'HIGH').length;
+      const confidence = tokens.length === 0 ? 0.95 : Math.min(0.99, 0.5 + critical * 0.15 + high * 0.08);
+
+      let verdict = 'ALLOW';
+      if (riskScore >= 80) verdict = 'BLOCK';
+      else if (riskScore >= 30) verdict = 'WARN';
+
+      return { filename, tokens, riskScore, confidence, verdict };
+    }
+
+    // UI State
+    let history = [];
+    let totalScanned = 0;
+
+    function updateUI(results) {
+      const combined = results.flatMap(r => r.tokens);
+      const maxScore = Math.max(...results.map(r => r.riskScore), 0);
+      const avgConfidence = results.reduce((s, r) => s + r.confidence, 0) / results.length;
+      const worstVerdict = results.some(r => r.verdict === 'BLOCK') ? 'BLOCK' :
+                          results.some(r => r.verdict === 'WARN') ? 'WARN' : 'ALLOW';
+
+      // Update cards
+      document.getElementById('risk-score').textContent = maxScore;
+      document.getElementById('confidence').textContent = (avgConfidence * 100).toFixed(1) + '%';
+      document.getElementById('findings-count').textContent = combined.length;
+      document.getElementById('scanned-count').textContent = totalScanned;
+
+      // Confidence bar
+      const confBar = document.getElementById('confidence-bar');
+      confBar.style.width = (avgConfidence * 100) + '%';
+      confBar.className = 'confidence-fill' + (avgConfidence < 0.5 ? ' critical' : avgConfidence < 0.75 ? ' low' : '');
+
+      // Verdict badge
+      const badge = document.getElementById('verdict-badge');
+      badge.textContent = worstVerdict;
+      badge.className = 'status-badge ' + worstVerdict.toLowerCase();
+
+      // Findings breakdown
+      const critical = combined.filter(t => t.risk === 'CRITICAL').length;
+      const high = combined.filter(t => t.risk === 'HIGH').length;
+      const medium = combined.filter(t => t.risk === 'MEDIUM').length;
+      document.getElementById('findings-breakdown').textContent =
+        combined.length === 0 ? 'No issues detected' :
+        `${critical} critical, ${high} high, ${medium} medium`;
+
+      // Findings table
+      const tbody = document.getElementById('findings-body');
+      if (combined.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary)">No findings</td></tr>`;
+      } else {
+        tbody.innerHTML = combined.map(t => `
+          <tr>
+            <td><span class="level-badge ${t.risk.toLowerCase()}">${t.risk}</span></td>
+            <td><code>${t.type}</code></td>
+            <td>${t.reason}</td>
+            <td>Line ${t.line}</td>
+            <td>${t.fix || '-'}</td>
+          </tr>
+        `).join('');
+      }
+
+      // History
+      results.forEach(r => {
+        history.unshift({ filename: r.filename, verdict: r.verdict, score: r.riskScore, time: new Date() });
+      });
+      history = history.slice(0, 10);
+      updateHistory();
+
+      // Animate MAPE-K steps
+      animateMAPEK();
+    }
+
+    function updateHistory() {
+      const list = document.getElementById('history-list');
+      if (history.length === 0) {
+        list.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem">No scans yet</div>`;
+      } else {
+        list.innerHTML = history.map(h => `
+          <div class="history-item">
+            <span><code>${h.filename}</code></span>
+            <span>
+              <span class="status-badge ${h.verdict.toLowerCase()}" style="font-size: 0.75rem">${h.verdict}</span>
+              Score: ${h.score}
+            </span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function animateMAPEK() {
+      const steps = ['monitor', 'analyze', 'plan', 'execute'];
+      steps.forEach((s, i) => {
+        setTimeout(() => {
+          document.querySelectorAll('.mape-step').forEach(el => el.classList.remove('active'));
+          document.getElementById('step-' + s).classList.add('active');
+        }, i * 300);
+      });
+      setTimeout(() => {
+        document.querySelectorAll('.mape-step').forEach(el => el.classList.remove('active'));
+      }, steps.length * 300 + 500);
+    }
+
+    // File handling
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(files) {
+      const results = [];
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          totalScanned++;
+          results.push(scanWorkflow(e.target.result, file.name));
+          if (results.length === files.length) {
+            updateUI(results);
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+  </script>
+</body>
+</html>
